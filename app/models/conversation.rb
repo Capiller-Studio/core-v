@@ -46,7 +46,7 @@ class Conversation < ShardRecord
   belongs_to :inbox
   belongs_to :campaign, optional: true
 
-  enum :status, { active: 0 }
+  enum :status, { active: 0, closed: 1, snoozed: 2 }
   enum :priority, { low: 0, medium: 1, high: 2 }
   enum :source, { email: 0, facebook_message: 1, whatsapp: 2 }, suffix: true
 
