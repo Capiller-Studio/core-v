@@ -69,6 +69,8 @@ class User < ApplicationRecord
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
 
+  before_save :configure_display_name
+  
   enum :status, { active: 0 }
   enum :gender, { male: 0, female: 1 }
 
@@ -79,5 +81,11 @@ class User < ApplicationRecord
       id: id,
       created_at: created_at
     }
+  end
+  
+  private
+
+  def configure_display_name
+    self.display_name = [first_name, middle_name, last_name].compact.join(" ")
   end
 end
