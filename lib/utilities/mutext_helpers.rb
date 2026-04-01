@@ -9,11 +9,11 @@ module RedisUtilities
         yield
         unlock(key)
       else
-        false
-        # TODO: Error handling and raise exception
+        raise(MutexLockError, "Could not acquire lock #{key}")
       end
-    rescue StandardError => _e
-      # TODO: Error handling
+    rescue StandardError => e
+      unlock(key) unless e.is_a?(MutexLockError)
+      raise(e)
     end
 
     def self.lock(key, timeout: TIMEOUT)

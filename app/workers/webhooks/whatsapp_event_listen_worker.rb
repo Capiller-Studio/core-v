@@ -5,10 +5,7 @@
 # Website: https://techbolic.com/
 
 module Webhooks
-  class WhatsappEventListenWorker
-    include Sidekiq::Worker
-    sidekiq_options retry: 3, queue: "default"
-
+  class WhatsappEventListenWorker < BaseMutexWorker
     def perform(params = {})
       params = params.with_indifferent_access
 

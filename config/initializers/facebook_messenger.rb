@@ -55,40 +55,18 @@ Rails.application.reloader.to_prepare do
   end
 
   Facebook::Messenger::Bot.on :message do |message|
-    # TODO: Create a worker to handle new message events
-
-    # For testing purpose
-
-    message = message.to_json
-    parsed_message = Parser::FacebookMessageParser.call(response: message)
-
-    Channel::FacebookPage.where(page_identifier: parsed_message.recipient_id).find_each do |channel|
-      Channels::FacebookPages::ConversationCreator.call(
-        facebook_page_channel: channel,
-        parsed_message:
-      )
-    end
+    Webhooks::FacebookEventListenWorker.perform_async("message", message.to_json)
   end
+
   Facebook::Messenger::Bot.on :message_echo do |message|
-    # TODO: Create a worker to handle new message events
-
-    # For testing purpose
-
-    message = message.to_json
-    parsed_message = Parser::FacebookMessageParser.call(response: message)
-    Channel::FacebookPage.where(page_identifier: parsed_message.sender_id).find_each do |channel|
-      Channels::FacebookPages::ConversationCreator.call(
-        facebook_page_channel: channel,
-        parsed_message:
-      )
-    end
+    Webhooks::FacebookEventListenWorker.perform_async("message_echo", message.to_json)
   end
 
   Facebook::Messenger::Bot.on :delivery do |delivery|
-    # TODO: Create a worker to handle delivery events
+    Webhooks::FacebookEventListenWorker.perform_async("delivery", delivery.to_json)
   end
 
   Facebook::Messenger::Bot.on :read do |read|
-    # TODO: Create a worker to handle delivery events
+    Webhooks::FacebookEventListenWorker.perform_async("read", read.to_json)
   end
 end

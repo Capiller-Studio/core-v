@@ -46,7 +46,7 @@ class Message < ShardRecord
   belongs_to :account
   belongs_to :sender, polymorphic: true
 
-  enum :status, { sent: 0 }
+  enum :status, { sent: 0, delivered: 1, read: 2, failed: 3 }
   enum :content_type, { text: 0 }
   enum :visibility, { personal: 0, global: 1 }
   enum :source, { email: 0 }, suffix: true
