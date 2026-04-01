@@ -13,5 +13,7 @@ module RedisUtilities
     REAUTHORIZATION_REQUIRED =  "REAUTHORIZATION_REQUIRED:%{resource_name}:%{resource_id}"
 
     MESSAGE_CREATION_LOCK = "MESSAGE_CREATION_LOCK:%{account_id}:%{id}"
+    INSTAGRAM_MESSAGE_CREATION_LOCK = "INSTAGRAM_MESSAGE_CREATION_LOCK:%{instagram_id}:%{sender_id}"
+    FACEBOOK_MESSAGE_CREATION_LOCK = "FACEBOOK_MESSAGE_CREATION_LOCK:%{receiver_id}:%{sender_id}"
   end
 end

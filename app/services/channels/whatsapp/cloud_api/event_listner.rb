@@ -37,32 +37,26 @@ module Channels
         private
 
         def process_statuses
-          existing_message = find_message(parsed_params[:statuses].first[:id])
-          return unless existing_message
+          status_payload = parsed_params[:statuses].first
+          return unless status_payload
 
-          update_message_status(existing_message, parsed_params[:statuses].first)
-        rescue ArgumentError => e
+          message_external_id = status_payload[:id]
+          status = status_payload[:status]
+
+          error_code = status_payload.dig(:errors, 0, :code)
+          error_message = status_payload.dig(:errors, 0, :title)
+
+          params = {
+            external_ids: [ message_external_id ],
+            error_code: error_code,
+            error_message: error_message,
+            channel_class: whatsapp_channel.class.name,
+            channel_id: whatsapp_channel.id
+          }
+
+          Messages::StatusUpdateWorker.perform_async(account.id, status, params)
+        rescue StandardError => e
           Rails.logger.error("Channels::Whatsapp::CloudApi::EventListner status process error => #{e.message}")
-        end
-
-        def update_message_status(message, status)
-          message.status = status[:status]
-          if status[:status] == "failed" && status[:errors].present?
-            # TODO: Log external errors.
-
-            # error = status[:errors]&.first
-            # message.errors = {
-            #   code: error[:code],
-            #   message: error[:title]
-            #  }
-          end
-          message.save!
-        end
-
-        def find_message(external_id)
-          return unless external_id
-
-          account.messages.find_by(external_id:)
         end
       end
     end
