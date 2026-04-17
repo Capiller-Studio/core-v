@@ -111,7 +111,7 @@ module Channels
           longitude: attachment.dig("payload", "coordinates", "long"),
           alt_title: attachment["title"],
           account:,
-          attachment_type: attachment_type
+          attachment_type:
         )
         attach_file(location_attachment)
       end
@@ -121,7 +121,7 @@ module Channels
           remote_url: attachment["url"],
           alt_title: attachment["title"],
           account:,
-          attachment_type: attachment_type
+          attachment_type:
         )
         attach_file(fallback_attachment)
       end

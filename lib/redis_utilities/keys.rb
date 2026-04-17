@@ -15,5 +15,6 @@ module RedisUtilities
     MESSAGE_CREATION_LOCK = "MESSAGE_CREATION_LOCK:%{account_id}:%{id}"
     INSTAGRAM_MESSAGE_CREATION_LOCK = "INSTAGRAM_MESSAGE_CREATION_LOCK:%{instagram_id}:%{sender_id}"
     FACEBOOK_MESSAGE_CREATION_LOCK = "FACEBOOK_MESSAGE_CREATION_LOCK:%{receiver_id}:%{sender_id}"
+    INBOX_ROUND_ROBIN = "INBOX:%{account_id}:%{inbox_id}:ROUND_ROBIN"
   end
 end

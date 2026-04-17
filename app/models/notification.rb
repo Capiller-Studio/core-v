@@ -27,5 +27,12 @@ class Notification < ShardRecord
   belongs_to :user
   belongs_to :resource, polymorphic: true
 
-  enum :event, { conversation_created: 0 }
+  enum :event, {
+    conversation_created: 0,
+    conversation_assigned: 1,
+    conversation_resolved: 2,
+    sla_breached: 3,
+    message_created: 4,
+    conversation_mention: 5
+  }
 end

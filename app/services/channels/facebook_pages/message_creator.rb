@@ -110,13 +110,13 @@ module Channels
       end
 
       def process_fallback_attachment(attachment)
-        location_attachment = message.attachments.create!(
+        fallback_attachment = message.attachments.create!(
           remote_url: attachment["url"],
           alt_title: attachment["title"],
           account:,
           attachment_type:
         )
-        attach_file(location_attachment)
+        attach_file(fallback_attachment)
       end
 
       def attach_file(attachment, tempfile = nil)

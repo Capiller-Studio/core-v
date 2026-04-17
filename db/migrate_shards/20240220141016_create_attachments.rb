@@ -6,6 +6,7 @@ class CreateAttachments < ActiveRecord::Migration[7.1]
       t.float   :latitude
       t.float   :longitude
       t.string  :extension
+      t.jsonb   :data, default: {}, null: false
 
       t.references :resource, polymorphic: true, null: false,  type: :uuid, index: true
       t.references :account,  null: false, foreign_key: false, type: :uuid, index: true

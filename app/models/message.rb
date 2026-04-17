@@ -47,25 +47,37 @@ class Message < ShardRecord
   belongs_to :sender, polymorphic: true
 
   enum :status, { sent: 0, delivered: 1, read: 2, failed: 3 }
-  enum :content_type, { text: 0 }
+  enum :content_type, { text: 0, input_email: 1, activity: 2, template: 3, input_csat: 4 }
   enum :visibility, { personal: 0, global: 1 }
-  enum :source, { email: 0 }, suffix: true
+  enum :source, { email: 0, facebook: 1, whatsapp: 2, instagram: 3, api: 4, web_widget: 5, sms: 6, telegram: 7 }, suffix: true
 
-  # TODO: WIP (Rough sketch to get going)
   has_many :attachments, as: :resource, dependent: :destroy
 
   after_create_commit :broadcast_message_creation
+  after_update_commit :broadcast_message_update, if: :saved_change_to_status?
+
+  def incoming?
+    sender_type == "Customer"
+  end
+
+  def outgoing?
+    sender_type == "User"
+  end
 
   def event_payload
     {
       id:,
       content:,
       content_type:,
+      status:,
       locale:,
       source:,
       visibility:,
       external_id:,
+      data:,
+      incoming: incoming?,
       created_at:,
+      updated_at:,
       sender: sender.event_payload,
       conversation: conversation.event_payload
     }
@@ -73,10 +85,13 @@ class Message < ShardRecord
 
   private
 
-  # TODO: Refactor to seperate concern
+  # TODO: Refactor to separate concern
   def broadcast_message_creation
-    # EventBroadcastWorker.perform_async("jj", "message.created", connection_tokens)
     EventBroadcastWorker.perform_async(event_payload.to_json, "message.created", connection_tokens)
+  end
+
+  def broadcast_message_update
+    EventBroadcastWorker.perform_async(event_payload.to_json, "message.updated", connection_tokens)
   end
 
   def connection_tokens

@@ -31,7 +31,7 @@ module Mailboxes
 
     def find_inbox
       # TODO: Logic for finding the correct inbox. Maybe: One inbox will act as default and other inboxes will
-      # receive onversations/messages based on Filters
+      # receive conversations/messages based on Filters
       self.inbox = email_channel.inboxes.first
     end
 
@@ -41,22 +41,54 @@ module Mailboxes
     end
 
     def find_conversation
-      # TODO: Maybe we need to allow replies here as well
-      # Possibilities: reply-to header or some pattern in receiver header
-      # mail.in_reply_to || mail["In-Reply-To"].try(:value)
-      # account.conversations.find_by(external_id: mail.in_reply_to)
-      # Plus we will have something like reply+conversation-id@domain.com for replies.
+      find_conversation_by_uuid || find_conversation_by_in_reply_to || find_conversation_by_references
+    end
+
+    # Strategy 1: reply+<uuid>@domain address pattern
+    def find_conversation_by_uuid
+      uuid = parsed_mail.reply_to_conversation_uuid
+      return unless uuid
+
+      self.conversation = account.conversations.find_by(identifier: uuid)
+    end
+
+    # Strategy 2: In-Reply-To header matching an existing message's external_id
+    def find_conversation_by_in_reply_to
+      return if parsed_mail.in_reply_to.blank?
+
+      message = account.messages.find_by(external_id: parsed_mail.in_reply_to)
+      self.conversation = message&.conversation
+    end
+
+    # Strategy 3: References header — walk through to find any matching message
+    def find_conversation_by_references
+      return if parsed_mail.references.blank?
+
+      parsed_mail.references.each do |ref|
+        message = account.messages.find_by(external_id: ref)
+        if message
+          self.conversation = message.conversation
+          return conversation
+        end
+      end
       nil
     end
 
     def create_conversation
-      # TODO: Fix placeholder identifier
+      # identifier is a UUID embedded in outbound reply-to address: reply+<identifier>@domain
+      # This allows customers to reply and have it routed back to this conversation.
       self.conversation = account.conversations.create!(
         inbox:,
         source: :email,
         identifier: SecureRandom.uuid,
         data: {
-          email: { subject: parsed_mail.subject }
+          email: {
+            subject: parsed_mail.subject,
+            message_id: parsed_mail.message_id,
+            in_reply_to: parsed_mail.in_reply_to,
+            from: parsed_mail.from,
+            to: parsed_mail.receiver
+          }
         }
       )
     end
