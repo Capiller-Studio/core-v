@@ -24,4 +24,9 @@
 #
 class SlaPolicy < ShardRecord
   belongs_to :account
+
+  has_many :sla_inboxes, dependent: :destroy
+  has_many :inboxes, through: :sla_inboxes
+  has_many :conversation_slas, dependent: :destroy
+  has_many :conversations, through: :conversation_slas
 end

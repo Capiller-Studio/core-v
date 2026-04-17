@@ -42,15 +42,17 @@
 #  fk_rails_...  (inbox_id => inboxes.id) ON DELETE => cascade
 #
 class Conversation < ShardRecord
+  include Assignable
+  include SlaTrackable
+
   belongs_to :account
   belongs_to :inbox
   belongs_to :campaign, optional: true
 
-  enum :status, { active: 0, closed: 1, snoozed: 2 }
-  enum :priority, { low: 0, medium: 1, high: 2 }
-  enum :source, { email: 0, facebook_message: 1, whatsapp: 2 }, suffix: true
+  enum :status, { active: 0, closed: 1, snoozed: 2, resolved: 3 }
+  enum :priority, { low: 0, medium: 1, high: 2, urgent: 3 }
+  enum :source, { email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3, api: 4, web_widget: 5, sms: 6, telegram: 7 }, suffix: true
 
-  # TODO: WIP (Rough sketch to get going)
   has_many :conversation_members, dependent: :destroy
   has_many :members, through: :conversation_members, source: :member, source_type: [ "Customer", "User" ]
   has_many :customers, through: :conversation_members,
@@ -63,6 +65,7 @@ class Conversation < ShardRecord
   has_many :customer_inboxes, through: :customers
 
   after_create_commit :broadcast_conversation_creation
+  before_save :update_last_activity_at, if: :will_save_change_to_status?
 
 
   scope :current_conversations, ->(current_user) {
@@ -70,24 +73,36 @@ class Conversation < ShardRecord
 
   def event_payload
     {
-      id: id,
-      locale: locale,
-      created_at: created_at
+      id:,
+      status:,
+      priority:,
+      source:,
+      title:,
+      locale:,
+      identifier:,
+      inbox_id:,
+      last_activity_at:,
+      created_at:,
+      updated_at:
     }
+  end
+
+  def update_last_activity
+    touch(:last_activity_at)
   end
 
   private
 
-  # TODO: Refactor to seperate concern
+  # TODO: Refactor to separate concern
   def broadcast_conversation_creation
-    # TODO: Broadcast event and create notification
-    # Create a worker for broadcasting events in the background
-
     EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.created", connection_tokens)
   end
 
+  def update_last_activity_at
+    self.last_activity_at = Time.current
+  end
 
   def connection_tokens
-    customer_inboxes.pluck(:connection_token) + User.pluck(:connection_token)
+    customer_inboxes.pluck(:connection_token) + users.pluck(:connection_token)
   end
 end

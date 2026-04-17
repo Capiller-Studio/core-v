@@ -30,7 +30,7 @@ class Attachment < ShardRecord
 
   #  TODO: File validations
 
-  enum :attachment_type, { image: 0, file: 1, video: 2, audio: 3, location: 4 }
+  enum :attachment_type, { image: 0, file: 1, video: 2, audio: 3, location: 4, fallback: 5, share: 6, story_mention: 7, contact: 8 }
 
   def direct_download_url
     return unless file.attached?
