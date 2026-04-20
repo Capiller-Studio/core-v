@@ -23,4 +23,78 @@ class NotificationSubscription < ShardRecord
   belongs_to :user
 
   enum :subscription_type, { push: 0, fcm: 1 }
+
+  # Web Push: data stores { endpoint:, p256dh:, auth: }
+  # FCM:      data stores { device_token: }
+
+  def push_token
+    data["device_token"] || data["endpoint"]
+  end
+
+  def web_push_keys
+    {
+      p256dh: data["p256dh"],
+      auth: data["auth"]
+    }
+  end
+
+  def deliver_push!(notification)
+    case subscription_type
+    when "push"
+      deliver_web_push(notification)
+    when "fcm"
+      deliver_fcm(notification)
+    end
+  rescue StandardError => e
+    Rails.logger.error("Push delivery failed for subscription##{id}: #{e.message}")
+  end
+
+  private
+
+  # Use user's configured locale for push notification text
+  def user_locale
+    user.locale || I18n.default_locale
+  end
+
+  def deliver_web_push(notification)
+    return unless data["endpoint"].present?
+
+    payload = push_payload(notification)
+
+    WebPush.payload_send(
+      message: payload.to_json,
+      endpoint: data["endpoint"],
+      p256dh: data["p256dh"],
+      auth: data["auth"],
+      vapid: {
+        subject: "mailto:#{Rails.application.credentials.dig(:vapid, :subject)}",
+        public_key: Rails.application.credentials.dig(:vapid, :public_key),
+        private_key: Rails.application.credentials.dig(:vapid, :private_key)
+      }
+    )
+  end
+
+  def deliver_fcm(notification)
+    return unless data["device_token"].present?
+
+    # TODO: Configure FCM credentials and implement
+    Rails.logger.info("FCM push queued for device: #{data['device_token']}")
+  end
+
+  def push_payload(notification)
+    locale = user_locale
+    identifier = notification.resource.try(:identifier) || ""
+    inbox_name = notification.resource.try(:inbox).try(:name) || ""
+
+    {
+      title: I18n.t("notifications.push.#{notification.event}.title", locale:),
+      body: I18n.t("notifications.push.#{notification.event}.body", locale:, identifier:, inbox_name:),
+      data: {
+        notification_id: notification.id,
+        event: notification.event,
+        resource_type: notification.resource_type,
+        resource_id: notification.resource_id
+      }
+    }
+  end
 end

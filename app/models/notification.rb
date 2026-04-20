@@ -23,6 +23,8 @@
 #  index_notifications_on_user_id_and_event       (user_id,event)
 #
 class Notification < ShardRecord
+  include Notifiable
+
   belongs_to :account
   belongs_to :user
   belongs_to :resource, polymorphic: true
@@ -35,4 +37,18 @@ class Notification < ShardRecord
     message_created: 4,
     conversation_mention: 5
   }
+
+  scope :unread, -> { where(read_at: nil) }
+  scope :recent, -> { order(created_at: :desc) }
+
+  def event_payload
+    {
+      id:,
+      event:,
+      read_at:,
+      resource_type:,
+      resource_id:,
+      created_at:
+    }
+  end
 end

@@ -47,10 +47,11 @@ class Account < ApplicationRecord
   enum :status, { active: 0 }
   enum :referral_commission_type, { fixed: 0 }
 
-  # TODO: WIP (Rough sketch to get going)
   has_many :customers, dependent: :destroy
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
   has_many :conversations, dependent: :destroy
   has_many :messages, dependent: :destroy
+  has_many :email_templates, dependent: :destroy
+  has_many :notification_settings, dependent: :destroy
 end

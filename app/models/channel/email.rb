@@ -36,7 +36,39 @@ module Channel
 
     enum :status, { active: 0 }
 
-    # TODO: WIP (Rough sketch to get going)
     has_many :inboxes, as: :channel, dependent: :destroy
+
+    # IMAP config: { address:, port:, username:, password:, enable_ssl: }
+    def imap_enabled?
+      imap_configurations.present? && imap_configurations["address"].present?
+    end
+
+    def imap_config
+      @imap_config ||= imap_configurations.symbolize_keys
+    end
+
+    # SMTP config: { address:, port:, username:, password:, domain:, authentication:, enable_starttls: }
+    def smtp_enabled?
+      smtp_configurations.present? && smtp_configurations["address"].present?
+    end
+
+    def smtp_config
+      @smtp_config ||= smtp_configurations.symbolize_keys
+    end
+
+    # Build ActionMailer delivery options from smtp_configurations
+    def smtp_delivery_options
+      return {} unless smtp_enabled?
+
+      {
+        address: smtp_config[:address],
+        port: smtp_config[:port] || 587,
+        user_name: smtp_config[:username],
+        password: smtp_config[:password],
+        domain: smtp_config[:domain],
+        authentication: (smtp_config[:authentication] || "plain").to_sym,
+        enable_starttls_auto: smtp_config[:enable_starttls] != false
+      }.compact
+    end
   end
 end
