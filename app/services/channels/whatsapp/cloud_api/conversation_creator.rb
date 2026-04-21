@@ -101,9 +101,25 @@ module Channels
             full_phone_number: "+#{parsed_params[:messages].first[:from]}",
             params: {
               name: customer_data.dig(:profile, :name)
-              # avatar_url: customer_data["avatar_url"]
             }
           )
+          
+          create_native_identity(customer_data)
+        end
+
+        def create_native_identity(customer_data)
+          return if customer_data.blank?
+          return if account.identities.exists?(customer: customer, identity_type: :whatsapp)
+
+          account.identities.create!(
+            customer: customer,
+            identity_type: :whatsapp,
+            identifier: customer_data["wa_id"],
+            name: customer_data.dig(:profile, :name),
+            raw_response: customer_data
+          )
+        rescue StandardError => e
+          Rails.logger.error("Failed to create native whatsapp identity: #{e.message}")
         end
 
         def find_or_create_conversation

@@ -10,15 +10,15 @@ class CreateIdentities < ActiveRecord::Migration[7.1]
       t.string :external_id
       t.string :administration_url
 
-      t.jsonb :configurations,   null: false, default: {}
-      t.jsonb :headers,          null: false, default: {}
-      t.jsonb :response_mapping, null: false, default: {}
-      t.jsonb :params,           null: false, default: {}
+      t.jsonb :configurations,    null: false, default: {}
+      t.jsonb :custom_attributes, null: false, default: {}
+      t.jsonb :raw_response,      null: false, default: {}
+      t.integer :identity_type,   null: false, default: 0
 
       t.references :account,         null: false, foreign_key: false, type: :uuid, index: true
       t.references :address,         null: true,  foreign_key: false, type: :uuid, index: false
       t.references :customer,        null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
-      t.references :identity_source, null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
+      t.references :identity_source, null: true, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

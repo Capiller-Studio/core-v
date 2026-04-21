@@ -67,6 +67,7 @@ module Channels
 
       def create_customer
         customer_data = fetch_customer_details || {}
+        
         self.customer = Customers::CustomerCreator.call(
           account:,
           inbox:,
@@ -75,9 +76,35 @@ module Channels
           params: {
             first_name: customer_data["first_name"],
             last_name: customer_data["last_name"],
-            avatar_url: customer_data["avatar_url"]
+            avatar_url: customer_data["profile_pic"],
+            gender: customer_data["gender"]
           }
         )
+
+        create_native_identity(customer_data)
+      end
+
+      def create_native_identity(customer_data)
+        return if customer_data.blank?
+        return if account.identities.exists?(customer: customer, identity_type: :facebook)
+
+        account.identities.create!(
+          customer: customer,
+          identity_type: :facebook,
+          identifier: sender_id,
+          first_name: customer_data["first_name"],
+          last_name: customer_data["last_name"],
+          name: customer_data["name"] || [customer_data["first_name"], customer_data["last_name"]].compact.join(" "),
+          raw_response: customer_data,
+          custom_attributes: {
+            "Gender" => customer_data["gender"],
+            "Locale" => customer_data["locale"],
+            "Timezone" => customer_data["timezone"],
+            "Profile Picture" => customer_data["profile_pic"]
+          }.compact
+        )
+      rescue StandardError => e
+        Rails.logger.error("Failed to create native facebook identity: #{e.message}")
       end
 
       def find_or_create_conversation_memeber
