@@ -12,6 +12,8 @@ class Transaction < ApplicationRecord
 
   has_one_attached :invoice_pdf
 
+  after_commit :process_affiliate_commissions, on: [:create, :update]
+
   scope :recent, -> { order(created_at: :desc) }
   scope :successful, -> { where(status: :completed) }
   scope :charges, -> { where(transaction_type: :charge) }
@@ -66,5 +68,18 @@ class Transaction < ApplicationRecord
   # Subtotal from line items
   def subtotal
     line_items.sum { |item| item["amount"].to_d }
+  end
+
+  private
+
+  def process_affiliate_commissions
+    # Evaluate uniformly across paddle, stripe, and native wallet systems generically!
+    if saved_change_to_status? && completed? && charge?
+      Affiliates::Commissions::Calculator.call(transaction: self)
+    elsif previous_changes.empty? && completed? && charge? # new record path 
+      Affiliates::Commissions::Calculator.call(transaction: self)
+    elsif saved_change_to_status? && refunded? && charge?
+      Affiliates::Commissions::Refunder.call(transaction: self)
+    end
   end
 end
