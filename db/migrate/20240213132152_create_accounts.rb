@@ -4,6 +4,7 @@ class CreateAccounts < ActiveRecord::Migration[7.1]
       t.string   :name, null: false
       t.string   :locale, null: false, default: "en"
       t.string   :email
+      t.string   :currency, limit: 4, null: false, default: "USD"
       t.bigint   :features,       default: 0, null: false
       t.jsonb    :limits,         default: {}, null: false
       t.jsonb    :data,           default: {}, null: false

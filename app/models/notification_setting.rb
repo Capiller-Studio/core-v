@@ -32,6 +32,13 @@ class NotificationSetting < ShardRecord
             4 => :email_sla_breached,
             5 => :email_message_created,
             6 => :email_conversation_mention,
+            7 => :email_subscription_created,
+            8 => :email_subscription_renewed,
+            9 => :email_subscription_cancelled,
+            10 => :email_trial_expiring,
+            11 => :email_payment_failed,
+            12 => :email_limit_approaching,
+            13 => :email_limit_reached,
             column: "email_flags"
 
   has_flags 1 => :push_conversation_created,
@@ -40,14 +47,23 @@ class NotificationSetting < ShardRecord
             4 => :push_sla_breached,
             5 => :push_message_created,
             6 => :push_conversation_mention,
+            7 => :push_subscription_created,
+            8 => :push_subscription_renewed,
+            9 => :push_subscription_cancelled,
+            10 => :push_trial_expiring,
+            11 => :push_payment_failed,
+            12 => :push_limit_approaching,
+            13 => :push_limit_reached,
             column: "push_flags",
             flag_query_mode: :bit_operator
 
   def email_enabled_for?(event)
-    send(:"email_#{event}")
+    flag = :"email_#{event}"
+    respond_to?(flag) ? send(flag) : false
   end
 
   def push_enabled_for?(event)
-    send(:"push_#{event}")
+    flag = :"push_#{event}"
+    respond_to?(flag) ? send(flag) : false
   end
 end
