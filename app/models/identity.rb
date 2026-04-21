@@ -42,6 +42,17 @@
 class Identity < ShardRecord
   belongs_to :account
   belongs_to :customer
-  belongs_to :identity_source
-  belongs_to :address
+  belongs_to :identity_source, optional: true
+  belongs_to :address, optional: true
+
+  enum :identity_type, { 
+    custom_api: 0, 
+    facebook: 1, 
+    instagram: 2, 
+    whatsapp: 3,
+    web_widget: 4
+  }
+
+  validates :identity_type, presence: true
+  validates :identifier, presence: true
 end

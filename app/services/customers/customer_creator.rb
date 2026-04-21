@@ -26,8 +26,7 @@ module Customers
 
       ActiveRecord::Base.transaction do
         find_or_create_customer
-        # TODO: Logic to attach some profile-picture/avatar. Maybe something random, if we can't fetch it
-        # params[:avatar_url] for sources like facebook
+        attach_avatar_if_present
       end
 
       customer_inbox&.customer
@@ -38,6 +37,28 @@ module Customers
     def find_or_create_customer
       find_customer || create_customer
       create_customer_inbox
+    end
+
+    def attach_avatar_if_present
+      url = params[:avatar_url].presence || generate_default_avatar_url
+      return unless url
+      
+      Utilities::ActiveStorageDownloader.attach(
+        record: customer, 
+        attachment_name: :avatar, 
+        url: url
+      )
+    end
+
+    def generate_default_avatar_url
+      gender_path = case params[:gender].to_s.downcase
+                    when "male" then "boy"
+                    when "female" then "girl"
+                    else "boy" # Fallback randomized
+                    end
+
+      seed = CGI.escape(params[:name] || params[:first_name] || external_id.to_s || customer.identifier.to_s)
+      "https://avatar.iran.liara.run/public/#{gender_path}?username=#{seed}"
     end
 
     def find_customer
@@ -74,6 +95,7 @@ module Customers
         last_name: params[:last_name],
         email:,
         external_id:,
+        gender: params[:gender],
         address: Address.create!
       )
     end

@@ -117,11 +117,18 @@ module Mailboxes
         email: parsed_mail.original_sender,
         params: {
           name: find_customer_name,
+          avatar_url: generate_gravatar_url(parsed_mail.original_sender),
           data: {
             email: { message_id: mail.message_id }
           }
         }
       )
+    end
+
+    def generate_gravatar_url(email)
+      return if email.blank?
+      hash = Digest::MD5.hexdigest(email.downcase.strip)
+      "https://www.gravatar.com/avatar/#{hash}?d=404"
     end
 
     def find_customer_name

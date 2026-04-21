@@ -66,6 +66,8 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
   belongs_to :address
 
+  include Avatarable
+
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
 

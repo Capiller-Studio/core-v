@@ -75,7 +75,8 @@ module Channels
           params: {
             first_name: customer_data["first_name"],
             last_name: customer_data["last_name"],
-            avatar_url: customer_data["profile_pic"] || customer_data["avatar_url"]
+            avatar_url: customer_data["profile_pic"] || customer_data["avatar_url"],
+            gender: customer_data["gender"]
           }
         )
       end

@@ -69,6 +69,8 @@ class Customer < ShardRecord
   # TODO: Fix concern
   belongs_to :address
 
+  include Avatarable
+
   enum :status, { active: 0 }
   enum :gender, { male: 0, female: 1 }
   enum :customer_type, { guest: 0, customer: 1 }
