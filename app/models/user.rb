@@ -70,6 +70,7 @@ class User < ApplicationRecord
 
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
+  has_one :affiliate_profile, class_name: "Affiliate::Profile", dependent: :destroy
 
   before_save :configure_display_name
   
