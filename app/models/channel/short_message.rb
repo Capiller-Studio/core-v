@@ -38,7 +38,7 @@ module Channel
     belongs_to :account
 
     enum :status,  { active: 0 }
-    enum :service, { twilio: 0 }
+    enum :service, { twilio: 0, signalwire: 1, aws_sns: 2 }
     enum :short_message_type,  { sms: 0 }
   end
 end

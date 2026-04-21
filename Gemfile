@@ -150,3 +150,8 @@ group :test do
   gem "selenium-webdriver"
   gem 'shoulda', '~> 4.0'
 end
+
+# Short Messages
+gem 'twilio-ruby'
+gem 'signalwire'
+gem 'aws-sdk-sns'
