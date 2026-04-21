@@ -42,4 +42,26 @@ class AccountUser < ApplicationRecord
   enum :role, { owner: 0, agent: 1, admin: 2 }
   enum :availability, { online: 0, offline: 1 }
   enum :status, { active: 0 }
+
+  before_create :enforce_user_limit!
+  after_create_commit :on_agent_added
+  after_destroy_commit :on_agent_removed
+
+  private
+
+  def enforce_user_limit!
+    return if account.within_limit?(:users)
+
+    errors.add(:base, "User limit reached for your plan. Please upgrade.")
+    throw(:abort)
+  end
+
+  def on_agent_added
+    account.increment_usage!(:users)
+    account.track_agent_count!
+  end
+
+  def on_agent_removed
+    account.decrement_usage!(:users)
+  end
 end

@@ -7,6 +7,13 @@ en:
       sla_breached: "SLA Breach Alert"
       message_created: "New message received"
       conversation_mention: "You were mentioned in a conversation"
+      subscription_created: "Subscription activated"
+      subscription_renewed: "Subscription renewed"
+      subscription_cancelled: "Subscription cancelled"
+      trial_expiring: "Your free trial is ending soon"
+      payment_failed: "Payment failed"
+      limit_approaching: "You are approaching your plan limit"
+      limit_reached: "Plan limit reached"
     push:
       conversation_created:
         title: "New Conversation"
@@ -26,6 +33,27 @@ en:
       conversation_mention:
         title: "Mentioned"
         body: "You were mentioned in conversation #%{identifier}"
+      subscription_created:
+        title: "Subscription Activated"
+        body: "Your %{plan_name} plan is now active"
+      subscription_renewed:
+        title: "Subscription Renewed"
+        body: "Your %{plan_name} plan has been renewed"
+      subscription_cancelled:
+        title: "Subscription Cancelled"
+        body: "Your subscription has been cancelled"
+      trial_expiring:
+        title: "Trial Ending Soon"
+        body: "Your free trial ends in %{days} days"
+      payment_failed:
+        title: "Payment Failed"
+        body: "We couldn't process your payment. Please update your payment method."
+      limit_approaching:
+        title: "Approaching Limit"
+        body: "You're at %{percentage}%% of your %{resource} limit"
+      limit_reached:
+        title: "Limit Reached"
+        body: "You've reached your %{resource} limit. Upgrade your plan to continue."
   mailers:
     conversation_reply:
       subject: "Re: %{subject}"
@@ -42,9 +70,27 @@ en:
         subject: "New message in conversation #%{identifier}"
       conversation_mention:
         subject: "You were mentioned in conversation #%{identifier}"
+      payment_failed:
+        subject: "Payment failed — action required"
+      trial_expiring:
+        subject: "Your free trial ends in %{days} days"
     system:
       workspace_request:
         subject: "Workspace Joining Request"
+  billing:
+    plans:
+      starter:
+        display_name: "Starter"
+        description: "Perfect for getting started. Includes 2 agents and 1 channel."
+      momentum:
+        display_name: "Momentum"
+        description: "For growing teams. Unlimited agents and all channels with 6-month data retention."
+      pinnacle:
+        display_name: "Pinnacle"
+        description: "For scaling businesses. SLA policies, API access, and 12-month data retention."
+      enterprise:
+        display_name: "Enterprise"
+        description: "Custom solutions for large organizations. Unlimited data retention and dedicated support."
   seeds:
     email_templates:
       conversation_reply:

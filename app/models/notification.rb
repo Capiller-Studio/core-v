@@ -35,7 +35,14 @@ class Notification < ShardRecord
     conversation_resolved: 2,
     sla_breached: 3,
     message_created: 4,
-    conversation_mention: 5
+    conversation_mention: 5,
+    subscription_created: 6,
+    subscription_renewed: 7,
+    subscription_cancelled: 8,
+    trial_expiring: 9,
+    payment_failed: 10,
+    limit_approaching: 11,
+    limit_reached: 12
   }
 
   scope :unread, -> { where(read_at: nil) }
