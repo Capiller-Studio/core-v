@@ -25,8 +25,20 @@ module LimitEnforceable
     current_usage(resource) < max
   end
 
-  def limit_reached?(resource)
-    !within_limit?(resource)
+  def limit_reached?(resource, strict: true)
+    return !within_limit?(resource) if strict
+    
+    # Soft block: Allow 10% buffer for monthly resources to improve UX
+    is_monthly = resource.to_s.include?("monthly")
+    buffer = is_monthly ? 1.1 : 1.0
+    
+    plan = current_plan
+    return false unless plan
+
+    max = plan.limit_for(resource)
+    return false if max == -1
+
+    current_usage(resource) >= (max * buffer)
   end
 
   def limit_approaching?(resource, threshold: 0.8)

@@ -45,6 +45,24 @@ class Account < ApplicationRecord
   include Addressable
   include Billable
   include LimitEnforceable
+  include FlagShihTzu
+
+  has_flags 1 => :api_access,
+            2 => :sla,
+            3 => :audit_logs,
+            4 => :teams,
+            5 => :automations,
+            6 => :csat,
+            7 => :custom_branding,
+            column: "features"
+
+  def feature_enabled?(feature)
+    # 1. Check if manually enabled via bitmask (overrides/enterprise overrides)
+    return true if send("#{feature}?")
+    
+    # 2. Fallback to the current plan's configuration
+    current_plan&.feature_enabled?(feature) == true
+  end
 
   enum :status, { active: 0 }
   enum :referral_commission_type, { fixed: 0 }
@@ -56,4 +74,13 @@ class Account < ApplicationRecord
   has_many :messages, dependent: :destroy
   has_many :email_templates, dependent: :destroy
   has_many :notification_settings, dependent: :destroy
+  has_many :roles, class_name: "Access::Role", dependent: :destroy
+
+  after_create :generate_default_roles
+
+  private
+
+  def generate_default_roles
+    Access::RoleGenerator.call(self)
+  end
 end

@@ -35,6 +35,8 @@
 #  fk_rails_...  (user_id => users.id) ON DELETE => cascade
 #
 class AccountUser < ApplicationRecord
+  include AccessControl
+
   belongs_to :account
   belongs_to :user
   belongs_to :invited_by, class_name: "User", optional: true
