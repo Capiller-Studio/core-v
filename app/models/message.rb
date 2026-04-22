@@ -75,6 +75,7 @@ class Message < ShardRecord
       visibility:,
       external_id:,
       data:,
+      inbox_id:,
       incoming: incoming?,
       created_at:,
       updated_at:,
@@ -87,11 +88,11 @@ class Message < ShardRecord
 
   # TODO: Refactor to separate concern
   def broadcast_message_creation
-    EventBroadcastWorker.perform_async(event_payload.to_json, "message.created", connection_tokens)
+    EventBroadcastWorker.perform_async(event_payload.to_json, "message.created", connection_tokens, account_id)
   end
 
   def broadcast_message_update
-    EventBroadcastWorker.perform_async(event_payload.to_json, "message.updated", connection_tokens)
+    EventBroadcastWorker.perform_async(event_payload.to_json, "message.updated", connection_tokens, account_id)
   end
 
   def connection_tokens
