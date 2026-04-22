@@ -47,9 +47,20 @@ class Inbox < ShardRecord
   has_many :sla_inboxes, dependent: :destroy
   has_many :sla_policies, through: :sla_inboxes
 
+  after_destroy :cleanup_integration_settings
+
   scope :current_inboxes, ->(current_user) { joins(:inbox_users).where(inbox_users: { user: current_user }) }
 
   def auto_assign?
     configurations.fetch("auto_assign", true)
+  end
+
+  private
+
+  def cleanup_integration_settings
+    Integration.where("settings @> ?", { subscribed_inboxes: [id] }.to_json).find_each do |integration|
+      remaining_inboxes = integration.subscribed_inboxes - [id]
+      integration.update!(settings: integration.settings.merge("subscribed_inboxes" => remaining_inboxes))
+    end
   end
 end
