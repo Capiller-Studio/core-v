@@ -6,7 +6,7 @@
 
 module Parser
   class MailParser < ApplicationService
-    include Utilities::StringHelpers
+    include ::Utilities::StringHelpers
 
     attr_accessor :mail
 

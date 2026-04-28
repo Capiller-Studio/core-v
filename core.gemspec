@@ -48,6 +48,7 @@ Gem::Specification.new do |spec|
 
   # Search
   spec.add_dependency 'searchkick'
+  spec.add_dependency 'elasticsearch'
 
   # JSON Optimization
   spec.add_dependency 'oj'

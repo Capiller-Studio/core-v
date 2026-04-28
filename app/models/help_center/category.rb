@@ -40,9 +40,13 @@
 #
 module HelpCenter
   class Category < ShardRecord
+    include Translateable
+
     belongs_to :account
     belongs_to :portal
 
     enum :status, { active: 0 }
+
+    translates :name, :description
   end
 end

@@ -7,7 +7,7 @@ class CreateHelpCenterArticles < ActiveRecord::Migration[7.1]
       t.jsonb   :configurations, null: false, default: {}
       t.integer :position
 
-      t.integer :status,            null: false, default: HelpCenter::Article.statuses[:active]
+      t.integer :status,            null: false, default: 0
       t.integer :flags,             null: false, default: 0
 
       t.references :account, null: false, foreign_key: false,                                                   type: :uuid, index: true

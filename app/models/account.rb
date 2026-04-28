@@ -75,6 +75,16 @@ class Account < ApplicationRecord
   has_many :email_templates, dependent: :destroy
   has_many :notification_settings, dependent: :destroy
   has_many :roles, class_name: "Access::Role", dependent: :destroy
+  has_many :identity_sources, dependent: :destroy
+  has_many :identities, dependent: :destroy
+  
+  has_many :inboxes, dependent: :destroy
+  has_many :portals, class_name: "HelpCenter::Portal", dependent: :destroy
+  has_many :teams, dependent: :destroy
+  has_many :labels, dependent: :destroy
+  has_many :canned_responses, dependent: :destroy
+  has_many :macros, dependent: :destroy
+  has_many :integrations, dependent: :destroy
 
   after_create :generate_default_roles
 

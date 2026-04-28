@@ -4,7 +4,7 @@ class CreateChatBotInboxes < ActiveRecord::Migration[7.1]
       t.references :chat_bot, null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
       t.references :inbox,    null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
       
-      t.integer :status, null: false, default: ChatBotInbox.statuses[:active]
+      t.integer :status, null: false, default: 0
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

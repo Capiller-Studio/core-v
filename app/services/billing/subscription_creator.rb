@@ -11,9 +11,9 @@ module Billing
     end
 
     def call
-      lock_key = RedisUtilities::Keys::SUBSCRIPTION_LOCK % { account_id: account.id }
+      lock_key = ::RedisUtilities::Keys::SUBSCRIPTION_LOCK % { account_id: account.id }
 
-      RedisUtilities::MutexHelpers.with_lock(lock_key) do
+      ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
         ActiveRecord::Base.transaction do
           validate!
           create_subscription

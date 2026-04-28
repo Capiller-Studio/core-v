@@ -5,7 +5,7 @@ class CreateCannedResponses < ActiveRecord::Migration[7.1]
       t.text   :description
       t.string :identifier, null: false
 
-      t.integer :status, null: false, default: CannedResponse.statuses[:active]
+      t.integer :status, null: false, default: 0
 
       t.references :account, null: false, foreign_key: false,  type: :uuid, index: true
 

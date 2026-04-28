@@ -3,13 +3,14 @@
 module Core
   class Engine < ::Rails::Engine
     initializer "core.append_migrations" do |app|
-      unless app.root.to_s.match(self.root.to_s)
+      unless app.root.to_s.match(root.to_s)
         app.config.paths["db/migrate"].concat([
-          File.expand_path("../db/migrate", __dir__),
-          File.expand_path("../db/migrate_shards", __dir__)
+          root.join("db/migrate").to_s,
         ])
       end
     end
+
+    config.autoload_paths << config.root.join("lib")
 
     config.i18n.available_locales = %i[en de es fr ur hi ar zh]
     config.i18n.default_locale = :en

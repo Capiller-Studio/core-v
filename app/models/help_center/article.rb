@@ -32,9 +32,33 @@
 #
 module HelpCenter
   class Article < ShardRecord
+    include Translateable
+
     belongs_to :account
     belongs_to :portal
 
     enum :status, { active: 0 }
+
+    translates :title, :content, :meta_title, :meta_description
+
+    searchkick
+
+    def search_data
+      {
+        id: id,
+        account_id: account_id,
+        portal_id: portal_id,
+        status: status,
+        slug: slug,
+        views_count: views_count,
+        translations: translations.map do |t|
+          {
+            locale: t.locale,
+            title: t.title,
+            content: t.content
+          }
+        end
+      }
+    end
   end
 end

@@ -31,6 +31,9 @@ module HelpCenter
     belongs_to :account
     belongs_to :domain
 
+    has_many :categories, dependent: :destroy
+    has_many :articles, dependent: :destroy
+
     enum :status, { active: 0 }
   end
 end

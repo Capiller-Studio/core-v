@@ -8,7 +8,7 @@ class CreateChannelFacebookPages < ActiveRecord::Migration[7.1]
       t.string  :name
       t.jsonb   :configurations, null: false, default: {}
       t.jsonb   :data,           null: false, default: {}
-      t.integer :status, default: Channel::FacebookPage.statuses[:active], null: false
+      t.integer :status, default: 0, null: false
 
       t.references :account, null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
 

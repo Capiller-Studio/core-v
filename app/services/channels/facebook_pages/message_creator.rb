@@ -140,7 +140,7 @@ module Channels
         return attachment_type unless [ "share", "story_mention" ].include?(attachment_type)
         return attachment_type unless tempfile
 
-        Utilities::AttachmentTypeHelpers.attachment_type(tempfile.content_type)
+        ::Utilities::AttachmentTypeHelpers.attachment_type(tempfile.content_type)
       end
 
       def fetch_story(_external_id)

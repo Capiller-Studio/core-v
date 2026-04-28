@@ -1,8 +1,8 @@
 class CreateAccessAccountUserRoles < ActiveRecord::Migration[7.1]
   def change
     create_table :access_account_user_roles, id: :uuid do |t|
-      t.references :account, null: false, foreign_key: { on_delete: :cascade }, type: :uuid
-      t.uuid :account_user_id, null: false
+      t.references :account, null: false, foreign_key: false, type: :uuid, index: true
+      t.references :account_user, null: false, foreign_key: false, type: :uuid, index: true
       t.references :role, null: false, foreign_key: { to_table: :access_roles, on_delete: :cascade }, type: :uuid
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }

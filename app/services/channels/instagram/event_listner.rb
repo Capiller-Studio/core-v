@@ -43,7 +43,7 @@ module Channels
         parsed_message = Parser::InstagramMessageParser.new(message: raw_message)
 
         if event == :message
-          RedisUtilities::MutexHelpers.with_lock(lock_key(entry, parsed_message)) do
+          ::RedisUtilities::MutexHelpers.with_lock(lock_key(entry, parsed_message)) do
             ConversationCreator.call(
               channel: instagram_channel,
               parsed_message: parsed_message
@@ -74,7 +74,7 @@ module Channels
 
       def lock_key(entry, parsed_message)
         format(
-          RedisUtilities::Keys::INSTAGRAM_MESSAGE_CREATION_LOCK,
+          ::RedisUtilities::Keys::INSTAGRAM_MESSAGE_CREATION_LOCK,
           instagram_id: entry[:id],
           sender_id: parsed_message.sender_id
         )

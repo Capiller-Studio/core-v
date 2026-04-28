@@ -11,7 +11,7 @@ class CreateHelpCenterCategories < ActiveRecord::Migration[7.1]
       t.string  :ancestry
       t.integer :position
 
-      t.integer :status,            null: false, default: HelpCenter::Portal.statuses[:active]
+      t.integer :status,            null: false, default: 0
       t.integer :flags,             null: false, default: 0
 
       t.references :account, null: false, foreign_key: false,                                                 type: :uuid, index: true

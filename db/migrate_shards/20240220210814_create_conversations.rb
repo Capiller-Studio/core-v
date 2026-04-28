@@ -7,7 +7,7 @@ class CreateConversations < ActiveRecord::Migration[7.1]
       t.jsonb    :configurations, null: false, default: {}
       t.jsonb    :data, null: false, default: {}
       t.string   :identifier, null: false
-      t.integer  :status,   null: false, default: Conversation.statuses[:active]
+      t.integer  :status,   null: false, default: 0
       t.integer  :priority, null: false, default: Conversation.priorities[:low]
       t.datetime :status_changed_at
       t.datetime :last_activity_at
