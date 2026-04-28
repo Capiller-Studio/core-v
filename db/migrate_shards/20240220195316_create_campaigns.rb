@@ -3,7 +3,7 @@ class CreateCampaigns < ActiveRecord::Migration[7.1]
     create_table :campaigns, id: :uuid do |t|
       t.string   :name
       t.text     :description
-      t.integer  :status,        null: false, default: Campaign.statuses[:active]
+      t.integer  :status,        null: false, default: 0
       t.integer  :campaign_type, null: false, default: Campaign.campaign_types[:one_time]
       t.datetime :start_at
       t.datetime :end_at

@@ -61,23 +61,23 @@ module Channels
         end
 
         def message_creation_locked?
-          RedisUtilities::Helpers.get(message_creation_lock_key)
+          ::RedisUtilities::Helpers.get(message_creation_lock_key)
         end
 
         def lock_message_creation
           return if parsed_params.try(:[], :messages).blank?
 
-          RedisUtilities::Helpers.set(message_creation_lock_key, 1, expiry: 10.minutes)
+          ::RedisUtilities::Helpers.set(message_creation_lock_key, 1, expiry: 10.minutes)
         end
 
         def unlock_message_creation
-          RedisUtilities::Helpers.delete(message_creation_lock_key)
+          ::RedisUtilities::Helpers.delete(message_creation_lock_key)
         end
 
         def message_creation_lock_key
           @message_creation_lock_key ||=
           format(
-            RedisUtilities::Keys::MESSAGE_CREATION_LOCK,
+            ::RedisUtilities::Keys::MESSAGE_CREATION_LOCK,
             account_id: account.id,
             id: parsed_params[:messages].first[:id]
           )

@@ -3,7 +3,7 @@ class CreateInboxes < ActiveRecord::Migration[7.1]
     create_table :inboxes, id: :uuid do |t|
       t.string  :name, null: false, default: ""
       t.string  :display_name
-      t.integer :status, null: false, default: Inbox.statuses[:active]
+      t.integer :status, null: false, default: 0
       t.integer :flags, null: false, default: 0
       t.jsonb   :configurations, null: false, default: {}
 

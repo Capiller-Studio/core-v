@@ -57,7 +57,7 @@ module Channels
         end
 
         def process_file_attachment(url, content_type)
-          attachment_type = Utilities::AttachmentTypeHelpers.attachment_type(content_type) rescue "file"
+          attachment_type = ::Utilities::AttachmentTypeHelpers.attachment_type(content_type) rescue "file"
 
           file_attachment = message.attachments.create!(
             remote_url: url,
@@ -65,7 +65,7 @@ module Channels
             attachment_type: attachment_type
           )
           
-          Utilities::ActiveStorageDownloader.attach(
+          ::Utilities::ActiveStorageDownloader.attach(
             record: file_attachment,
             attachment_name: :file,
             url: url

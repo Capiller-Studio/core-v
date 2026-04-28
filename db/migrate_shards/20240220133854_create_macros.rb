@@ -3,7 +3,7 @@ class CreateMacros < ActiveRecord::Migration[7.1]
     create_table :macros, id: :uuid do |t|
       t.string  :name
       t.integer :macro_type, null: false, default: Macro.macro_types[:manual]
-      t.integer :status,     null: false, default: Macro.statuses[:active]
+      t.integer :status,     null: false, default: 0
       t.jsonb   :events,     null: false, default: {}
       t.jsonb   :actions,    null: false, default: {}
       t.boolean :managed,    null: false, default: false

@@ -6,7 +6,7 @@ class CreateTeams < ActiveRecord::Migration[7.1]
       t.string  :identifier,  null: false
       t.boolean :auto_assign, null: false, default: true
 
-      t.integer :status,            null: false, default: Team.statuses[:active]
+      t.integer :status,            null: false, default: 0
       t.integer :flags,             null: false, default: 0
 
       t.references :account, null: false, foreign_key: false,  type: :uuid, index: true

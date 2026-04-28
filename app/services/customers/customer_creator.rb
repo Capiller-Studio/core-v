@@ -43,7 +43,7 @@ module Customers
       url = params[:avatar_url].presence || generate_default_avatar_url
       return unless url
       
-      Utilities::ActiveStorageDownloader.attach(
+      ::Utilities::ActiveStorageDownloader.attach(
         record: customer, 
         attachment_name: :avatar, 
         url: url

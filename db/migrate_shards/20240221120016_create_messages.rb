@@ -8,7 +8,7 @@ class CreateMessages < ActiveRecord::Migration[7.1]
       # t.boolean :private TODO: WIP
 
       # t.integer :message_type, null: false, default: Message.message_types[] TODO: WIP
-      t.integer :status,       null: false, default: Message.statuses[:sent]
+      t.integer :status,       null: false, default: 0
       t.integer :content_type, null: false, default: Message.content_types[:text]
       t.integer :visibility,   null: false, default: Message.visibilities[:global]
 

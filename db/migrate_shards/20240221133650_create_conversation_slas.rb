@@ -1,7 +1,7 @@
 class CreateConversationSlas < ActiveRecord::Migration[7.1]
   def change
     create_table :conversation_slas, id: :uuid do |t|
-      t.integer    :status, null: false, default: ConversationSla.statuses[:pending]
+      t.integer    :status, null: false, default: 0
 
       t.references :account,         null: false, foreign_key: false,                     type: :uuid, index: true
       t.references :sla_policy,      null: false, foreign_key: { on_delete: :cascade },   type: :uuid, index: true

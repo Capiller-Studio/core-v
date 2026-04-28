@@ -10,8 +10,8 @@ class CreateAccounts < ActiveRecord::Migration[7.1]
       t.jsonb    :data,           default: {}, null: false
       t.jsonb    :configurations, default: {}, null: false
       t.jsonb    :billing_data,   default: {}, null: false
-      t.integer  :status, null: false, default: Account.statuses[:active]
-      t.integer  :referral_commission_type, null: false, default: Account.referral_commission_types[:fixed]
+      t.integer  :status, null: false, default: 0
+      t.integer  :referral_commission_type, null: false, default: 0
       t.decimal  :referral_commission, precision: 10, scale: 2
       t.decimal  :referred_by_commission, precision: 10, scale: 2
       t.datetime :referral_approved_at

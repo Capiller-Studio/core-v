@@ -4,7 +4,7 @@ class CreateDomains < ActiveRecord::Migration[7.1]
       t.string   :name, default: ""
       t.string   :value, null: false
       t.datetime :ssl_added_at
-      t.integer  :status,           null: false, default: Domain.statuses[:active]
+      t.integer  :status,           null: false, default: 0
       t.jsonb    :configurations,   null: false, default: {}
       t.boolean  :managed,          null: false, default: false
       t.boolean  :system_provided,  null: false, default: false

@@ -103,20 +103,20 @@ module Channels
         end
 
         def message_creation_locked?(external_id)
-          RedisUtilities::Helpers.get(message_creation_lock_key(external_id)).present?
+          ::RedisUtilities::Helpers.get(message_creation_lock_key(external_id)).present?
         end
 
         def lock_message_creation(external_id)
-          RedisUtilities::Helpers.set(message_creation_lock_key(external_id), 1, expiry: 10.minutes)
+          ::RedisUtilities::Helpers.set(message_creation_lock_key(external_id), 1, expiry: 10.minutes)
         end
 
         def unlock_message_creation(external_id)
-          RedisUtilities::Helpers.delete(message_creation_lock_key(external_id))
+          ::RedisUtilities::Helpers.delete(message_creation_lock_key(external_id))
         end
 
         def message_creation_lock_key(external_id)
           format(
-            RedisUtilities::Keys::MESSAGE_CREATION_LOCK,
+            ::RedisUtilities::Keys::MESSAGE_CREATION_LOCK,
             account_id: account.id,
             id: external_id
           )

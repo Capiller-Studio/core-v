@@ -2,7 +2,7 @@ class CreateAccountUsers < ActiveRecord::Migration[7.1]
   def change
     create_table :account_users, id: :uuid do |t|
       t.integer    :role,         null: false, default: AccountUser.roles[:agent]
-      t.integer    :status,       null: false, default: AccountUser.statuses[:active]
+      t.integer    :status,       null: false, default: 0
       t.integer    :availability, null: false, default: AccountUser.availabilities[:offline]
       t.datetime   :status_changed_at
       t.datetime   :availability_changed_at

@@ -18,7 +18,7 @@ class CreateCustomers < ActiveRecord::Migration[7.1]
       t.string   :identifier
       t.datetime :last_activity_at
       t.integer  :customer_type, null: false, default: Customer.customer_types[:guest]
-      t.integer  :status, null: false, default: Customer.statuses[:active]
+      t.integer  :status, null: false, default: 0
 
       t.integer  :sign_in_count,         null: false, default: 0
       t.string   :reset_password_token

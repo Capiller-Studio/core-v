@@ -35,7 +35,7 @@ module Conversations
       inbox = conversation.inbox
 
       # Get user IDs who are active in Redis (recent heartbeat)
-      active_user_ids = Utilities::ActivityHelpers.available_user_ids(account.id)
+      active_user_ids = ::Utilities::ActivityHelpers.available_user_ids(account.id)
       return [] if active_user_ids.blank?
 
       # Get inbox agent IDs
@@ -59,7 +59,7 @@ module Conversations
       sorted_ids = agent_ids.sort
       key = round_robin_key
 
-      last_assigned = RedisUtilities::Helpers.get(key)
+      last_assigned = ::RedisUtilities::Helpers.get(key)
       next_index = if last_assigned.present?
                      last_index = sorted_ids.index(last_assigned)
                      last_index ? (last_index + 1) % sorted_ids.size : 0
@@ -68,14 +68,14 @@ module Conversations
                    end
 
       selected_id = sorted_ids[next_index]
-      RedisUtilities::Helpers.set(key, selected_id)
+      ::RedisUtilities::Helpers.set(key, selected_id)
 
       User.find_by(id: selected_id)
     end
 
     def round_robin_key
       format(
-        RedisUtilities::Keys::INBOX_ROUND_ROBIN,
+        ::RedisUtilities::Keys::INBOX_ROUND_ROBIN,
         account_id: conversation.account_id,
         inbox_id: conversation.inbox_id
       )

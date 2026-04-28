@@ -5,7 +5,7 @@ class CreateChannelTwitterProfiles < ActiveRecord::Migration[7.1]
       t.string     :profile_identifier, null: false
       t.jsonb      :tokens, default: {}, null: false
       t.boolean    :handle_tweets, null: false, default: true
-      t.integer    :status, default: Channel::TwitterProfile.statuses[:active], null: false
+      t.integer    :status, default: 0, null: false
 
       t.references :account, null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
 

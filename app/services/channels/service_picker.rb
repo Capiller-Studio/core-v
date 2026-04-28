@@ -41,6 +41,9 @@ message: message)
     end
 
     def channel_web_widget_service
+      # No external delivery needed. Agent replies to web_widget conversations
+      # are delivered in real-time via ActionCable. Message#broadcast_message_creation
+      # broadcasts to the customer's connection_token automatically.
     end
 
     def channel_facebook_page_service

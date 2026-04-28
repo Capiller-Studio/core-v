@@ -6,7 +6,7 @@ class CreateHelpCenterPortals < ActiveRecord::Migration[7.1]
       t.jsonb   :ui_configurations, default: {}, null: false
       t.string  :locales,           array: true, null: false, default: ["en"]
       t.string  :default_locale,    null: false, default: "en"
-      t.integer :status,            null: false, default: HelpCenter::Portal.statuses[:active]
+      t.integer :status,            null: false, default: 0
       t.integer :flags,             null: false, default: 0
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true

@@ -64,7 +64,8 @@ gem 'omniauth-rails_csrf_protection'
 gem 'ancestry'
 
 # Search
-gem 'searchkick'
+# gem 'searchkick'
+# gem 'elasticsearch'
 
 # JSON Optimization
 gem 'oj'
@@ -93,6 +94,9 @@ gem 'groupdate'
 
 # Models localization
 gem 'mobility', '~> 1.3.0.rc1'
+
+# Pagination
+gem 'pagy', '~> 6.2'
 
 # Channels
 gem 'facebook-messenger'
