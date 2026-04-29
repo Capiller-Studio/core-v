@@ -4,12 +4,13 @@ module Channels
   module WebWidgets
     class ConversationCreator < ApplicationService
       attr_accessor :inbox, :web_widget_channel, :customer, :account,
-                    :conversation, :contact_params, :content
+                    :conversation, :contact_params, :content, :attachments
 
-      def initialize(web_widget_channel:, contact_params:, content:, account: nil)
+      def initialize(web_widget_channel:, contact_params:, content:, attachments: [], account: nil)
         self.web_widget_channel = web_widget_channel
         self.contact_params     = contact_params
         self.content            = content
+        self.attachments        = attachments || []
         self.account            = account || web_widget_channel.account
       end
 
@@ -69,7 +70,8 @@ module Channels
           inbox: inbox,
           conversation: conversation,
           sender: customer,
-          content: content
+          content: content,
+          attachments: attachments
         )
       end
     end

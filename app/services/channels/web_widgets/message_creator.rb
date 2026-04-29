@@ -3,19 +3,21 @@
 module Channels
   module WebWidgets
     class MessageCreator < ApplicationService
-      attr_reader :account, :inbox, :conversation, :sender, :content, :message
+      attr_reader :account, :inbox, :conversation, :sender, :content, :attachments, :message
 
-      def initialize(account:, inbox:, conversation:, sender:, content:)
+      def initialize(account:, inbox:, conversation:, sender:, content:, attachments: [])
         @account = account
         @inbox = inbox
         @conversation = conversation
         @sender = sender
         @content = content
+        @attachments = attachments || []
       end
 
       def call
         ActiveRecord::Base.transaction do
           create_message
+          create_attachments if attachments.any?
         end
 
         message
@@ -33,6 +35,28 @@ module Channels
           data: {}
         )
       end
+
+      def create_attachments
+        attachments.each do |file|
+          attachment = message.attachments.build(
+            account: account,
+            attachment_type: detect_type(file)
+          )
+          attachment.file.attach(file)
+          attachment.save!
+        end
+      end
+
+      def detect_type(file)
+        content_type = file.content_type
+        case content_type
+        when /\Aimage\//  then :image
+        when /\Avideo\//  then :video
+        when /\Aaudio\//  then :audio
+        else :file
+        end
+      end
     end
   end
 end
+

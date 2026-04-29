@@ -79,9 +79,13 @@ class User < ApplicationRecord
 
   has_secure_token :connection_token
 
+  # TODO: Fix avator URL
   def event_payload
     {
       id: id,
+      name: name,
+      display_name: display_name,
+      avatar_url: avatar.attached? ? Rails.application.routes.url_helpers.rails_blob_url(avatar, only_path: true) : nil,
       created_at: created_at
     }
   end
