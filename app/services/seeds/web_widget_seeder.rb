@@ -41,9 +41,17 @@ module Seeds
         user = User.create!(
           email: email,
           password: "password123",
-          first_name: "Agent",
-          last_name: (i + 1).to_s,
+          first_name: ["Sarah", "James"][i],
+          last_name: ["Miller", "Chen"][i],
           address: Address.create!
+        )
+
+        # Attach a random avatar
+        avatar_url = "https://i.pravatar.cc/256?u=agent#{i + 1}@deskbolic.test"
+        ::Utilities::ActiveStorageDownloader.attach(
+          record: user,
+          attachment_name: :avatar,
+          url: avatar_url
         )
 
         account_user = AccountUser.find_or_create_by!(
@@ -122,42 +130,71 @@ module Seeds
     end
 
     def create_help_center_data(account, portal)
-      category = HelpCenter::Category.find_or_initialize_by(
-        portal: portal,
-        account: account,
-        identifier: "getting-started"
-      )
-      category.assign_attributes(
-        code: "GS",
-        permalink: "getting-started",
-        status: :active
-      )
-      category.save!
-
-      # Add category translation
-      unless category.translated_to?(:en)
-        category.translations.create!(
-          locale: "en",
+      categories_data = [
+        {
+          identifier: "getting-started",
+          code: "GS",
+          permalink: "getting-started",
           name: "Getting Started",
-          description: "Learn the basics of using our platform."
-        )
-      end
+          description: "Learn the basics of using our platform.",
+          articles: [
+            { slug: "how-to-get-started", title: "How to Get Started", content: "Welcome to Deskbolic! This guide will walk you through setting up your workspace and connecting your first channel." },
+            { slug: "creating-your-account", title: "Creating Your Account", content: "To create an account, visit our sign-up page and enter your business email. You'll receive a verification email within minutes." },
+            { slug: "connecting-your-first-channel", title: "Connecting Your First Channel", content: "Navigate to Settings > Channels and choose from Email, Live Chat, Facebook, WhatsApp, or other supported channels." }
+          ]
+        },
+        {
+          identifier: "managing-conversations",
+          code: "MC",
+          permalink: "managing-conversations",
+          name: "Managing Conversations",
+          description: "Tips for handling customer conversations efficiently.",
+          articles: [
+            { slug: "assigning-conversations", title: "Assigning Conversations", content: "Conversations can be assigned manually or automatically using round-robin. Go to Settings > Assignment to configure." },
+            { slug: "using-canned-responses", title: "Using Canned Responses", content: "Save time by creating canned responses for frequently asked questions. Access them by typing / in the reply box." }
+          ]
+        },
+        {
+          identifier: "account-billing",
+          code: "AB",
+          permalink: "account-billing",
+          name: "Account & Billing",
+          description: "Manage your subscription, invoices, and payment methods.",
+          articles: [
+            { slug: "upgrading-your-plan", title: "Upgrading Your Plan", content: "To upgrade, navigate to Settings > Billing and select a plan that fits your team size and feature needs." },
+            { slug: "understanding-your-invoice", title: "Understanding Your Invoice", content: "Each invoice includes a breakdown of per-agent charges, add-on fees, and any applicable taxes." }
+          ]
+        }
+      ]
 
-      # Create a sample article
-      article = HelpCenter::Article.find_or_initialize_by(
-        portal: portal,
-        account: account,
-        slug: "how-to-get-started"
-      )
-      article.assign_attributes(status: :active)
-      article.save!
-
-      unless article.translated_to?(:en)
-        article.translations.create!(
-          locale: "en",
-          title: "How to Get Started",
-          content: "Welcome to Deskbolic! This guide will walk you through setting up your workspace and connecting your first channel."
+      categories_data.each do |cat_data|
+        category = HelpCenter::Category.find_or_initialize_by(
+          portal: portal, account: account, identifier: cat_data[:identifier]
         )
+        category.assign_attributes(code: cat_data[:code], permalink: cat_data[:permalink], status: :active)
+        category.save!
+
+        unless category.translated_to?(:en)
+          category.translations.create!(locale: "en", name: cat_data[:name], description: cat_data[:description])
+        end
+
+        cat_data[:articles].each do |art_data|
+          article = HelpCenter::Article.find_or_initialize_by(
+            portal: portal, account: account, slug: art_data[:slug]
+          )
+          article.assign_attributes(status: :active)
+          article.save!
+
+          unless article.translated_to?(:en)
+            article.translations.create!(locale: "en", title: art_data[:title], content: art_data[:content])
+          end
+
+          # Link article to category
+          HelpCenter::CategoryResource.find_or_create_by!(
+            category: category,
+            resource: article
+          )
+        end
       end
     end
 
