@@ -8,7 +8,7 @@
 #  configurations    :jsonb            not null
 #  default_locale    :string           default("en"), not null
 #  flags             :integer          default(0), not null
-#  locales           :string           default(["\"en\""]), not null, is an Array
+#  locales           :string           default(["en"]), not null, is an Array
 #  name              :string
 #  status            :integer          default("active"), not null
 #  ui_configurations :jsonb            not null
@@ -28,12 +28,53 @@
 #
 module HelpCenter
   class Portal < ShardRecord
+    include FlagShihTzu
+
     belongs_to :account
     belongs_to :domain
 
     has_many :categories, dependent: :destroy
-    has_many :articles, dependent: :destroy
+    has_many :articles,   dependent: :destroy
+    has_many :translations, class_name: "HelpCenter::PortalTranslation", dependent: :destroy
+    has_many :redirects,    class_name: "HelpCenter::Redirect",          dependent: :destroy
+
+    # Web widget is already linked via Channel::WebWidget#portal_id (FK on that table)
+    has_one :web_widget_channel,   class_name: "Channel::WebWidget",     foreign_key: :portal_id
+    # Contact form channel — links this portal to its embeddable support/contact form
+    has_one :contact_form_channel, class_name: "Channel::ContactForm",   foreign_key: :portal_id
+
+    has_one_attached :logo              # Brand logo shown in portal header
+    has_one_attached :favicon           # Browser tab icon (ICO/PNG, 32x32 or 64x64)
+    has_one_attached :social_share_image # OG image for social media previews (1200x630px)
+    has_one_attached :hero_image        # Background image for hero section (used when hero_style == "image")
 
     enum :status, { active: 0 }
+
+    # Feature flags (stored in :flags integer column via FlagShihTzu bit flags):
+    #   show_contact_form   — enable /contact page for ticket submission
+    #   show_customer_portal — enable /my-tickets page for end-user conversation history (requires customer login)
+    #   show_web_widget     — embed the linked web widget on this portal
+    #   indexing_enabled    — allow search engines to crawl/index this portal
+    has_flags 1 => :show_contact_form,
+              2 => :show_customer_portal,
+              3 => :show_web_widget,
+              4 => :indexing_enabled,
+              column: "flags"
+
+    # ui_configurations jsonb — visual/theme settings only (no feature flags here):
+    # {
+    #   "theme_mode"       => "light | dark | system",
+    #   "primary_color"    => "#7E61F0",
+    #   "secondary_color"  => "#3A3060",
+    #   "font_family"      => "Inter",
+    #   "hero_style"       => "gradient | image | plain",
+    #   "category_layout"  => "grid | list"
+    # }
+
+    # configurations jsonb — non-visual, non-flag settings:
+    # {
+    #   "google_analytics_id" => "UA-XXXXX",
+    #   "custom_css"          => ""           (injected into <style> tag on portal pages)
+    # }
   end
 end
