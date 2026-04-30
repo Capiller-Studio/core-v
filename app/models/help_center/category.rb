@@ -10,12 +10,14 @@
 #  children_count :integer          default(0), not null
 #  code           :string           not null
 #  configurations :jsonb            not null
+#  featured       :boolean          default(FALSE), not null
 #  flags          :integer          default(0), not null
-#  hidden         :boolean          default(FALSE), not null
+#  icon_key       :string
 #  identifier     :string           not null
 #  permalink      :string           not null
 #  position       :integer
 #  status         :integer          default("active"), not null
+#  visibility     :integer          default("public"), not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  account_id     :uuid             not null
@@ -27,12 +29,13 @@
 #  index_help_center_categories_on_portal_id                 (portal_id)
 #  index_help_center_categories_on_portal_id_and_ancestry    (portal_id,ancestry)
 #  index_help_center_categories_on_portal_id_and_created_at  (portal_id,created_at)
+#  index_help_center_categories_on_portal_id_and_featured    (portal_id,featured)
 #  index_help_center_categories_on_portal_id_and_flags       (portal_id,flags)
-#  index_help_center_categories_on_portal_id_and_hidden      (portal_id,hidden)
 #  index_help_center_categories_on_portal_id_and_identifier  (portal_id,identifier) UNIQUE
 #  index_help_center_categories_on_portal_id_and_permalink   (portal_id,permalink) UNIQUE
 #  index_help_center_categories_on_portal_id_and_position    (portal_id,position)
 #  index_help_center_categories_on_portal_id_and_status      (portal_id,status)
+#  index_help_center_categories_on_portal_id_and_visibility  (portal_id,visibility)
 #
 # Foreign Keys
 #
@@ -41,11 +44,32 @@
 module HelpCenter
   class Category < ShardRecord
     include Translateable
+    include FlagShihTzu
 
     belongs_to :account
     belongs_to :portal
 
+    has_one_attached :image # Custom JPG/PNG/WebP image; takes precedence over icon_key when present
+
     enum :status, { active: 0 }
+
+    # visibility controls who can see this category:
+    #   public    — visible to all visitors
+    #   unlisted  — accessible via direct link, not shown in navigation
+    #   internal  — visible to authenticated agents/team only
+    enum :visibility, { public: 0, unlisted: 1, internal: 2 }
+
+    # flags (FlagShihTzu bit fields):
+    #   guide_mode — when enabled, articles in this category are treated as sequential steps.
+    #                Readers see a step progress indicator ("Step 2 of 5") and Next/Previous buttons.
+    #                Agents see step numbers in the article list and position ordering is enforced.
+    #                Use this for multi-step setup guides (e.g. WhatsApp channel configuration).
+    has_flags 1 => :guide_mode,
+              column: "flags"
+
+    # icon_key stores a key from the predefined Lucide icon set (e.g. "book-open", "message-circle")
+    # The actual SVG is rendered per-app (deskbolic/helpbolic independently bundle Lucide)
+    # Custom :image attachment takes precedence over icon_key when both are present
 
     translates :name, :description
   end

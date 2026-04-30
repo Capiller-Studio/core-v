@@ -51,7 +51,11 @@ class Conversation < ShardRecord
 
   enum :status, { active: 0, closed: 1, snoozed: 2, resolved: 3 }
   enum :priority, { low: 0, medium: 1, high: 2, urgent: 3 }
-  enum :source, { email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3, api: 4, web_widget: 5, sms: 6, telegram: 7 }, suffix: true
+  enum :source, {
+    email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3,
+    api: 4, web_widget: 5, sms: 6, telegram: 7,
+    help_center: 8  # Submitted via a Channel::ContactForm on a Help Center portal
+  }, suffix: true
 
   has_many :conversation_members, dependent: :destroy
   has_many :members, through: :conversation_members, source: :member, source_type: [ "Customer", "User" ]
