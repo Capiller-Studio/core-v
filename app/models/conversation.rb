@@ -99,7 +99,7 @@ class Conversation < ShardRecord
 
   # TODO: Refactor to separate concern
   def broadcast_conversation_creation
-    EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.created", connection_tokens)
+    EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.created", connection_tokens, account_id)
   end
 
   def update_last_activity_at

@@ -17,13 +17,27 @@ module Integrations
         return unless integration&.active? && integration.webhook?
 
         begin
+          body = delivery.request_payload.to_json
+          timestamp = Time.now.to_i
+          secret = integration.webhook_secret
+
+          headers = {
+            "Content-Type" => "application/json",
+            "User-Agent" => "Deskbolic-Webhook-Engine/1.0"
+          }
+
+          # Add HMAC-SHA256 signature if the integration has a webhook secret configured.
+          # Format: "t=<timestamp>,v1=<hex_digest>"
+          # Receiver verifies by recomputing: HMAC-SHA256(secret, "<timestamp>-<body>")
+          if secret.present?
+            signature = OpenSSL::HMAC.hexdigest("SHA256", secret, "#{timestamp}-#{body}")
+            headers["Signature"] = "t=#{timestamp},v1=#{signature}"
+          end
+
           response = HTTParty.post(
             delivery.endpoint_url,
-            body: delivery.request_payload.to_json,
-            headers: {
-              "Content-Type" => "application/json",
-              "User-Agent" => "Deskbolic-Webhook-Engine/1.0"
-            },
+            body: body,
+            headers: headers,
             timeout: 10
           )
 

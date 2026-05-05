@@ -18,7 +18,12 @@ class EventBroadcastWorker
       return unless account
 
       parsed_payload = JSON.parse(data) rescue {}
+
+      # 1. Dispatch to integrations (webhooks, Slack, etc.)
       Integrations::EventDispatcher.call(event_name: event, payload: parsed_payload, account: account)
+
+      # 2. Dispatch to automation engine (evaluate event_trigger rules)
+      Automations::EventDispatcher.call(event_name: event, payload: parsed_payload, account: account)
     end
   end
 end
