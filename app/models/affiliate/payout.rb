@@ -4,7 +4,7 @@ module Affiliate
   class Payout < ApplicationRecord
     include CodeGenerator.new(prefix: "AFF")
 
-    belongs_to :profile, class_name: "Affiliate::Profile", foreign_key: "affiliate_profile_id"
+    belongs_to :profile, class_name: "Affiliate::Profile", foreign_key: "affiliate_profile_id", inverse_of: :payouts
     has_one_attached :invoice_pdf
 
     enum :status, { processing: 0, paid: 1 }

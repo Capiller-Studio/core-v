@@ -8,6 +8,6 @@ class WalletTransaction < ApplicationRecord
   enum :transaction_type, { topup: 0, deduction: 1, refund: 2 }
 
   scope :recent, -> { order(created_at: :desc) }
-  scope :credits, -> { where(transaction_type: [:topup, :refund]) }
+  scope :credits, -> { where(transaction_type: [ :topup, :refund ]) }
   scope :debits, -> { where(transaction_type: :deduction) }
 end

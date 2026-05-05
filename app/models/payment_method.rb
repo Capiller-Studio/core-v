@@ -24,7 +24,9 @@ class PaymentMethod < ApplicationRecord
 
   def make_default!
     transaction do
+      # rubocop:disable Rails/SkipsModelValidations
       account.payment_methods.where(is_default: true).update_all(is_default: false)
+      # rubocop:enable Rails/SkipsModelValidations
       update!(is_default: true)
     end
   end

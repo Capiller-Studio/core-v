@@ -5,7 +5,7 @@ module Core
     initializer "core.append_migrations" do |app|
       unless app.root.to_s.match(root.to_s)
         app.config.paths["db/migrate"].concat([
-          root.join("db/migrate").to_s,
+          root.join("db/migrate").to_s
         ])
       end
     end

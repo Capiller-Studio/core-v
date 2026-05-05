@@ -14,7 +14,7 @@ module Channels
         def call
           return unless message.sender.is_a?(User)
 
-          # Signalwire expects project ID, Auth token, and Space URL natively 
+          # Signalwire expects project ID, Auth token, and Space URL natively
           client = ::Signalwire::REST::Client.new(project, token, signalwire_space_url: space_url)
 
           response = client.messages.create(

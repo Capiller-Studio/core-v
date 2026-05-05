@@ -27,11 +27,11 @@ module LimitEnforceable
 
   def limit_reached?(resource, strict: true)
     return !within_limit?(resource) if strict
-    
+
     # Soft block: Allow 10% buffer for monthly resources to improve UX
     is_monthly = resource.to_s.include?("monthly")
     buffer = is_monthly ? 1.1 : 1.0
-    
+
     plan = current_plan
     return false unless plan
 
@@ -62,7 +62,7 @@ module LimitEnforceable
     max = plan.limit_for(resource)
     return 0 if max == -1
 
-    [(current_usage(resource).to_f / max * 100).round(1), 100].min
+    [ (current_usage(resource).to_f / max * 100).round(1), 100 ].min
   end
 
   def increment_usage!(resource)
@@ -70,7 +70,9 @@ module LimitEnforceable
     new_limits = limits.deep_dup
     new_limits[resource.to_s] ||= {}
     new_limits[resource.to_s]["current"] = current + 1
+    # rubocop:disable Rails/SkipsModelValidations
     update_column(:limits, new_limits)
+    # rubocop:enable Rails/SkipsModelValidations
 
     check_limit_notifications(resource)
   end
@@ -79,8 +81,10 @@ module LimitEnforceable
     current = current_usage(resource)
     new_limits = limits.deep_dup
     new_limits[resource.to_s] ||= {}
-    new_limits[resource.to_s]["current"] = [current - 1, 0].max
+    new_limits[resource.to_s]["current"] = [ current - 1, 0 ].max
+    # rubocop:disable Rails/SkipsModelValidations
     update_column(:limits, new_limits)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   def reset_monthly_counters!
@@ -89,7 +93,9 @@ module LimitEnforceable
       new_limits[resource] ||= {}
       new_limits[resource]["current"] = 0
     end
+    # rubocop:disable Rails/SkipsModelValidations
     update_column(:limits, new_limits)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   private

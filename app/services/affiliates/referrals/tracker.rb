@@ -11,7 +11,7 @@ module Affiliates
       end
 
       def call
-        return unless referral_code.present?
+        return if referral_code.blank?
 
         profile = ::Affiliate::Profile.find_by(referral_code: referral_code)
         return unless profile

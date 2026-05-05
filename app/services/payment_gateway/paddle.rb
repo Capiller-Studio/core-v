@@ -50,14 +50,14 @@ module PaymentGateway
 
       response = paddle_client.post("/transactions", {
         customer_id:,
-        items: [{
+        items: [ {
           price: {
             description: description || "Deskbolic charge",
             unit_price: { amount: (amount * 100).to_i.to_s, currency_code: currency.upcase },
             product_id: product_id
           },
           quantity: 1
-        }],
+        } ],
         custom_data: { account_id: account.id }
       })
 
@@ -89,7 +89,7 @@ module PaymentGateway
 
       response = paddle_client.post("/subscriptions", {
         customer_id:,
-        items: [{ price_id:, quantity: account.account_users.count }],
+        items: [ { price_id:, quantity: account.account_users.count } ],
         custom_data: { account_id: account.id, plan_id: plan.id, billing_cycle: }
       })
 
@@ -132,7 +132,7 @@ module PaymentGateway
     def get(path)
       response = HTTParty.get("#{@base_url}#{path}", headers: auth_headers)
       parsed = JSON.parse(response.body)
-      raise "Paddle API error: #{parsed['error']}" if parsed["error"]
+      raise("Paddle API error: #{parsed['error']}") if parsed["error"]
 
       parsed
     end
@@ -140,7 +140,7 @@ module PaymentGateway
     def post(path, body)
       response = HTTParty.post("#{@base_url}#{path}", headers: auth_headers, body: body.to_json)
       parsed = JSON.parse(response.body)
-      raise "Paddle API error: #{parsed['error']}" if parsed["error"]
+      raise("Paddle API error: #{parsed['error']}") if parsed["error"]
 
       parsed
     end

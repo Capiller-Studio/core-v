@@ -6,7 +6,7 @@ module Automations
       def call
         key = params[:key]
         value = params[:value]
-        raise "key is required" if key.blank?
+        raise("key is required") if key.blank?
 
         # Writes to the entity's data jsonb column.
         # Works on both Conversation and Customer resources.

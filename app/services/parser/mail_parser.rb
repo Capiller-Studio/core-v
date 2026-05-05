@@ -74,11 +74,10 @@ module Parser
     # Extract conversation UUID from reply-to address pattern: reply+<uuid>@domain
     def reply_to_conversation_uuid
       @reply_to_conversation_uuid ||= begin
-        all_recipients = mail.to.to_a + mail.cc.to_a + mail.bcc.to_a + [mail["X-Original-To"]&.value]
+        all_recipients = mail.to.to_a + mail.cc.to_a + mail.bcc.to_a + [ mail["X-Original-To"]&.value ]
         reply_address = all_recipients.compact.find { |addr| addr.match?(/reply\+[^@]+@/i) }
-        return unless reply_address
 
-        reply_address.match(/reply\+([^@]+)@/i)&.captures&.first
+        reply_address&.match(/reply\+([^@]+)@/i)&.captures&.first
       end
     end
 
@@ -89,15 +88,17 @@ module Parser
     def auto_reply?
       @auto_reply ||= begin
         auto_submitted = mail["Auto-Submitted"]&.value.to_s.downcase
-        return true if auto_submitted.present? && auto_submitted != "no"
-        return true if mail["X-Autoreply"]&.value.present?
-        return true if mail["X-Auto-Response-Suppress"]&.value.present?
-        return true if mail["X-PM-Message-Id"]&.value.present? && mail["X-Mailer-Daemon"]&.value.present?
-        return true if %w[bulk junk list].include?(mail["Precedence"]&.value.to_s.downcase)
-        return true if mail["Feedback-ID"]&.value.present?
-        return true if mail.from&.any? { |addr| addr.match?(/mailer-daemon|postmaster/i) }
-
-        false
+        if (auto_submitted.present? && auto_submitted != "no") ||
+           mail["X-Autoreply"]&.value.present? ||
+           mail["X-Auto-Response-Suppress"]&.value.present? ||
+           (mail["X-PM-Message-Id"]&.value.present? && mail["X-Mailer-Daemon"]&.value.present?) ||
+           %w[bulk junk list].include?(mail["Precedence"]&.value.to_s.downcase) ||
+           mail["Feedback-ID"]&.value.present? ||
+           mail.from&.any? { |addr| addr.match?(/mailer-daemon|postmaster/i) }
+          true
+        else
+          false
+        end
       end
     end
 

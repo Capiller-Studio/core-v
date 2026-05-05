@@ -63,7 +63,9 @@ module Billing
         new_limits[resource] ||= {}
         new_limits[resource]["max"] = max
       end
+      # rubocop:disable Rails/SkipsModelValidations
       account.update_column(:limits, new_limits)
+      # rubocop:enable Rails/SkipsModelValidations
     end
   end
 end

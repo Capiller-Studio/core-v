@@ -7,7 +7,7 @@ module Automations
         require_conversation!
 
         content = params[:content]
-        raise "content is required" if content.blank?
+        raise("content is required") if content.blank?
 
         # Internal note: visibility is "personal" so customers don't see it
         resource.messages.create!(

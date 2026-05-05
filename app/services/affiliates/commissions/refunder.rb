@@ -31,7 +31,7 @@ module Affiliates
               original_currency: commission.original_currency,
               exchange_rate: commission.exchange_rate,
               amount: -commission.amount,
-              status: :available # Forces immediate ledger subtraction against their upcoming physical totals 
+              status: :available # Forces immediate ledger subtraction against their upcoming physical totals
             )
           end
         end

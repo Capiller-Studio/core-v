@@ -33,7 +33,7 @@ module Affiliates
 
     def conversion_rate
       return 0.0 if total_clicks.zero?
-      
+
       ((total_referrals.to_f / total_clicks) * 100.0).round(2)
     end
 
@@ -44,7 +44,7 @@ module Affiliates
     def pending_balance
       profile.commissions.pending.sum(:amount).to_f
     end
-    
+
     def available_balance
       profile.commissions.available.sum(:amount).to_f
     end

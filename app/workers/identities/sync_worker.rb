@@ -7,7 +7,7 @@ module Identities
     def perform(customer_id, identity_source_id)
       customer = Customer.find_by(id: customer_id)
       identity_source = IdentitySource.find_by(id: identity_source_id)
-      
+
       return unless customer && identity_source && identity_source.api?
 
       account = customer.account
@@ -46,7 +46,7 @@ module Identities
       Rails.logger.warn("IdentitySyncWorker lock acquired elsewhere for customer_id: #{customer_id}, identity_source_id: #{identity_source_id}")
     rescue StandardError => e
       Rails.logger.error("IdentitySyncWorker failed for customer_id: #{customer_id}, identity_source_id: #{identity_source_id}. Error: #{e.message}")
-      raise e # Re-raise for Sidekiq retry mechanism
+      raise(e) # Re-raise for Sidekiq retry mechanism
     end
   end
 end

@@ -15,7 +15,7 @@ module Channels
         return false if signature.blank?
 
         expected_signature = OpenSSL::HMAC.hexdigest(
-          'sha256',
+          "sha256",
           widget.hmac_token,
           identifier.to_s
         )

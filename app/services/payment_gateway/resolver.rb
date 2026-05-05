@@ -12,7 +12,7 @@ module PaymentGateway
       when "stripe" then PaymentGateway::Stripe
       when "paddle" then PaymentGateway::Paddle
       else
-        raise ArgumentError, "Unknown payment provider: #{provider}"
+        raise(ArgumentError, "Unknown payment provider: #{provider}")
       end
     end
 

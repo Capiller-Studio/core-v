@@ -13,28 +13,28 @@ module Webhooks
           parsed_params: request.POST.to_h
         )
 
-        head :ok
+        head(:ok)
       rescue StandardError => e
         Rails.logger.error("Twilio Webhook failed: #{e.message}")
-        head :internal_server_error
+        head(:internal_server_error)
       end
 
       private
 
       def find_channel
         @channel = Channel::ShortMessage.twilio.find_by(account_id: params[:account_id], id: params[:channel_id])
-        head :not_found unless @channel
+        head(:not_found) unless @channel
       end
 
       def verify_signature
         validator = Twilio::Security::RequestValidator.new(auth_token)
         signature = request.headers["X-Twilio-Signature"]
-        
+
         # Determine the full requested URL organically
         url = request.original_url
-        
+
         unless validator.validate(url, request.POST, signature)
-          head :unauthorized
+          head(:unauthorized)
         end
       end
 

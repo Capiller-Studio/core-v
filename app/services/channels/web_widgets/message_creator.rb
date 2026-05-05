@@ -59,4 +59,3 @@ module Channels
     end
   end
 end
-

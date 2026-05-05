@@ -8,7 +8,7 @@ FactoryBot.define do
     conditions { { operator: 'AND', groups: [] } }
     actions { [] }
     configurations { {} }
-    
+
     trait :macro do
       automation_type { :macro }
       user

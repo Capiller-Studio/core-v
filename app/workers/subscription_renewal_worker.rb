@@ -29,7 +29,7 @@ class SubscriptionRenewalWorker < BaseMutexWorker
   def process_scheduled_cancellations
     Subscription.where(status: :active)
                 .where.not(cancelled_at: nil)
-                .where("current_period_end <= ?", Time.current)
+                .where(current_period_end: ..Time.current)
                 .find_each do |subscription|
       Billing::SubscriptionCanceller.call(subscription:, immediate: true)
     rescue StandardError => e

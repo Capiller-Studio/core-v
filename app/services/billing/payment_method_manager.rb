@@ -83,7 +83,6 @@ module Billing
 
     def resolve_paddle_type(type)
       case type
-      when "card" then :card
       when "paypal" then :paypal
       else :card
       end

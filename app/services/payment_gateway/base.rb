@@ -10,51 +10,51 @@ module PaymentGateway
 
     # Customer management
     def create_customer
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     def retrieve_customer(external_id)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     # Payment methods
     def add_payment_method(token)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     def remove_payment_method(external_id)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     def list_payment_methods
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     # Charges
     def charge(amount:, currency:, description: nil, payment_method_id: nil)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     def refund(transaction_external_id:, amount: nil)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     # Subscriptions (for gateways that support managed subscriptions)
     def create_subscription(plan:, billing_cycle:, payment_method_id: nil)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     def cancel_subscription(external_id)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     def retrieve_subscription(external_id)
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     # Provider name
     def provider_name
-      raise NotImplementedError
+      raise(NotImplementedError)
     end
 
     protected

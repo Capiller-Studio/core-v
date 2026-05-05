@@ -11,7 +11,7 @@ class Plan < ApplicationRecord
   PINNACLE   = "pinnacle"
   ENTERPRISE = "enterprise"
 
-  NAMES = [STARTER, MOMENTUM, PINNACLE, ENTERPRISE].freeze
+  NAMES = [ STARTER, MOMENTUM, PINNACLE, ENTERPRISE ].freeze
 
   enum :status, { active: 0, archived: 1 }
 

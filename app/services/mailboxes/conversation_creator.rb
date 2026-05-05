@@ -64,7 +64,7 @@ module Mailboxes
     def find_conversation_by_references
       return if parsed_mail.references.blank?
 
-      parsed_mail.references.each do |ref|
+      parsed_mail.references.find_each do |ref|
         message = account.messages.find_by(external_id: ref)
         if message
           self.conversation = message.conversation

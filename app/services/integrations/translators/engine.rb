@@ -12,14 +12,14 @@ module Integrations
       end
 
       def call
-        return unless message.content.present?
+        return if message.content.blank?
 
         existing_translations = message.data["translation"] || {}
         return existing_translations[target_locale] if existing_translations.key?(target_locale)
 
         translated_text = process_translation
 
-        return unless translated_text.present?
+        return if translated_text.blank?
 
         existing_translations[target_locale] = translated_text
         message.update!(data: message.data.merge("translation" => existing_translations))
@@ -33,7 +33,7 @@ module Integrations
       private
 
       def process_translation
-        # Prefer google APIs if integration exists 
+        # Prefer google APIs if integration exists
         google_integration = account.integrations.find_by(provider: :google_translate, active: true)
 
         if google_integration
@@ -41,7 +41,7 @@ module Integrations
           return perform_google_translation(api_key) if api_key.present?
         end
 
-        # Fallback to our translation engine 
+        # Fallback to our translation engine
         perform_libre_translation
       end
 
@@ -63,7 +63,7 @@ module Integrations
 
       def perform_libre_translation
         url = ENV.fetch("OS_TRANSLATOR_URL", "http://localhost:5000/translate")
-        
+
         response = HTTParty.post(
           url,
           body: {

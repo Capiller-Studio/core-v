@@ -31,8 +31,8 @@ RSpec.describe Inbox, type: :model do
   describe 'Callbacks' do
     it 'cleans up integration settings after destroy' do
       inbox = create(:inbox)
-      integration = create(:integration, account: inbox.account, settings: { 'subscribed_inboxes' => [inbox.id] })
-      
+      integration = create(:integration, account: inbox.account, settings: { 'subscribed_inboxes' => [ inbox.id ] })
+
       inbox.destroy
       integration.reload
       expect(integration.settings['subscribed_inboxes']).not_to include(inbox.id)

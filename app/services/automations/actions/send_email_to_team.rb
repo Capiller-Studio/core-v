@@ -8,8 +8,8 @@ module Automations
 
         template_id = params[:email_template_id]
         team_id = params[:team_id]
-        raise "email_template_id is required" if template_id.blank?
-        raise "team_id is required" if team_id.blank?
+        raise("email_template_id is required") if template_id.blank?
+        raise("team_id is required") if team_id.blank?
 
         template = account.email_templates.find(template_id)
         team = account.teams.find(team_id)

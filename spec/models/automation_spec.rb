@@ -16,14 +16,16 @@ RSpec.describe Automation, type: :model do
 
   describe 'Validations' do
     it { is_expected.to validate_presence_of(:name) }
-    
+
     context 'when event_trigger' do
       subject { build(:automation, automation_type: :event_trigger) }
+
       it { is_expected.to validate_presence_of(:event_name) }
     end
 
     context 'when macro' do
       subject { build(:automation, :macro) }
+
       it { is_expected.to validate_presence_of(:user_id) }
     end
   end

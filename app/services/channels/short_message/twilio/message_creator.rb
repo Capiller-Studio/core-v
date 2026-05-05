@@ -64,7 +64,7 @@ module Channels
             account: account,
             attachment_type: attachment_type
           )
-          
+
           ::Utilities::ActiveStorageDownloader.attach(
             record: file_attachment,
             attachment_name: :file,

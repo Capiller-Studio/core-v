@@ -22,7 +22,7 @@ module HelpCenter
           portal_id: portal.id,
           status: "active"
         },
-        fields: ["translations.title^3", "translations.content"],
+        fields: [ "translations.title^3", "translations.content" ],
         match: :word_start,
         boost_by: { views_count: { factor: 1.2 } }
       )

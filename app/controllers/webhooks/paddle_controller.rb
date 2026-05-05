@@ -24,10 +24,10 @@ module Webhooks
         end
       end
 
-      head :ok
+      head(:ok)
     rescue StandardError => e
       Rails.logger.error("Paddle webhook error: #{e.message}")
-      head :bad_request
+      head(:bad_request)
     end
 
     private
@@ -35,20 +35,20 @@ module Webhooks
     def verify_paddle_signature
       # Paddle signs webhooks with a shared secret
       webhook_secret = Rails.application.credentials.dig(:paddle, :webhook_secret)
-      return head :unauthorized unless webhook_secret
+      return head(:unauthorized) unless webhook_secret
 
       signature = request.headers["Paddle-Signature"]
-      return head :unauthorized unless signature
+      return head(:unauthorized) unless signature
 
       # Parse ts and h1 from "ts=...;h1=..."
-      parts = signature.split(";").map { |p| p.split("=", 2) }.to_h
+      parts = signature.split(";").to_h { |p| p.split("=", 2) }
       ts = parts["ts"]
       h1 = parts["h1"]
 
       payload = "#{ts}:#{request.raw_post}"
       computed = OpenSSL::HMAC.hexdigest("SHA256", webhook_secret, payload)
 
-      head :unauthorized unless ActiveSupport::SecurityUtils.secure_compare(computed, h1)
+      head(:unauthorized) unless ActiveSupport::SecurityUtils.secure_compare(computed, h1)
     end
 
     def handle_transaction_completed(data)
@@ -93,7 +93,7 @@ module Webhooks
       return if account.subscribed?
 
       now = Time.current
-      period_end = data["current_billing_period"] ? Time.parse(data["current_billing_period"]["ends_at"]) : now + 1.month
+      period_end = data["current_billing_period"] ? Time.zone.parse(data["current_billing_period"]["ends_at"]) : now + 1.month
 
       Subscription.create!(
         account:,
@@ -109,7 +109,9 @@ module Webhooks
       # Sync limits
       new_limits = account.limits.deep_dup
       plan.limits.each { |r, m| new_limits[r] = { "max" => m, "current" => new_limits.dig(r, "current") || 0 } }
+      # rubocop:disable Rails/SkipsModelValidations
       account.update_column(:limits, new_limits)
+      # rubocop:enable Rails/SkipsModelValidations
     end
 
     def handle_subscription_updated(data)
@@ -118,8 +120,8 @@ module Webhooks
 
       if data["current_billing_period"]
         subscription.update!(
-          current_period_start: Time.parse(data["current_billing_period"]["starts_at"]),
-          current_period_end: Time.parse(data["current_billing_period"]["ends_at"])
+          current_period_start: Time.zone.parse(data["current_billing_period"]["starts_at"]),
+          current_period_end: Time.zone.parse(data["current_billing_period"]["ends_at"])
         )
       end
     end

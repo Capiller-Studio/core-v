@@ -30,7 +30,7 @@ module Billing
 
       # Step 1: Deduct from wallet first
       if wallet && wallet.balance.positive?
-        wallet_deduction = [wallet.balance, remaining].min
+        wallet_deduction = [ wallet.balance, remaining ].min
         if wallet_deduction.positive?
           wallet.deduct!(wallet_deduction, description: "Payment: #{description}")
           remaining -= wallet_deduction
@@ -47,7 +47,7 @@ module Billing
       # Step 2: Charge remaining via payment gateway
       if remaining.positive?
         result = charge_via_gateway(remaining)
-        raise ActiveRecord::Rollback, "Payment failed" if result[:status] == :failed
+        raise(ActiveRecord::Rollback, "Payment failed") if result[:status] == :failed
 
         result
       else
@@ -98,7 +98,7 @@ module Billing
         external_id:,
         description:,
         data: {
-          "line_items" => [{ "description" => description, "quantity" => 1, "unit_price" => amount.to_s, "amount" => amount.to_s }],
+          "line_items" => [ { "description" => description, "quantity" => 1, "unit_price" => amount.to_s, "amount" => amount.to_s } ],
           "period_start" => subscription&.current_period_start&.to_date&.to_s,
           "period_end" => subscription&.current_period_end&.to_date&.to_s
         }

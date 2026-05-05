@@ -66,7 +66,7 @@ class Account < ApplicationRecord
     # We use the "_enabled" suffix for flags to avoid naming conflicts with associations (like teams/automations)
     feature_method = feature.to_s.end_with?("_enabled") ? "#{feature}?" : "#{feature}_enabled?"
     return true if respond_to?(feature_method) && send(feature_method)
-    
+
     # 2. Fallback to the current plan's configuration
     base_feature = feature.to_s.delete_suffix("_enabled")
     current_plan&.feature_enabled?(base_feature) == true
@@ -85,7 +85,7 @@ class Account < ApplicationRecord
   has_many :roles, class_name: "Access::Role", dependent: :destroy
   has_many :identity_sources, dependent: :destroy
   has_many :identities, dependent: :destroy
-  
+
   has_many :inboxes, dependent: :destroy
   has_many :portals, class_name: "HelpCenter::Portal", dependent: :destroy
   has_many :teams, dependent: :destroy

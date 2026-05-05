@@ -39,9 +39,9 @@ module HelpCenter
     has_many :redirects,    class_name: "HelpCenter::Redirect",          dependent: :destroy
 
     # Web widget is already linked via Channel::WebWidget#portal_id (FK on that table)
-    has_one :web_widget_channel,   class_name: "Channel::WebWidget",     foreign_key: :portal_id
+    has_one :web_widget_channel,   class_name: "Channel::WebWidget", dependent: :nullify
     # Contact form channel — links this portal to its embeddable support/contact form
-    has_one :contact_form_channel, class_name: "Channel::ContactForm",   foreign_key: :portal_id
+    has_one :contact_form_channel, class_name: "Channel::ContactForm", dependent: :nullify
 
     has_one_attached :logo              # Brand logo shown in portal header
     has_one_attached :favicon           # Browser tab icon (ICO/PNG, 32x32 or 64x64)

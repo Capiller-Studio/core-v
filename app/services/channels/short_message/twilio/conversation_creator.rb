@@ -21,12 +21,12 @@ module Channels
 
         def call
           find_inbox
-          
+
           message_id = parsed_params["MessageSid"]
           return if find_existing_message(message_id) || message_creation_locked?(message_id)
 
           lock_message_creation(message_id)
-          
+
           begin
             ActiveRecord::Base.transaction do
               find_or_create_customer

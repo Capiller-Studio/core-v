@@ -58,8 +58,8 @@ class Inbox < ShardRecord
   private
 
   def cleanup_integration_settings
-    Integration.where("settings @> ?", { subscribed_inboxes: [id] }.to_json).find_each do |integration|
-      remaining_inboxes = integration.subscribed_inboxes - [id]
+    Integration.where("settings @> ?", { subscribed_inboxes: [ id ] }.to_json).find_each do |integration|
+      remaining_inboxes = integration.subscribed_inboxes - [ id ]
       integration.update!(settings: integration.settings.merge("subscribed_inboxes" => remaining_inboxes))
     end
   end

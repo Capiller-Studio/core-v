@@ -7,7 +7,7 @@ module Automations
         require_conversation!
 
         locale = params[:locale]
-        raise "locale is required" if locale.blank?
+        raise("locale is required") if locale.blank?
 
         resource.update!(locale: locale)
       end

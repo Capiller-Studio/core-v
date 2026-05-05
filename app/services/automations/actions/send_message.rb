@@ -7,7 +7,7 @@ module Automations
         require_conversation!
 
         content = params[:content]
-        raise "content is required" if content.blank?
+        raise("content is required") if content.blank?
 
         visibility = params.fetch(:visibility, "global")
 

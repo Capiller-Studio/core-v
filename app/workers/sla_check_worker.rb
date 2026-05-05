@@ -34,7 +34,7 @@ class SlaCheckWorker
     # Also notify inbox agents who are admins/owners
     admin_ids = AccountUser.where(
       account: conversation.account,
-      role: [:owner, :admin]
+      role: [ :owner, :admin ]
     ).pluck(:user_id)
 
     inbox_admin_ids = conversation.inbox.inbox_users

@@ -11,7 +11,7 @@ FactoryBot.define do
     data { {} }
     sentiment { {} }
     configurations { {} }
-    
+
     trait :outgoing do
       sender { association :user }
     end

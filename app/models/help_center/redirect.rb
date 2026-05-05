@@ -28,11 +28,11 @@ module HelpCenter
 
     validates :source_path, presence: true
     validates :target_path, presence: true
-    validates :status_code, inclusion: { in: [301, 302] }
+    validates :status_code, inclusion: { in: [ 301, 302 ] }
 
     # locale: nil = applies to all locales; set to a specific locale (e.g. "es") for locale-specific redirects.
     # source_path and target_path store only the slug segment (not the full URL or locale prefix).
     # e.g. source_path: "old-whatsapp-guide", target_path: "setup-whatsapp-channel"
-    validates :source_path, uniqueness: { scope: [:portal_id, :locale] }
+    validates :source_path, uniqueness: { scope: [ :portal_id, :locale ] }
   end
 end

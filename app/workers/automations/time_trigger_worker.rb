@@ -46,7 +46,7 @@ module Automations
     # This is the initial filter — further conditions are evaluated in-memory.
     def find_matching_conversations(rule)
       account = rule.account
-      conversations = account.conversations.where(status: [:active, :snoozed])
+      conversations = account.conversations.where(status: [ :active, :snoozed ])
 
       # Extract time threshold from the first time-based condition
       hours = extract_hours_threshold(rule)
@@ -54,14 +54,14 @@ module Automations
 
       case rule.event_name
       when "hours_since_created"
-        conversations.where("conversations.created_at < ?", hours.hours.ago)
+        conversations.where(conversations: { created_at: ...hours.hours.ago })
       when "hours_since_updated"
-        conversations.where("conversations.updated_at < ?", hours.hours.ago)
+        conversations.where(conversations: { updated_at: ...hours.hours.ago })
       when "hours_since_resolved"
         conversations.where(status: :resolved)
-                     .where("conversations.status_changed_at < ?", hours.hours.ago)
+                     .where(conversations: { status_changed_at: ...hours.hours.ago })
       when "hours_since_last_activity"
-        conversations.where("conversations.last_activity_at < ?", hours.hours.ago)
+        conversations.where(conversations: { last_activity_at: ...hours.hours.ago })
       else
         Conversation.none
       end

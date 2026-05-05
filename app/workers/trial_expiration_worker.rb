@@ -14,7 +14,7 @@ class TrialExpirationWorker
 
     # Expire trials that have ended
     Subscription.where(status: :trialing)
-                .where("trial_end_at <= ?", Time.current)
+                .where(trial_end_at: ..Time.current)
                 .find_each do |subscription|
       expire_trial(subscription)
     end

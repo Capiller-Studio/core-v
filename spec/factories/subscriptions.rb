@@ -8,7 +8,7 @@ FactoryBot.define do
     current_period_start { Time.current }
     current_period_end { 1.month.from_now }
     data { {} }
-    
+
     trait :trialing do
       status { :trialing }
       trial_start_at { Time.current }

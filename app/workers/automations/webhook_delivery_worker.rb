@@ -31,15 +31,15 @@ module Automations
       end
 
       response = case method.upcase
-                 when "GET"
+      when "GET"
                    HTTParty.get(url, headers: headers, timeout: 10)
-                 when "POST"
+      when "POST"
                    HTTParty.post(url, body: body, headers: headers, timeout: 10)
-                 when "PUT"
+      when "PUT"
                    HTTParty.put(url, body: body, headers: headers, timeout: 10)
-                 when "PATCH"
+      when "PATCH"
                    HTTParty.patch(url, body: body, headers: headers, timeout: 10)
-                 end
+      end
 
       unless response&.success?
         Rails.logger.warn("[Automations::WebhookDeliveryWorker] #{method} #{url} returned #{response&.code}")

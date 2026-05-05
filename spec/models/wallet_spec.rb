@@ -13,7 +13,7 @@ RSpec.describe Wallet, type: :model do
       expect {
         wallet.credit!(50, description: 'Topup')
       }.to change { wallet.balance }.from(100).to(150)
-      
+
       expect(wallet.wallet_transactions.count).to eq(1)
       expect(wallet.wallet_transactions.last.amount).to eq(50)
     end

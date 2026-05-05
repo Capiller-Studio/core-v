@@ -92,7 +92,9 @@ class Conversation < ShardRecord
   end
 
   def update_last_activity
+    # rubocop:disable Rails/SkipsModelValidations
     touch(:last_activity_at)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   private

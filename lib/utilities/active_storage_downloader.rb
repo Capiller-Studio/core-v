@@ -3,12 +3,12 @@
 module Utilities
   class ActiveStorageDownloader
     def self.attach(record:, attachment_name:, url:)
-      return unless url.present?
+      return if url.blank?
       return if record.send(attachment_name).attached?
 
       begin
         tempfile = Down.download(url)
-        
+
         record.send(attachment_name).attach(
           io: tempfile,
           filename: tempfile.original_filename || "downloaded-file",

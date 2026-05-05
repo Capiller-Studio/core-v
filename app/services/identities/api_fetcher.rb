@@ -10,7 +10,7 @@ module Identities
     end
 
     def call
-      raise "IdentitySource missing or not an API type" unless identity.custom_api? && identity_source.present?
+      raise("IdentitySource missing or not an API type") unless identity.custom_api? && identity_source.present?
 
       # 1. Prepare Liquid Context
       liquid_context = prepare_context
@@ -32,16 +32,16 @@ module Identities
 
       # 5. Update Identity Attributes
       update_identity!(parsed, mapped_data)
-      
+
       identity
     rescue StandardError => e
       Rails.logger.error("Identities::ApiFetcher Error [Identity ID: #{identity.id}]: #{e.message}")
-      
+
       # Still save raw response for debugging even on error
       identity.update!(
         raw_response: { error: e.message }
       )
-      
+
       identity
     end
 
@@ -70,20 +70,20 @@ module Identities
 
     def render_template(template, context)
       return template if template.blank?
-      
+
       Liquid::Template.parse(template).render(context)
     end
 
     def render_hash(hash, context)
       return {} if hash.blank?
-      
+
       result = {}
       hash.each do |k, v|
         result[k] = if v.is_a?(String)
                       render_template(v, context)
-                    else
+        else
                       v
-                    end
+        end
       end
       result
     end

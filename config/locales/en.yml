@@ -113,3 +113,20 @@ en:
           <p style="color: #666; font-size: 12px;">
             You are receiving this because of your notification preferences.
           </p>
+  activerecord:
+    errors:
+      models:
+        integration:
+          attributes:
+            provider:
+              taken: "Only one integration per provider per account"
+        subscription:
+          attributes:
+            account_id:
+              active_subscription_exists: "already has an active subscription"
+        custom_field:
+          attributes:
+            name:
+              taken_in_account: "is already taken for this account"
+            key:
+              invalid_format: "only lowercase letters, numbers, and underscores"

@@ -7,7 +7,7 @@ module Automations
         require_conversation!
 
         duration_hours = params[:duration_hours].to_i
-        raise "duration_hours must be positive" unless duration_hours.positive?
+        raise("duration_hours must be positive") unless duration_hours.positive?
 
         resource.update!(
           status: :snoozed,

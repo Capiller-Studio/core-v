@@ -27,13 +27,16 @@ module Seeds
       Account.first || Account.create!(name: "Deskbolic Demo")
     end
 
+    FIRST_NAMES = %w[Sarah James].freeze
+    LAST_NAMES = %w[Miller Chen].freeze
+
     def find_or_create_agents(account)
       existing = account.users
       return existing.to_a if existing.count >= 2
 
       agent_role = account.roles.find_by(name: "Agent")
 
-      2.times.map do |i|
+      2.times.filter_map do |i|
         email = "agent#{i + 1}@deskbolic.test"
         user = User.find_by(email: email)
         next user if user
@@ -41,8 +44,8 @@ module Seeds
         user = User.create!(
           email: email,
           password: "password123",
-          first_name: ["Sarah", "James"][i],
-          last_name: ["Miller", "Chen"][i],
+          first_name: FIRST_NAMES[i],
+          last_name: LAST_NAMES[i],
           address: Address.create!
         )
 
@@ -70,7 +73,7 @@ module Seeds
         end
 
         user
-      end.compact
+      end
     end
 
     def create_web_widget(account)
@@ -119,7 +122,7 @@ module Seeds
       portal.assign_attributes(
         domain: domain,
         default_locale: "en",
-        locales: ["en", "de"]
+        locales: [ "en", "de" ]
       )
       portal.save!
 
@@ -187,7 +190,7 @@ module Seeds
 
           article = if existing_translation
                       existing_translation.article
-                    else
+          else
                       new_article = HelpCenter::Article.create!(
                         portal: portal, account: account, status: :published
                       )
@@ -198,7 +201,7 @@ module Seeds
                         content: art_data[:content]
                       )
                       new_article
-                    end
+          end
 
           # Link article to category
           HelpCenter::CategoryResource.find_or_create_by!(

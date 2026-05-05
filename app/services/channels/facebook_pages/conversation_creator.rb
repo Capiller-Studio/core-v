@@ -67,7 +67,7 @@ module Channels
 
       def create_customer
         customer_data = fetch_customer_details || {}
-        
+
         self.customer = Customers::CustomerCreator.call(
           account:,
           inbox:,
@@ -94,7 +94,7 @@ module Channels
           identifier: sender_id,
           first_name: customer_data["first_name"],
           last_name: customer_data["last_name"],
-          name: customer_data["name"] || [customer_data["first_name"], customer_data["last_name"]].compact.join(" "),
+          name: customer_data["name"] || [ customer_data["first_name"], customer_data["last_name"] ].compact.join(" "),
           raw_response: customer_data,
           custom_attributes: {
             "Gender" => customer_data["gender"],

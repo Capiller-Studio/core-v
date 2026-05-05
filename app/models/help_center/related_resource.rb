@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/LineLength
+# rubocop:disable Layout/LineLength
 # == Schema Information
 #
 # Table name: help_center_related_resources
@@ -19,7 +19,7 @@
 #  index_help_center_related_resources_on_resource         (resource_type,resource_id)
 #  index_help_center_related_resources_on_unique_record    (resource_id,resource_type,linked_resource_id,linked_resource_type) UNIQUE
 #
-# rubocop:enable Metrics/LineLength
+# rubocop:enable Layout/LineLength
 module HelpCenter
   class RelatedResource < ShardRecord
     belongs_to :resource, polymorphic: true

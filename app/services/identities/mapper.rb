@@ -2,6 +2,8 @@
 
 module Identities
   class Mapper < ApplicationService
+    STANDARD_FIELDS = %w[first_name last_name middle_name name administration_url external_id custom_attributes custom_fields].freeze
+
     attr_reader :identity_source, :raw_response
 
     def initialize(identity_source:, raw_response:)
@@ -16,7 +18,7 @@ module Identities
       parsed_response = raw_response.is_a?(String) ? JSON.parse(raw_response) : raw_response
 
       result = {}
-      
+
       # Extract standard fields specifically
       %w[first_name last_name middle_name name administration_url external_id].each do |field|
         if mapping[field].present?
@@ -30,8 +32,8 @@ module Identities
         custom_attrs = {}
         custom_mapping.each do |key, path|
           # Skip standard fields if they are at the top level of custom_mapping
-          next if %w[first_name last_name middle_name name administration_url external_id custom_attributes custom_fields].include?(key)
-          
+          next if STANDARD_FIELDS.include?(key)
+
           value = extract_value(parsed_response, path)
           custom_attrs[key] = value unless value.nil?
         end
@@ -48,7 +50,7 @@ module Identities
     # Simple JSON path extractor: e.g., "data.customer.first_name" or "[0].name"
     def extract_value(data, path)
       return nil if path.blank?
-      
+
       keys = path.to_s.split(".")
       current_value = data
 

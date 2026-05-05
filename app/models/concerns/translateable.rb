@@ -4,14 +4,16 @@ module Translateable
   extend ActiveSupport::Concern
 
   included do
-    @translation_model = "#{self}Translation"
+    @translation_model = "#{self}Translation".freeze
 
+    # rubocop:disable Rails/ReflectionClassName, Rails/HasManyOrHasOneDependent, Rails/InverseOf
     has_many :translations, class_name: @translation_model, dependent: :destroy, autosave: true
     accepts_nested_attributes_for :translations, allow_destroy: true
 
     # Eager loadable associations for specific locales
-    has_one :current_translation, -> { where locale: I18n.locale }, class_name: @translation_model
-    has_one :fallback_translation, ->(record) { where locale: record.fallback_locale }, class_name: @translation_model
+    has_one :current_translation, -> { where(locale: I18n.locale) }, class_name: @translation_model
+    has_one :fallback_translation, ->(record) { where(locale: record.fallback_locale) }, class_name: @translation_model
+    # rubocop:enable Rails/ReflectionClassName, Rails/HasManyOrHasOneDependent, Rails/InverseOf
 
     def self.translates(*attributes)
       attributes.each do |attribute|
@@ -24,7 +26,7 @@ module Translateable
           target = I18n.locale.to_s
           translation = translations.find { |t| t.locale.to_s == target } || translations.build(locale: target)
           translation.send("#{attribute}=", value)
-          
+
           # Reset cache if value is changed
           @_translations_cache = nil
         end
@@ -46,7 +48,7 @@ module Translateable
     # 2. Try current locale
     target = I18n.locale.to_s
     translation = find_translation_in_memory(target)
-    
+
     # 3. Try fallback locale if current is missing
     if translation&.send(attribute).blank?
       fallback = fallback_locale.to_s

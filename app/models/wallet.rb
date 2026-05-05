@@ -16,7 +16,7 @@ class Wallet < ApplicationRecord
     ActiveRecord::Base.transaction do
       # Lock the row for update to prevent races
       locked = self.class.lock.find(id)
-      raise InsufficientBalanceError, "Insufficient wallet balance" unless locked.balance >= amount
+      raise(InsufficientBalanceError, "Insufficient wallet balance") unless locked.balance >= amount
 
       new_balance = locked.balance - amount
       locked.update!(balance: new_balance)

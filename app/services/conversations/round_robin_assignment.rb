@@ -63,9 +63,9 @@ module Conversations
       next_index = if last_assigned.present?
                      last_index = sorted_ids.index(last_assigned)
                      last_index ? (last_index + 1) % sorted_ids.size : 0
-                   else
+      else
                      0
-                   end
+      end
 
       selected_id = sorted_ids[next_index]
       ::RedisUtilities::Helpers.set(key, selected_id)

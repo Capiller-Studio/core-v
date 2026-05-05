@@ -17,7 +17,7 @@ module Affiliates
       base_rate = fetch_live_rate
       return 1.0 unless base_rate
 
-      # Add spread to move things in our favor natively 
+      # Add spread to move things in our favor natively
       (base_rate * (1.0 - SPREAD_MARGIN)).round(6)
     end
 

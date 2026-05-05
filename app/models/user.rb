@@ -70,10 +70,10 @@ class User < ApplicationRecord
 
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
-  has_one :affiliate_profile, class_name: "Affiliate::Profile", dependent: :destroy
+  has_one :affiliate_profile, class_name: "Affiliate::Profile", dependent: :destroy, inverse_of: :user
 
   before_save :configure_display_name
-  
+
   enum :status, { active: 0 }
   enum :gender, { male: 0, female: 1 }
 
@@ -89,10 +89,10 @@ class User < ApplicationRecord
       created_at: created_at
     }
   end
-  
+
   private
 
   def configure_display_name
-    self.display_name = [first_name, middle_name, last_name].compact.join(" ")
+    self.display_name = [ first_name, middle_name, last_name ].compact.join(" ")
   end
 end

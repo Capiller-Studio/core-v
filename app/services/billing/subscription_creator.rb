@@ -24,9 +24,9 @@ module Billing
     private
 
     def validate!
-      raise "Account already has an active subscription" if account.subscribed?
-      raise "Plan is not available" unless plan.active?
-      raise "Enterprise plan requires contacting sales" if plan.contact_us?
+      raise("Account already has an active subscription") if account.subscribed?
+      raise("Plan is not available") unless plan.active?
+      raise("Enterprise plan requires contacting sales") if plan.contact_us?
     end
 
     def create_subscription
@@ -54,7 +54,7 @@ module Billing
         )
       else
         result = charge_for_subscription
-        raise "Payment failed: #{result[:error]}" if result[:status] == :failed
+        raise("Payment failed: #{result[:error]}") if result[:status] == :failed
 
         attrs.merge!(
           status: :active,
@@ -69,7 +69,7 @@ module Billing
     end
 
     def charge_for_subscription
-      agent_count = [account.account_users.count, 1].max
+      agent_count = [ account.account_users.count, 1 ].max
       amount = plan.price_for(billing_cycle) * agent_count
 
       Billing::ChargeProcessor.call(
@@ -94,7 +94,9 @@ module Billing
         new_limits[resource]["max"] = max
         new_limits[resource]["current"] ||= 0
       end
+      # rubocop:disable Rails/SkipsModelValidations
       account.update_column(:limits, new_limits)
+      # rubocop:enable Rails/SkipsModelValidations
     end
   end
 end

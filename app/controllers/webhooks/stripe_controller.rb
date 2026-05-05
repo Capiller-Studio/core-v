@@ -7,7 +7,7 @@ module Webhooks
 
     def create
       event = construct_event
-      return head :bad_request unless event
+      return head(:bad_request) unless event
 
       ActiveRecord::Base.transaction do
         case event.type
@@ -26,10 +26,10 @@ module Webhooks
         end
       end
 
-      head :ok
+      head(:ok)
     rescue StandardError => e
       Rails.logger.error("Stripe webhook error: #{e.message}")
-      head :bad_request
+      head(:bad_request)
     end
 
     private
@@ -42,7 +42,7 @@ module Webhooks
       begin
         ::Stripe::Webhook.construct_event(payload, sig_header, endpoint_secret)
       rescue ::Stripe::SignatureVerificationError
-        head :unauthorized
+        head(:unauthorized)
       end
     end
 
@@ -107,8 +107,8 @@ module Webhooks
       return unless subscription
 
       subscription.update!(
-        current_period_start: Time.at(stripe_sub.current_period_start),
-        current_period_end: Time.at(stripe_sub.current_period_end)
+        current_period_start: Time.zone.at(stripe_sub.current_period_start),
+        current_period_end: Time.zone.at(stripe_sub.current_period_end)
       )
     end
 

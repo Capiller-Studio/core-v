@@ -6,9 +6,9 @@ module Channels
       class ConversationCreator < ApplicationService
         # NOTE: AWS routes inbound SMS via SNS Topics (HTTP/S subscriptions) natively.
         # This payload arrives completely differently than Twilio (usually embedded inside a generic SNS Notification JSON).
-        # We must actively parse the "Message" string out of the payload, then extract 
+        # We must actively parse the "Message" string out of the payload, then extract
         # originationNumber and destinationNumber cleanly here natively.
-        
+
         attr_accessor :inbox, :message, :parsed_params,
                       :short_message_channel, :customer, :sender_id, :account,
                       :conversation
@@ -17,22 +17,22 @@ module Channels
           self.parsed_params         = parsed_params
           self.short_message_channel = short_message_channel
           self.account               = account || short_message_channel.account
-          
-          # AWS nested extraction mapping natively 
+
+          # AWS nested extraction mapping natively
           aws_message = JSON.parse(parsed_params["Message"] || "{}") rescue {}
           self.sender_id = aws_message["originationNumber"]
         end
 
         def call
           return if sender_id.blank?
-          
+
           find_inbox
-          
+
           message_id = parsed_params["MessageId"]
           return if find_existing_message(message_id) || message_creation_locked?(message_id)
 
           lock_message_creation(message_id)
-          
+
           begin
             ActiveRecord::Base.transaction do
               find_or_create_customer
@@ -59,7 +59,7 @@ module Channels
             external_id: sender_id,
             full_phone_number: sender_id,
             params: {
-              name: sender_id # AWS doesn't provide names natively inside inbound SMS strings 
+              name: sender_id # AWS doesn't provide names natively inside inbound SMS strings
             }
           )
         end

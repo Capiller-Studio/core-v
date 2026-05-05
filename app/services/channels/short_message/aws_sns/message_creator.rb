@@ -37,7 +37,7 @@ module Channels
             sender: sender,
             content: aws_message["messageBody"],
             inbox: inbox,
-            external_id: parsed_message["MessageId"], # Use the outer payload SNS Notification ID natively 
+            external_id: parsed_message["MessageId"], # Use the outer payload SNS Notification ID natively
             data: {}
           )
         end

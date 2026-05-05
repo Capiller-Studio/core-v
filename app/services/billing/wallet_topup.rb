@@ -23,10 +23,10 @@ module Billing
     private
 
     def process_topup
-      raise "Amount must be positive" unless amount.positive?
+      raise("Amount must be positive") unless amount.positive?
 
       payment_method = account.default_payment_method
-      raise "No payment method available" unless payment_method
+      raise("No payment method available") unless payment_method
 
       gateway = PaymentGateway::Resolver.for(account)
       result = gateway.charge(
@@ -36,7 +36,7 @@ module Billing
         payment_method_id: payment_method.external_id
       )
 
-      raise "Payment failed: #{result[:error]}" if result[:status] == :failed
+      raise("Payment failed: #{result[:error]}") if result[:status] == :failed
 
       txn = Transaction.create!(
         account:,

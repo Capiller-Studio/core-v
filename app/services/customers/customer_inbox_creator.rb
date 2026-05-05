@@ -18,9 +18,9 @@ module Customers
 
     def call
       self.external_id ||= find_external_id
-      
+
       if external_id.present?
-        self.customer_inbox = create_customer_inbox 
+        self.customer_inbox = create_customer_inbox
         ::Identities::AutomationManager.call(customer: customer, inbox: inbox, external_id: external_id)
       end
 

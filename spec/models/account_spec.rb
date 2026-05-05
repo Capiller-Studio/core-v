@@ -22,7 +22,7 @@ RSpec.describe Account, type: :model do
     it { is_expected.to have_many(:automations).dependent(:destroy) }
     it { is_expected.to have_many(:automation_executions).dependent(:destroy) }
     it { is_expected.to have_many(:integrations).dependent(:destroy) }
-    
+
     # Billable associations
     it { is_expected.to have_one(:wallet).dependent(:destroy) }
     it { is_expected.to have_many(:subscriptions).dependent(:destroy) }
@@ -38,8 +38,9 @@ RSpec.describe Account, type: :model do
   describe 'Callbacks' do
     it 'generates default roles after create' do
       account = build(:account)
-      expect(Access::RoleGenerator).to receive(:call).with(account)
+      allow(Access::RoleGenerator).to receive(:call)
       account.save!
+      expect(Access::RoleGenerator).to have_received(:call).with(account)
     end
 
     it 'creates a wallet after create' do
@@ -64,7 +65,7 @@ RSpec.describe Account, type: :model do
 
   describe '#feature_enabled?' do
     let(:account) { create(:account) }
-    
+
     context 'when manually enabled via bitmask' do
       it 'returns true when teams_enabled? is true' do
         account.teams_enabled = true
@@ -78,7 +79,7 @@ RSpec.describe Account, type: :model do
     end
 
     context 'when falling back to plan' do
-      let(:plan) { instance_double('Plan') }
+      let(:plan) { instance_double(Plan) }
 
       before do
         allow(account).to receive(:current_plan).and_return(plan)
@@ -101,8 +102,19 @@ RSpec.describe Account, type: :model do
     let(:account) { create(:account) }
 
     it 'returns current usage from limits jsonb' do
+      # rubocop:disable Rails/SkipsModelValidations
       account.update_column(:limits, { 'users' => { 'current' => 5 } })
+      # rubocop:enable Rails/SkipsModelValidations
       expect(account.current_usage(:users)).to eq(5)
+    end
+
+    it 'increments usage on agent added' do
+      # We need to make sure within_limit? returns true so it can be created
+      allow(account).to receive(:within_limit?).with(:users).and_return(true)
+
+      allow(account).to receive(:increment_usage!)
+      create(:account_user, account: account, user: create(:user))
+      expect(account).to have_received(:increment_usage!).with(:users)
     end
 
     it 'increments usage correctly' do

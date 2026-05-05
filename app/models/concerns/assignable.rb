@@ -18,7 +18,9 @@ module Assignable
   def assign!(user)
     ActiveRecord::Base.transaction do
       # Demote current assignee to participant
+      # rubocop:disable Rails/SkipsModelValidations
       conversation_members.assignees.agents.update_all(role: :participant)
+      # rubocop:enable Rails/SkipsModelValidations
 
       # Set new assignee
       member = conversation_members.find_or_initialize_by(
@@ -30,7 +32,9 @@ module Assignable
   end
 
   def unassign!
+    # rubocop:disable Rails/SkipsModelValidations
     conversation_members.assignees.agents.update_all(role: :participant)
+    # rubocop:enable Rails/SkipsModelValidations
   end
 
   private

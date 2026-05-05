@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/LineLength
+# rubocop:disable Layout/LineLength
 # == Schema Information
 #
 # Table name: business_hours
@@ -29,7 +29,7 @@
 #
 #  fk_rails_...  (business_hour_group_id => business_hour_groups.id) ON DELETE => cascade
 #
-# rubocop:enable Metrics/LineLength
+# rubocop:enable Layout/LineLength
 class BusinessHour < ShardRecord
   belongs_to :account
 end

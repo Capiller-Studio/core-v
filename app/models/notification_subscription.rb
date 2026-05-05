@@ -57,7 +57,7 @@ class NotificationSubscription < ShardRecord
   end
 
   def deliver_web_push(notification)
-    return unless data["endpoint"].present?
+    return if data["endpoint"].blank?
 
     payload = push_payload(notification)
 
@@ -75,7 +75,7 @@ class NotificationSubscription < ShardRecord
   end
 
   def deliver_fcm(notification)
-    return unless data["device_token"].present?
+    return if data["device_token"].blank?
 
     # TODO: Configure FCM credentials and implement
     Rails.logger.info("FCM push queued for device: #{data['device_token']}")

@@ -45,10 +45,10 @@ class Identity < ShardRecord
   belongs_to :identity_source, optional: true
   belongs_to :address, optional: true
 
-  enum :identity_type, { 
-    custom_api: 0, 
-    facebook: 1, 
-    instagram: 2, 
+  enum :identity_type, {
+    custom_api: 0,
+    facebook: 1,
+    instagram: 2,
     whatsapp: 3,
     web_widget: 4
   }

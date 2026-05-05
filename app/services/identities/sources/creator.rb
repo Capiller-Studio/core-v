@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require "liquid"
 
 module Identities
@@ -39,10 +40,10 @@ module Identities
 
       def validate_liquid_syntax!
         Liquid::Template.parse(params[:source_url].to_s)
-        
+
         # Validate values in hashes
-        (params[:headers] || {}).values.each { |val| Liquid::Template.parse(val.to_s) }
-        (params[:query_params] || {}).values.each { |val| Liquid::Template.parse(val.to_s) }
+        (params[:headers] || {}).each_value { |val| Liquid::Template.parse(val.to_s) }
+        (params[:query_params] || {}).each_value { |val| Liquid::Template.parse(val.to_s) }
       end
     end
   end

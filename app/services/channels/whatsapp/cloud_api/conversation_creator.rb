@@ -103,7 +103,7 @@ module Channels
               name: customer_data.dig(:profile, :name)
             }
           )
-          
+
           create_native_identity(customer_data)
         end
 

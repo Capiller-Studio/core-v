@@ -31,7 +31,7 @@ module Billing
       {
         provider: "paddle",
         customer_id:,
-        items: [{ price_id:, quantity: account.account_users.count }],
+        items: [ { price_id:, quantity: account.account_users.count } ],
         custom_data: {
           account_id: account.id,
           plan_id: plan.id,
@@ -47,7 +47,7 @@ module Billing
       session = ::Stripe::Checkout::Session.create(
         customer: customer_id,
         mode: "subscription",
-        line_items: [{
+        line_items: [ {
           price_data: {
             currency: account.currency.downcase,
             product_data: { name: "Deskbolic #{plan.name.capitalize}" },
@@ -55,7 +55,7 @@ module Billing
             recurring: { interval: billing_cycle.to_s == "annual" ? "year" : "month" }
           },
           quantity: account.account_users.count
-        }],
+        } ],
         success_url: "#{base_url}/billing/success?session_id={CHECKOUT_SESSION_ID}",
         cancel_url: "#{base_url}/billing/cancel",
         metadata: {

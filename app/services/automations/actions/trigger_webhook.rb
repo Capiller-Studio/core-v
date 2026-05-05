@@ -9,8 +9,8 @@ module Automations
         headers = params.fetch(:headers, {})
         secret = params[:secret] # Optional: HMAC signing key for request verification
 
-        raise "url is required" if url.blank?
-        raise "Invalid method: #{method}" unless %w[GET POST PUT PATCH].include?(method)
+        raise("url is required") if url.blank?
+        raise("Invalid method: #{method}") unless %w[GET POST PUT PATCH].include?(method)
 
         # Build the payload with conversation/customer context
         webhook_payload = {

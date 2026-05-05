@@ -19,10 +19,10 @@ RSpec.describe AccountUser, type: :model do
     it 'enforces user limit on create' do
       account = create(:account)
       user = create(:user)
-      
+
       # Mock the limit check
       allow(account).to receive(:within_limit?).with(:users).and_return(false)
-      
+
       account_user = build(:account_user, account: account, user: user)
       expect(account_user.save).to be false
       expect(account_user.errors[:base]).to include("User limit reached for your plan. Please upgrade.")
@@ -35,20 +35,22 @@ RSpec.describe AccountUser, type: :model do
 
     it 'increments usage on agent added' do
       # We need to make sure within_limit? returns true so it can be created
-      allow_any_instance_of(Account).to receive(:within_limit?).with(:users).and_return(true)
-      
-      expect_any_instance_of(Account).to receive(:increment_usage!).with(:users)
+      allow(account).to receive(:within_limit?).with(:users).and_return(true)
+
+      allow(account).to receive(:increment_usage!)
       create(:account_user, account: account, user: user)
+      expect(account).to have_received(:increment_usage!).with(:users)
     end
 
     it 'decrements usage on agent removed' do
       # Avoid the limit check for creation
-      allow_any_instance_of(Account).to receive(:within_limit?).with(:users).and_return(true)
-      
+      allow(account).to receive(:within_limit?).with(:users).and_return(true)
+
       account_user = create(:account_user, account: account, user: user)
-      
-      expect(account).to receive(:decrement_usage!).with(:users)
+
+      allow(account).to receive(:decrement_usage!)
       account_user.destroy
+      expect(account).to have_received(:decrement_usage!).with(:users)
     end
   end
 end

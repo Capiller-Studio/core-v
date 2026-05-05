@@ -7,7 +7,7 @@ module Automations
         require_conversation!
 
         label_ids = Array(params[:label_ids])
-        raise "label_ids is required" if label_ids.blank?
+        raise("label_ids is required") if label_ids.blank?
 
         labels = account.labels.where(id: label_ids)
 

@@ -9,7 +9,7 @@ plugins:
   - rubocop-capybara
 
 AllCops:
-  TargetRubyVersion: 3.4.1
+  TargetRubyVersion: 3.3.1
   DisplayCopNames: true
   Include:
     - "**/*.rb"
@@ -24,6 +24,9 @@ AllCops:
     - "db/migrate_shards/**/*.rb"
     - "db/schema.rb"
     - "db/primary_de_schema.rb"
+    - "test/dummy/db/schema.rb"
+    - "test/dummy/db/primary_de_schema.rb"
+    - "test/dummy/bin/**/*"
     - "log/**/*"
     - "node_modules/**/*"
     - "public/**/*"
@@ -94,10 +97,9 @@ Metrics/CollectionLiteralLength: # new in 1.47
 Layout/LineLength:
   Max: 120
   Exclude:
-    - "config/**/**"
-    - "db/migrate/**/*.rb"
+    - 'db/migrate/*.rb'
     - "db/migrate_shards/**/*.rb"
-    - "db/seed_data/**/*.rb"
+    - "spec/**/*_spec.rb"
 
 Metrics/MethodLength:
   Max: 35
@@ -111,6 +113,15 @@ Metrics/ModuleLength:
     - "db/migrate/**/*.rb"
     - "db/migrate_shards/**/*.rb"
     - "spec/**/*_spec.rb"
+RSpec/MultipleExpectations:
+  Max: 5
+  Exclude:
+    - "spec/**/*"
+
+RSpec/ExampleLength:
+  Max: 15
+  Exclude:
+    - "spec/**/*"
 
 Metrics/ClassLength:
   Max: 130
@@ -119,7 +130,7 @@ Metrics/ClassLength:
     - "db/migrate/**/*.rb"
     - "db/migrate_shards/**/*.rb"
 
-Naming/PredicateName:
+Naming/PredicatePrefix:
   ForbiddenPrefixes:
     - is_
   Exclude:

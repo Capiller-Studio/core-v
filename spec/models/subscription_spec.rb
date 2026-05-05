@@ -19,7 +19,7 @@ RSpec.describe Subscription, type: :model do
     it 'validates uniqueness of account_id scoped to status active/trialing' do
       account = create(:account)
       create(:subscription, account: account, status: :active)
-      
+
       duplicate = build(:subscription, account: account, status: :trialing)
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:account_id]).to include("already has an active subscription")
@@ -47,7 +47,7 @@ RSpec.describe Subscription, type: :model do
       # Assuming plan price is 29.0 for monthly (from Account model spec or plan logic)
       allow(plan).to receive(:price_for).with('monthly').and_return(30.0)
       allow(account).to receive(:users_count).and_return(5)
-      
+
       expect(subscription.total_price).to eq(150.0)
     end
   end

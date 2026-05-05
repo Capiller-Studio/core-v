@@ -45,7 +45,7 @@ module Automations
         status: has_failures ? :failed : :success,
         triggered_by: triggered_by,
         executed_actions: results,
-        error_message: has_failures ? results.select { |r| r["result"] == "failed" }.map { |r| r["error"] }.join("; ") : nil,
+        error_message: has_failures ? results.select { |r| r["result"] == "failed" }.pluck("error").join("; ") : nil,
         execution_duration_ms: duration_ms,
         executed_at: Time.current
       )

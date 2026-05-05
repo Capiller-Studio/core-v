@@ -59,8 +59,8 @@ class CustomField < ShardRecord
             4 => :is_readonly,
             column: "flags"
 
-  validates :key, presence: true, uniqueness: { scope: :account_id },
-                  format: { with: /\A[a-z0-9_]+\z/, message: "only lowercase letters, numbers, and underscores" }
+  validates :key, presence: true, uniqueness: { scope: :account_id, message: :taken_in_account },
+                  format: { with: /\A[a-z0-9_]+\z/, message: :invalid_format }
 
   # validations jsonb structure:
   # {

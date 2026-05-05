@@ -5,7 +5,7 @@ module Billable
 
   included do
     has_one :wallet, dependent: :destroy
-    has_one :active_subscription, -> { where(status: [:active, :trialing]) }, class_name: "Subscription"
+    has_one :active_subscription, -> { where(status: [ :active, :trialing ]) }, class_name: "Subscription", dependent: :nullify, inverse_of: :account
     has_many :subscriptions, dependent: :destroy
     has_many :payment_methods, dependent: :destroy
     has_many :transactions, dependent: :destroy

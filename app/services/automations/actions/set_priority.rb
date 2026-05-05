@@ -7,7 +7,7 @@ module Automations
         require_conversation!
 
         new_priority = params[:priority]
-        raise "Invalid priority: #{new_priority}" unless Conversation.priorities.key?(new_priority)
+        raise("Invalid priority: #{new_priority}") unless Conversation.priorities.key?(new_priority)
 
         resource.update!(priority: new_priority)
       end

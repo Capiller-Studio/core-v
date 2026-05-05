@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class JwtService
-  ALGORITHM = 'HS256'
+  ALGORITHM = "HS256"
   DEFAULT_EXPIRY = 24.hours
 
   class << self
@@ -16,9 +16,7 @@ class JwtService
     def decode(token)
       decoded = JWT.decode(token, secret_key, true, { algorithm: ALGORITHM })
       decoded.first.with_indifferent_access
-    rescue JWT::ExpiredSignature
-      nil
-    rescue JWT::DecodeError
+    rescue JWT::ExpiredSignature, JWT::DecodeError
       nil
     end
 

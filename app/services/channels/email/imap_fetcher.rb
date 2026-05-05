@@ -25,7 +25,7 @@ module Channels
 
         begin
           imap.select("INBOX")
-          message_ids = imap.search(["UNSEEN"])
+          message_ids = imap.search([ "UNSEEN" ])
 
           message_ids.each do |msg_id|
             process_email(imap, msg_id)
@@ -66,7 +66,7 @@ module Channels
         )
 
         # Mark as seen on the IMAP server
-        imap.store(msg_id, "+FLAGS", [:Seen])
+        imap.store(msg_id, "+FLAGS", [ :Seen ])
       rescue StandardError => e
         Rails.logger.error("IMAP email processing failed for msg##{msg_id}: #{e.message}")
       end

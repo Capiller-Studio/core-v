@@ -33,7 +33,6 @@ module Automations
       results = groups.map { |group| evaluate_group(group) }
 
       case top_operator
-      when "AND" then results.all?
       when "OR"  then results.any?
       else results.all?
       end
@@ -48,7 +47,6 @@ module Automations
       results = group_conditions.map { |condition| evaluate_condition(condition) }
 
       case group_operator
-      when "AND" then results.all?
       when "OR"  then results.any?
       else results.all?
       end
@@ -97,9 +95,9 @@ module Automations
 
         normalize(actual).to_s.include?(normalize(expected).to_s)
       when "not_contains"
-        return !Array(actual).map { |v| normalize(v) }.include?(normalize(expected)) if actual.is_a?(Array)
+        return Array(actual).map { |v| normalize(v) }.exclude?(normalize(expected)) if actual.is_a?(Array)
 
-        !normalize(actual).to_s.include?(normalize(expected).to_s)
+        normalize(actual).to_s.exclude?(normalize(expected).to_s)
       when "starts_with"
         normalize(actual).to_s.start_with?(normalize(expected).to_s)
       when "ends_with"
@@ -114,7 +112,7 @@ module Automations
         to_number(actual) < to_number(expected)
       when "days_before"
         # Used for time_trigger: checks if a datetime is more than N days ago
-        return false unless actual.present?
+        return false if actual.blank?
 
         parsed = actual.is_a?(String) ? Time.zone.parse(actual) : actual
         parsed.present? && parsed < to_number(expected).days.ago

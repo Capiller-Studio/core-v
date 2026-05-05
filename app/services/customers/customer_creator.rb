@@ -42,20 +42,20 @@ module Customers
     def attach_avatar_if_present
       url = params[:avatar_url].presence || generate_default_avatar_url
       return unless url
-      
+
       ::Utilities::ActiveStorageDownloader.attach(
-        record: customer, 
-        attachment_name: :avatar, 
+        record: customer,
+        attachment_name: :avatar,
         url: url
       )
     end
 
     def generate_default_avatar_url
-      gender_path = case params[:gender].to_s.downcase
-                    when "male" then "boy"
-                    when "female" then "girl"
-                    else "boy" # Fallback randomized
-                    end
+      gender_path =
+        case params[:gender].to_s.downcase
+        when "female" then "girl"
+        else "boy" # Fallback randomized
+        end
 
       seed = CGI.escape(params[:name] || params[:first_name] || external_id.to_s || customer.identifier.to_s)
       "https://avatar.iran.liara.run/public/#{gender_path}?username=#{seed}"

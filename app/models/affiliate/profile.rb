@@ -2,10 +2,10 @@
 
 module Affiliate
   class Profile < ApplicationRecord
-    belongs_to :user
-    has_many :referrals, class_name: "Affiliate::Referral", foreign_key: "affiliate_profile_id", dependent: :destroy
-    has_many :commissions, class_name: "Affiliate::Commission", foreign_key: "affiliate_profile_id", dependent: :destroy
-    has_many :payouts, class_name: "Affiliate::Payout", foreign_key: "affiliate_profile_id", dependent: :destroy
+    belongs_to :user, inverse_of: :affiliate_profile
+    has_many :referrals, class_name: "Affiliate::Referral", foreign_key: "affiliate_profile_id", dependent: :destroy, inverse_of: :profile
+    has_many :commissions, class_name: "Affiliate::Commission", foreign_key: "affiliate_profile_id", dependent: :destroy, inverse_of: :profile
+    has_many :payouts, class_name: "Affiliate::Payout", foreign_key: "affiliate_profile_id", dependent: :destroy, inverse_of: :profile
 
     validates :referral_code, presence: true, uniqueness: true
 
@@ -19,7 +19,7 @@ module Affiliate
       self.tenure_months ||= 6
       self.holding_days ||= 30
       self.currency ||= "USD"
-      # max_earnings_per_account defaults to nil inherently 
+      # max_earnings_per_account defaults to nil inherently
     end
 
     def generate_referral_code

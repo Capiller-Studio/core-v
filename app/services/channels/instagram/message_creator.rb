@@ -84,9 +84,9 @@ module Channels
 
         if %w[image video audio file share story_mention].include?(attachment_type)
           process_file_attachment(attachment, attachment_type)
-        elsif ["location"].include?(attachment_type)
+        elsif [ "location" ].include?(attachment_type)
           process_location_attachment(attachment, attachment_type)
-        elsif ["fallback"].include?(attachment_type)
+        elsif [ "fallback" ].include?(attachment_type)
           process_fallback_attachment(attachment, attachment_type)
         end
       end
@@ -94,7 +94,7 @@ module Channels
       def process_file_attachment(attachment, attachment_type)
         url = attachment.dig("payload", "url")
         tempfile = download_file(url)
-        
+
         file_attachment = message.attachments.create!(
           remote_url: url,
           account:,
@@ -151,7 +151,7 @@ module Channels
       end
 
       def parse_attachment_type(attachment_type, tempfile)
-        return attachment_type unless ["share", "story_mention"].include?(attachment_type)
+        return attachment_type unless [ "share", "story_mention" ].include?(attachment_type)
         return attachment_type unless tempfile
 
         ::Utilities::AttachmentTypeHelpers.attachment_type(tempfile.content_type)
@@ -160,11 +160,7 @@ module Channels
       def fetch_story(external_id)
         client = Koala::Facebook::API.new(instagram_channel.page_access_token)
         client.get_object(external_id, fields: %w[story from])
-      rescue Koala::Facebook::AuthenticationError
-        nil
-      rescue Koala::Facebook::ClientError => _e
-        nil
-      rescue StandardError => _e
+      rescue Koala::Facebook::AuthenticationError, Koala::Facebook::ClientError, StandardError
         nil
       end
 

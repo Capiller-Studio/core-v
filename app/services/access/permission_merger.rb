@@ -16,7 +16,7 @@ module Access
       @permissions_list.any? do |permissions|
         policy = permissions.dig(@resource_type, @action)
         next false if policy.nil? || policy == false
-        
+
         # If true, it's a global allow for this user in this account
         next true if policy == true
 
@@ -37,7 +37,7 @@ module Access
       # All keys within a single role's hash must match (AND logic)
       conditions.all? do |key, values|
         allowed_values = Array(values).map(&:to_s)
-        
+
         case key
         when "inbox_ids"
           @resource.respond_to?(:inbox_id) && allowed_values.include?(@resource.inbox_id.to_s)

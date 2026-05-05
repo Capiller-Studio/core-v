@@ -11,12 +11,12 @@ class Subscription < ApplicationRecord
   enum :billing_cycle, { monthly: 0, annual: 1 }
   enum :provider, { stripe: 0, paddle: 1 }
 
-  scope :current, -> { where(status: [:active, :trialing]) }
+  scope :current, -> { where(status: [ :active, :trialing ]) }
   scope :expiring_soon, ->(days = 3) { where(trial_end_at: ..days.days.from_now).where(status: :trialing) }
   scope :due_for_renewal, -> { where(current_period_end: ..Time.current).where(status: :active) }
 
-  validates :account_id, uniqueness: { conditions: -> { where(status: [:active, :trialing]) },
-                                       message: "already has an active subscription" }
+  validates :account_id, uniqueness: { conditions: -> { where(status: [ :active, :trialing ]) },
+                                       message: :active_subscription_exists }
 
   def trialing?
     status == "trialing" && trial_end_at.present? && trial_end_at > Time.current
@@ -37,7 +37,7 @@ class Subscription < ApplicationRecord
   def days_until_trial_end
     return 0 unless trial_end_at
 
-    [(trial_end_at.to_date - Date.current).to_i, 0].max
+    [ (trial_end_at.to_date - Date.current).to_i, 0 ].max
   end
 
   def cancel!(immediate: false)
@@ -58,7 +58,7 @@ class Subscription < ApplicationRecord
   end
 
   def billable_agents
-    [data["max_agents_in_period"] || 0, account.users_count].max
+    [ data["max_agents_in_period"] || 0, account.users_count ].max
   end
 
   def total_price
