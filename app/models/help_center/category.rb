@@ -54,10 +54,10 @@ module HelpCenter
     enum :status, { active: 0 }
 
     # visibility controls who can see this category:
-    #   public    — visible to all visitors
+    #   everyone  — visible to all visitors
     #   unlisted  — accessible via direct link, not shown in navigation
     #   internal  — visible to authenticated agents/team only
-    enum :visibility, { public: 0, unlisted: 1, internal: 2 }
+    enum :visibility, { everyone: 0, unlisted: 1, internal: 2 }
 
     # flags (FlagShihTzu bit fields):
     #   guide_mode — when enabled, articles in this category are treated as sequential steps.

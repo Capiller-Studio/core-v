@@ -56,10 +56,10 @@ module HelpCenter
     enum :article_type, { standard: 0, external_link: 1 }
 
     # visibility controls who can access this article:
-    #   public    — visible to all visitors
+    #   everyone  — visible to all visitors
     #   unlisted  — accessible via direct link only, not shown in navigation/search
     #   internal  — visible to authenticated agents/team only
-    enum :visibility, { public: 0, unlisted: 1, internal: 2 }
+    enum :visibility, { everyone: 0, unlisted: 1, internal: 2 }
 
     # configurations jsonb structure:
     # {
