@@ -47,21 +47,24 @@ class Account < ApplicationRecord
   include LimitEnforceable
   include FlagShihTzu
 
-  has_flags 1 => :api_access,
-            2 => :sla,
-            3 => :audit_logs,
-            4 => :teams,
-            5 => :automations,
-            6 => :csat,
-            7 => :custom_branding,
+  has_flags 1 => :api_access_enabled,
+            2 => :sla_enabled,
+            3 => :audit_logs_enabled,
+            4 => :teams_enabled,
+            5 => :automations_enabled,
+            6 => :csat_enabled,
+            7 => :custom_branding_enabled,
             column: "features"
 
   def feature_enabled?(feature)
     # 1. Check if manually enabled via bitmask (overrides/enterprise overrides)
-    return true if send("#{feature}?")
+    # We use the "_enabled" suffix for flags to avoid naming conflicts with associations (like teams/automations)
+    feature_method = feature.to_s.end_with?("_enabled") ? "#{feature}?" : "#{feature}_enabled?"
+    return true if respond_to?(feature_method) && send(feature_method)
     
     # 2. Fallback to the current plan's configuration
-    current_plan&.feature_enabled?(feature) == true
+    base_feature = feature.to_s.delete_suffix("_enabled")
+    current_plan&.feature_enabled?(base_feature) == true
   end
 
   enum :status, { active: 0 }

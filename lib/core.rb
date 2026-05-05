@@ -38,7 +38,7 @@ require "image_processing"
 require "redis"
 require "twilio-ruby"
 require "signalwire"
-require "dotenv/rails-now" if defined?(Dotenv)
+require "dotenv/load" if defined?(Dotenv)
 
 module Core
   # Your code goes here...

@@ -1,28 +1,49 @@
-# Core
-Short description and motivation.
+# Deskbolic Core
 
-## Usage
-How to use my plugin.
+This is the shared Rails Engine that powers the entire Deskbolic ecosystem. It contains the core business logic, models, shared services, and seeding utilities used by all applications.
 
-## Installation
-Add this line to your application's Gemfile:
+## 🛠 Development Setup
+
+We use the latest high-performance stack. Since Ruby 4.0.3 is not yet available in RVM, we have transitioned to **rbenv** as our primary manager for this project, while keeping RVM available for legacy work.
+
+### 1. Ruby Setup (rbenv)
+1. **Disable RVM by default**: Comment out RVM initialization in your terminal profiles (`~/.zshrc`, `~/.bash_profile`, etc.).
+2. **Configure Shell**: Add the following to your `~/.zshrc` (or equivalent):
+   ```bash
+   # Rbenv Initialization
+   export PATH="$HOME/.rbenv/bin:$PATH"
+   eval "$(rbenv init - zsh)"
+   typeset -U path
+
+   # Legacy RVM access (for older projects)
+   alias use_rvm='source "$HOME/.rvm/scripts/rvm"'
+   ```
+3. **Install & Use Ruby 4.0.3**:
+   ```bash
+   rbenv install 4.0.3
+   rbenv local 4.0.3
+   ```
+
+### 2. Node.js Setup (nvm)
+We require **Node v25.9.0**.
+```bash
+nvm install 25.9.0
+nvm alias default 25.9.0
+nvm use default
+```
+
+### 3. Shared Engine Installation
+To use this engine in a Deskbolic application, ensure it's linked in your `Gemfile`:
 
 ```ruby
-gem "core"
+gem "core", path: "../core"
 ```
 
-And then execute:
-```bash
-$ bundle
-```
+## 📂 Responsibilities
+- **Models**: Unified data structures (Accounts, Conversations, Users, etc.)
+- **Seeding**: Shared seeders for development environments.
+- **Services**: Cross-app business logic (Integrations, Automation Engine).
+- **Concerns**: Shared behaviors like `Addressable` and `Billable`.
 
-Or install it yourself as:
-```bash
-$ gem install core
-```
-
-## Contributing
-Contribution directions go here.
-
-## License
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+---
+© 2026 Techbolic Solutions (Private) Limited.
