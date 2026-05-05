@@ -41,11 +41,16 @@
 #  fk_rails_...  (referred_by_id => accounts.id) ON DELETE => nullify
 #
 class Account < ApplicationRecord
-  include CodeGenerator.new(prefix: "ACC", referral: true)
+  include CodeGenerator.new(prefix: "ACC", column: :identifier)
+  include CodeGenerator.new(prefix: "REF", column: :referral_code)
   include Addressable
   include Billable
   include LimitEnforceable
   include FlagShihTzu
+
+  def users_count
+    current_usage(:users)
+  end
 
   has_flags 1 => :api_access_enabled,
             2 => :sla_enabled,

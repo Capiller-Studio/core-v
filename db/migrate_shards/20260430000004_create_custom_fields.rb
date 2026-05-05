@@ -1,4 +1,4 @@
-class CreateCustomFields < ActiveRecord::Migration[7.1]
+class CreateCustomFields < ActiveRecord::Migration[8.1]
   def change
     create_table :custom_fields, id: :uuid do |t|
       # key is the machine-readable identifier used as the JSON key when storing values

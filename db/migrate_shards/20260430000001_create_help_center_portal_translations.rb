@@ -1,4 +1,4 @@
-class CreateHelpCenterPortalTranslations < ActiveRecord::Migration[7.1]
+class CreateHelpCenterPortalTranslations < ActiveRecord::Migration[8.1]
   def change
     create_table :help_center_portal_translations, id: :uuid do |t|
       t.string :locale, null: false

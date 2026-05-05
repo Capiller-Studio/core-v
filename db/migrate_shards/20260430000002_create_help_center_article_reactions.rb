@@ -1,4 +1,4 @@
-class CreateHelpCenterArticleReactions < ActiveRecord::Migration[7.1]
+class CreateHelpCenterArticleReactions < ActiveRecord::Migration[8.1]
   def change
     create_table :help_center_article_reactions, id: :uuid do |t|
       # reaction_type: happy (0) 😃, neutral (1) 😐, sad (2) 😔

@@ -1,4 +1,4 @@
-class CreateExchangeRates < ActiveRecord::Migration[7.1]
+class CreateExchangeRates < ActiveRecord::Migration[8.1]
   def change
     create_table :exchange_rates, id: :uuid do |t|
       t.string :from_currency, null: false

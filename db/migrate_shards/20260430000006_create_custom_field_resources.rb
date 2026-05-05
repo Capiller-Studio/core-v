@@ -1,4 +1,4 @@
-class CreateCustomFieldResources < ActiveRecord::Migration[7.1]
+class CreateCustomFieldResources < ActiveRecord::Migration[8.1]
   def change
     create_table :custom_field_resources, id: :uuid do |t|
       # Polymorphic resource: the entity this field is attached to.

@@ -1,4 +1,4 @@
-class CreateCustomFieldTranslations < ActiveRecord::Migration[7.1]
+class CreateCustomFieldTranslations < ActiveRecord::Migration[8.1]
   def change
     create_table :custom_field_translations, id: :uuid do |t|
       t.string :locale, null: false

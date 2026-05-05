@@ -1,4 +1,4 @@
-class CreateChannelContactForms < ActiveRecord::Migration[7.1]
+class CreateChannelContactForms < ActiveRecord::Migration[8.1]
   def change
     create_table :channel_contact_forms, id: :uuid do |t|
       t.string  :name                  # Internal name e.g. "Website Support Form"
@@ -22,8 +22,7 @@ class CreateChannelContactForms < ActiveRecord::Migration[7.1]
 
       # portal_id is optional — a contact form can exist independently (embeddable on own website)
       # and be linked to a portal when the portal's contact page feature is enabled
-      t.references :portal, foreign_key: { to_table: :help_center_portals, on_delete: :nullify },
-                   type: :uuid, index: true
+      t.references :portal, foreign_key: false, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

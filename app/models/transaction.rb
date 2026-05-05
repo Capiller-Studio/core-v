@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Transaction < ApplicationRecord
-  include CodeGenerator.new(prefix: "INV")
+  include CodeGenerator.new(prefix: "INV", column: :code)
 
   belongs_to :account
   belongs_to :subscription, optional: true

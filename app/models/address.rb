@@ -39,4 +39,6 @@
 #  fk_rails_...  (state_id => states.id) ON DELETE => nullify
 #
 class Address < ApplicationRecord
+  belongs_to :country, optional: true
+  belongs_to :state, optional: true
 end

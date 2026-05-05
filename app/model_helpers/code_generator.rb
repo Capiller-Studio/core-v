@@ -4,29 +4,24 @@ class CodeGenerator < Module
   BASE           = 10
   DEFAULT_LENGTH = 9
 
-  attr_accessor :prefix, :referral, :length, :letters
+  attr_accessor :prefix, :length, :letters, :column
 
   def initialize(options = {})
-    self.prefix     = options.fetch(:prefix)
-    self.referral   = options.fetch(:referral)
-    self.length     = options.fetch(:length, DEFAULT_LENGTH)
-    self.letters    = options.fetch(:letters, true)
+    self.prefix  = options.fetch(:prefix)
+    self.length  = options.fetch(:length, DEFAULT_LENGTH)
+    self.letters = options.fetch(:letters, true)
+    self.column  = options.fetch(:column, :identifier)
   end
 
   def included(host)
-    generator_instance = self
+    generator = self
 
     host.class_eval do
       before_validation do |instance|
-        instance.identifier ||= generate_code(host, :identifier)
-
-        instance.referral_code ||= generate_code(host, :referral_code) if generator_instance.referral
-      end
-
-      define_singleton_method(:code_generator) { generator_instance }
-
-      def generate_code(host, attribute)
-        host.code_generator.generate_code(host, attribute)
+        col = generator.column
+        if instance.send(col).blank?
+          instance.send("#{col}=", generator.generate_code(host, col))
+        end
       end
     end
   end
@@ -45,6 +40,6 @@ class CodeGenerator < Module
 
   def new_candidate(length)
     characters = letters ? 36 : 10
-    @prefix + SecureRandom.random_number(characters**length).to_s(characters).rjust(length, "0").upcase
+    prefix + SecureRandom.random_number(characters**length).to_s(characters).rjust(length, "0").upcase
   end
 end

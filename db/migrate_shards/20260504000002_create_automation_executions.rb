@@ -1,4 +1,4 @@
-class CreateAutomationExecutions < ActiveRecord::Migration[7.1]
+class CreateAutomationExecutions < ActiveRecord::Migration[8.1]
   def change
     create_table :automation_executions, id: :uuid do |t|
       # Which rule fired

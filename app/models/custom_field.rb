@@ -40,7 +40,7 @@ class CustomField < ShardRecord
   enum :field_type, {
     text: 0, email: 1, phone: 2, number: 3, textarea: 4,
     select: 5, multi_select: 6, checkbox: 7, file: 8, date: 9, url: 10
-  }
+  }, prefix: true
 
   # entity_type determines which model's data jsonb column stores the value:
   #   customer (0)     → Customer.data jsonb     e.g. customer.data["department"] = "sales"
@@ -56,7 +56,7 @@ class CustomField < ShardRecord
   has_flags 1 => :searchable,
             2 => :filterable,
             3 => :hidden,
-            4 => :readonly,
+            4 => :is_readonly,
             column: "flags"
 
   validates :key, presence: true, uniqueness: { scope: :account_id },

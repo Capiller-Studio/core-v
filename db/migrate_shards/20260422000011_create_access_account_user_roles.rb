@@ -1,4 +1,4 @@
-class CreateAccessAccountUserRoles < ActiveRecord::Migration[7.1]
+class CreateAccessAccountUserRoles < ActiveRecord::Migration[8.1]
   def change
     create_table :access_account_user_roles, id: :uuid do |t|
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true

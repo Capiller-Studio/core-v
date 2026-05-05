@@ -11,14 +11,16 @@ development:
   primary:
     <<: *default
     database: deskbolic_development
+    migrations_paths: ../../db/migrate
   primary_replica:
     <<: *default
     database: deskbolic_development
+    migrations_paths: ../../db/migrate
     replica: true
   primary_de:
     <<: *default
     database: deskbolic_de_development
-    migrations_paths: db/migrate_shards
+    migrations_paths: ../../db/migrate_shards
   primary_de_replica:
     <<: *default
     database: deskbolic_de_development
@@ -28,14 +30,16 @@ test:
   primary:
     <<: *default
     database: deskbolic_test
+    migrations_paths: ../../db/migrate
   primary_replica:
     <<: *default
     database: deskbolic_test
+    migrations_paths: ../../db/migrate
     replica: true
   primary_de:
     <<: *default
     database: deskbolic_de_test
-    migrations_paths: db/migrate_shards
+    migrations_paths: ../../db/migrate_shards
   primary_de_replica:
     <<: *default
     database: deskbolic_de_test
@@ -45,11 +49,13 @@ production:
   primary:
     <<: *default
     database: deskbolic_production
+    migrations_paths: ../../db/migrate
     username: <%= Rails.application.credentials.db_username %>
     password: <%= Rails.application.credentials.db_password %>
   primary_replica:
     <<: *default
     database: deskbolic_production
+    migrations_paths: ../../db/migrate
     username: <%= Rails.application.credentials.db_username %>
     password: <%= Rails.application.credentials.db_password %>
     replica: true
@@ -58,7 +64,7 @@ production:
     database: deskbolic_de_production
     username: <%= Rails.application.credentials.db_username %>
     password: <%= Rails.application.credentials.db_password %>
-    migrations_paths: db/migrate_shards
+    migrations_paths: ../../db/migrate_shards
   primary_de_replica:
     <<: *default
     database: deskbolic_de_production
@@ -70,11 +76,13 @@ staging:
   primary:
     <<: *default
     database: deskbolic_staging
+    migrations_paths: ../../db/migrate
     username: <%= Rails.application.credentials.db_username %>
     password: <%= Rails.application.credentials.db_password %>
   primary_replica:
     <<: *default
     database: deskbolic_staging
+    migrations_paths: ../../db/migrate
     username: <%= Rails.application.credentials.db_username %>
     password: <%= Rails.application.credentials.db_password %>
     replica: true
@@ -83,7 +91,7 @@ staging:
     database: deskbolic_de_staging
     username: <%= Rails.application.credentials.db_username %>
     password: <%= Rails.application.credentials.db_password %>
-    migrations_paths: db/migrate_shards
+    migrations_paths: ../../db/migrate_shards
   primary_de_replica:
     <<: *default
     database: deskbolic_de_staging

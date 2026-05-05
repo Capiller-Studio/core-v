@@ -21,4 +21,5 @@
 #  fk_rails_...  (country_id => countries.id) ON DELETE => cascade
 #
 class State < ApplicationRecord
+  belongs_to :country
 end

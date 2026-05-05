@@ -1,4 +1,4 @@
-class CreateWebhookDeliveryAttempts < ActiveRecord::Migration[7.1]
+class CreateWebhookDeliveryAttempts < ActiveRecord::Migration[8.1]
   def change
     create_table :webhook_delivery_attempts, id: :uuid do |t|
       t.references :webhook_delivery, null: false, foreign_key: { on_delete: :cascade }, type: :uuid

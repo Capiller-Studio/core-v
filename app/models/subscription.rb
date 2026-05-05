@@ -15,7 +15,7 @@ class Subscription < ApplicationRecord
   scope :expiring_soon, ->(days = 3) { where(trial_end_at: ..days.days.from_now).where(status: :trialing) }
   scope :due_for_renewal, -> { where(current_period_end: ..Time.current).where(status: :active) }
 
-  validates :account_id, uniqueness: { scope: :status, conditions: -> { where(status: [:active, :trialing]) },
+  validates :account_id, uniqueness: { conditions: -> { where(status: [:active, :trialing]) },
                                        message: "already has an active subscription" }
 
   def trialing?

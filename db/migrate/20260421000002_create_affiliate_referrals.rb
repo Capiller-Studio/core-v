@@ -1,4 +1,4 @@
-class CreateAffiliateReferrals < ActiveRecord::Migration[7.1]
+class CreateAffiliateReferrals < ActiveRecord::Migration[8.1]
   def change
     create_table :affiliate_referrals, id: :uuid do |t|
       t.references :affiliate_profile, null: false, foreign_key: { on_delete: :cascade }, type: :uuid

@@ -1,4 +1,4 @@
-class CreateAutomations < ActiveRecord::Migration[7.1]
+class CreateAutomations < ActiveRecord::Migration[8.1]
   def change
     create_table :automations, id: :uuid do |t|
       t.string  :name, null: false

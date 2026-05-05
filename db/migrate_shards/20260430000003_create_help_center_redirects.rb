@@ -1,4 +1,4 @@
-class CreateHelpCenterRedirects < ActiveRecord::Migration[7.1]
+class CreateHelpCenterRedirects < ActiveRecord::Migration[8.1]
   def change
     create_table :help_center_redirects, id: :uuid do |t|
       # source_path and target_path store URL path segments (without domain)
