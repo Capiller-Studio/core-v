@@ -179,15 +179,26 @@ module Seeds
         end
 
         cat_data[:articles].each do |art_data|
-          article = HelpCenter::Article.find_or_initialize_by(
-            portal: portal, account: account, slug: art_data[:slug]
+          # slug now lives on ArticleTranslation (locale-specific SEO URLs),
+          # so we look up via the translation join instead of directly on the article.
+          existing_translation = HelpCenter::ArticleTranslation.find_by(
+            slug: art_data[:slug], locale: "en"
           )
-          article.assign_attributes(status: :active)
-          article.save!
 
-          unless article.translated_to?(:en)
-            article.translations.create!(locale: "en", title: art_data[:title], content: art_data[:content])
-          end
+          article = if existing_translation
+                      existing_translation.article
+                    else
+                      new_article = HelpCenter::Article.create!(
+                        portal: portal, account: account, status: :published
+                      )
+                      new_article.translations.create!(
+                        locale: "en",
+                        title: art_data[:title],
+                        slug: art_data[:slug],
+                        content: art_data[:content]
+                      )
+                      new_article
+                    end
 
           # Link article to category
           HelpCenter::CategoryResource.find_or_create_by!(
