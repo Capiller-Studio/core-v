@@ -68,7 +68,7 @@ module HelpCenter
     #   "estimated_read_time"      => 5               (minutes; auto-computed from content length or manually overridden)
     # }
 
-    translates :title, :content, :meta_title, :meta_description
+    translates :title, :slug, :content, :meta_title, :meta_description
 
     searchkick
 
