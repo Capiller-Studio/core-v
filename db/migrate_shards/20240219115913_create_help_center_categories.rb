@@ -12,7 +12,7 @@ class CreateHelpCenterCategories < ActiveRecord::Migration[7.1]
       t.boolean :featured,   null: false, default: false  # Marks category as featured tile on portal landing page
       t.string  :icon_key                                 # Key from predefined icon set e.g. "book-open" (rendered per-app via Lucide)
 
-      # visibility: public (0) — visible to all, unlisted (1) — accessible via link only, internal (2) — agents only
+      # visibility: everyone (0) — visible to all, unlisted (1) — accessible via link only, internal (2) — agents only
       t.integer :visibility, null: false, default: 0
       t.integer :status,     null: false, default: 0
 

@@ -12,7 +12,7 @@ class CreateHelpCenterArticles < ActiveRecord::Migration[7.1]
       # NOT at the article level. Articles within a guide_mode category are ordered steps.
       t.integer :article_type, null: false, default: 0
 
-      # visibility: public (0) — visible to all, unlisted (1) — accessible via link only, internal (2) — agents only
+      # visibility: everyone (0) — visible to all, unlisted (1) — accessible via link only, internal (2) — agents only
       t.integer :visibility, null: false, default: 0
 
       # status: draft (0) — work in progress, published (1) — live, archived (2) — no longer shown
