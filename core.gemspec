@@ -23,20 +23,10 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 8.0.1"
-
   spec.add_dependency "redis", ">= 4.2.5"
-
-  # Use Active Storage variant
   spec.add_dependency 'image_processing'
-
-
-  # Active Storage validations
   spec.add_dependency 'active_storage_validations'
-
-  # For Active Storage S3 storage
   spec.add_dependency "aws-sdk-s3"
-
-  # Background jobs processing
   spec.add_dependency 'sidekiq'
 
   # For Authentication
@@ -60,10 +50,41 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'maxmind-geoip2'
 
   spec.add_dependency 'httparty'
+  spec.add_dependency 'typhoeus'
 
   # Cryptography
   spec.add_dependency 'openssl'
 
   # bitwise features flag
   spec.add_dependency 'flag_shih_tzu'
+
+  # --- Shared Stack dependencies moved from Gemfile ---
+  spec.add_dependency 'liquid'
+  spec.add_dependency 'anycable-rails'
+  spec.add_dependency 'pundit'
+  spec.add_dependency 'stringex'
+  spec.add_dependency 'money'
+  spec.add_dependency 'prawn'
+  spec.add_dependency 'prawn-table'
+  spec.add_dependency 'inline_svg'
+  spec.add_dependency 'groupdate'
+  spec.add_dependency 'mobility', '~> 1.3.0.rc1'
+  spec.add_dependency 'pagy', '~> 6.2'
+  spec.add_dependency 'facebook-messenger'
+  spec.add_dependency 'koala'
+  spec.add_dependency 'down'
+  spec.add_dependency 'rack-attack'
+  spec.add_dependency 'twilio-ruby'
+  spec.add_dependency 'signalwire'
+  spec.add_dependency 'aws-sdk-sns'
+
+  # Development/Test tools for core engine development only
+  spec.add_development_dependency 'dotenv-rails'
+  spec.add_development_dependency 'pry'
+  spec.add_development_dependency 'pry-rails'
+  spec.add_development_dependency 'awesome_print'
+  spec.add_development_dependency 'factory_bot_rails'
+  spec.add_development_dependency 'ffaker'
+  spec.add_development_dependency 'annotate'
+  spec.add_development_dependency 'bullet'
 end
