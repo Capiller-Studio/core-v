@@ -5,7 +5,7 @@ module RedisUtilities
     include RedisUtilities::Keys
 
     CONNECTION_POOL = ConnectionPool.new(size: 10, timeout: 1) do
-      Redis.new
+      Redis.new(url: ENV.fetch("REDIS_URL") { "redis://localhost:6379/3" })
     end
 
     def self.set(key, value, overwrite: true, expiry: false)
