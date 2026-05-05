@@ -25,4 +25,11 @@ class Integration < ShardRecord
     return nil unless webhook? || slack?
     settings["url"] || settings["webhook_url"]
   end
+
+  # HMAC signing secret for webhook deliveries.
+  # Stored in settings["webhook_secret"] when the user configures a webhook integration.
+  # If present, all outgoing webhook requests include a Signature header.
+  def webhook_secret
+    settings["webhook_secret"]
+  end
 end

@@ -83,7 +83,8 @@ class Account < ApplicationRecord
   has_many :teams, dependent: :destroy
   has_many :labels, dependent: :destroy
   has_many :canned_responses, dependent: :destroy
-  has_many :macros, dependent: :destroy
+  has_many :automations, dependent: :destroy
+  has_many :automation_executions, dependent: :destroy
   has_many :integrations, dependent: :destroy
 
   after_create :generate_default_roles
