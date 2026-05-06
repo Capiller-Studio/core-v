@@ -28,7 +28,8 @@
 #  fk_rails_...  (account_id => accounts.id) ON DELETE => cascade
 #
 module Channel
-  class TwitterProfile < ApplicationRecord
+  class TwitterProfile < ShardRecord
+    include Routable
     belongs_to :account
 
     enum :status, { active: 0 }

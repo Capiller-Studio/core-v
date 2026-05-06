@@ -8,7 +8,7 @@ class CreateChannelLines < ActiveRecord::Migration[7.1]
       t.jsonb   :configurations, default: {}, null: false
       t.integer :status, default: 0, null: false
 
-      t.references :account, null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
+      t.references :account, null: false, foreign_key: false, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

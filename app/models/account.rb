@@ -21,6 +21,7 @@
 #  referral_paid_at         :datetime
 #  referred_by_commission   :decimal(10, 2)
 #  status                   :integer          default("active"), not null
+#  shard_key                :string           default("de"), not null
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
 #  address_id               :uuid
@@ -48,6 +49,7 @@ class Account < ApplicationRecord
   include Billable
   include LimitEnforceable
   include FlagShihTzu
+  include ShardResolvable
 
   def users_count
     current_usage(:users)
@@ -78,18 +80,18 @@ class Account < ApplicationRecord
   enum :status, { active: 0 }
   enum :referral_commission_type, { fixed: 0 }
 
-  has_many :customers, dependent: :destroy
+  # Primary DB Associations
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
+
+  # Sharded DB Associations
+  # IMPORTANT: These associations reside in a separate database shard.
+  # When accessing them, you must ensure the correct shard context is set,
+  # typically using account.with_shard { ... }
+  has_many :customers, dependent: :destroy
   has_many :conversations, dependent: :destroy
   has_many :messages, dependent: :destroy
-  has_many :email_templates, dependent: :destroy
-  has_many :notification_settings, dependent: :destroy
-  has_many :roles, class_name: "Access::Role", dependent: :destroy
-  has_many :identity_sources, dependent: :destroy
-  has_many :identities, dependent: :destroy
   has_many :inboxes, dependent: :destroy
-  has_many :portals, class_name: "HelpCenter::Portal", dependent: :destroy
   has_many :teams, dependent: :destroy
   has_many :labels, dependent: :destroy
   has_many :canned_responses, dependent: :destroy
@@ -97,6 +99,24 @@ class Account < ApplicationRecord
   has_many :automation_executions, dependent: :destroy
   has_many :integrations, dependent: :destroy
   has_many :custom_fields, dependent: :destroy
+  has_many :identity_sources, dependent: :destroy
+  has_many :identities, dependent: :destroy
+  has_many :portals, class_name: "HelpCenter::Portal", dependent: :destroy
+  has_many :roles, class_name: "Access::Role", dependent: :destroy
+  has_many :email_templates, dependent: :destroy
+  has_many :notification_settings, dependent: :destroy
+  has_many :campaigns, dependent: :destroy
+  has_many :filters, dependent: :destroy
+  has_many :mentions, dependent: :destroy
+  has_many :notes, dependent: :destroy
+  has_many :attachments, dependent: :destroy
+  has_many :sla_policies, dependent: :destroy
+  has_many :conversation_slas, dependent: :destroy
+  has_many :notification_subscriptions, dependent: :destroy
+  has_many :business_hour_groups, dependent: :destroy
+  has_many :business_hours, dependent: :destroy
+  has_many :chat_bots, dependent: :destroy
+  has_many :webhook_deliveries, dependent: :destroy
 
   after_create :generate_default_roles
   after_create :generate_default_custom_fields
