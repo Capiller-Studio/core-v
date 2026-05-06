@@ -40,6 +40,7 @@
 #  fk_rails_...  (address_id => addresses.id) ON DELETE => nullify
 #  fk_rails_...  (referred_by_id => accounts.id) ON DELETE => nullify
 #
+
 class Account < ApplicationRecord
   include CodeGenerator.new(prefix: "ACC", column: :identifier)
   include CodeGenerator.new(prefix: "REF", column: :referral_code)
@@ -59,6 +60,8 @@ class Account < ApplicationRecord
             5 => :automations_enabled,
             6 => :csat_enabled,
             7 => :custom_branding_enabled,
+            8 => :contact_form_enabled,
+            9 => :help_center_enabled,
             column: "features"
 
   def feature_enabled?(feature)
@@ -85,7 +88,6 @@ class Account < ApplicationRecord
   has_many :roles, class_name: "Access::Role", dependent: :destroy
   has_many :identity_sources, dependent: :destroy
   has_many :identities, dependent: :destroy
-
   has_many :inboxes, dependent: :destroy
   has_many :portals, class_name: "HelpCenter::Portal", dependent: :destroy
   has_many :teams, dependent: :destroy
@@ -94,12 +96,18 @@ class Account < ApplicationRecord
   has_many :automations, dependent: :destroy
   has_many :automation_executions, dependent: :destroy
   has_many :integrations, dependent: :destroy
+  has_many :custom_fields, dependent: :destroy
 
   after_create :generate_default_roles
+  after_create :generate_default_custom_fields
 
   private
 
   def generate_default_roles
     Access::RoleGenerator.call(self)
+  end
+
+  def generate_default_custom_fields
+    Accounts::DefaultCustomFieldsCreator.call(account: self)
   end
 end

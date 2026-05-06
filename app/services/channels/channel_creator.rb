@@ -44,6 +44,29 @@ module Channels
       )
     end
 
+    def contact_form_channel
+      channel = Channel::ContactForm.create!(
+        name: channel_params[:name],
+        account: current_account,
+        configurations: {
+          submit_redirect_url: channel_params[:submit_redirect_url],
+          notification_emails: channel_params[:notification_emails]&.split(",")&.map(&:strip),
+          success_message_i18n_key: channel_params[:success_message_i18n_key] || "contact_form.success"
+        }
+      )
+
+      # Handle flags
+      channel.require_login = channel_params[:require_login] == "true"
+      channel.allow_attachments = channel_params[:allow_attachments] == "true"
+      channel.send_confirmation_email = channel_params[:send_confirmation_email] == "true"
+      channel.save!
+
+      channel.inboxes.create!(
+        name: channel_params[:name],
+        account: current_account
+      )
+    end
+
     def facebook_page_channel
       existing_channel = Channel::FacebookPage.find_by(account: current_account,
 page_identifier: JSON.parse(channel_params[:page_data])["id"])
