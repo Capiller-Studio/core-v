@@ -42,7 +42,7 @@ class CustomField < ShardRecord
     trans = translations.detect { |t| t.locale.to_s == locale.to_s }
     # 2. Fallback to default locale if missing
     trans ||= translations.detect { |t| t.locale.to_s == I18n.default_locale.to_s }
-    
+
     opts = trans&.options || []
     # 3. If options are empty but we have allowed_values in validations, use those as fallback
     if opts.blank? && validations["allowed_values"].present?
@@ -77,6 +77,17 @@ class CustomField < ShardRecord
             4 => :is_readonly,
             column: "flags"
 
+  MAPPING_TARGETS = %w[
+    customer.name
+    customer.first_name
+    customer.last_name
+    customer.email
+    conversation.title
+    message.content
+    conversation.priority
+  ].freeze
+
+  validates :mapped_to, inclusion: { in: MAPPING_TARGETS, allow_blank: true }
   validates :key, presence: true, uniqueness: { scope: :account_id, message: :taken_in_account },
                   format: { with: /\A[a-z0-9_]+\z/, message: :invalid_format }
 

@@ -28,6 +28,10 @@ class CreateCustomFields < ActiveRecord::Migration[8.1]
       #   3 => :hidden       — defined but hidden from UI (kept for data storage)
       #   4 => :readonly     — displayed but cannot be edited by agents
 
+      # mapped_to determines if this field maps to a standard internal attribute:
+      #   customer.email, customer.name, conversation.title, message.content
+      t.string :mapped_to
+
       # validations jsonb — server-side and client-side validation rules:
       # {
       #   "min_length"     => 3,

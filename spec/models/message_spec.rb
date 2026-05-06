@@ -15,7 +15,7 @@ RSpec.describe Message, type: :model do
     it { is_expected.to define_enum_for(:status).with_values(sent: 0, delivered: 1, read: 2, failed: 3) }
     it { is_expected.to define_enum_for(:content_type).with_values(text: 0, input_email: 1, activity: 2, template: 3, input_csat: 4) }
     it { is_expected.to define_enum_for(:visibility).with_values(personal: 0, global: 1) }
-    it { is_expected.to define_enum_for(:source).with_values(email: 0, facebook: 1, whatsapp: 2, instagram: 3, api: 4, web_widget: 5, sms: 6, telegram: 7).with_suffix(:source) }
+    it { is_expected.to define_enum_for(:source).with_values(email: 0, facebook: 1, whatsapp: 2, instagram: 3, api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8).with_suffix(:source) }
   end
 
   describe '#incoming?' do

@@ -6,7 +6,7 @@ class ContactFormMailer < ApplicationMailer
     @conversation = message.conversation
     @customer = @conversation.customers.first
     @account = message.account
-    
+
     return unless @customer&.email
 
     subject = I18n.t("mailers.contact_form.reply.subject", title: @conversation.title, default: "Re: %{title}")

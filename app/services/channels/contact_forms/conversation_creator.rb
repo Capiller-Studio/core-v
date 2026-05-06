@@ -46,33 +46,34 @@ module Channels
           value = form_params[field.key]
           next if value.blank?
 
-          case field.entity_type.to_sym
-          when :customer
-            # Map standard fields if possible, else to data JSONB
-            if %w[name first_name last_name email].include?(field.key)
-              @customer_data[field.key] = value
-            else
-              @customer_data["data"] ||= {}
-              @customer_data["data"][field.key] = value
-            end
-          when :conversation
-            if field.key == "priority"
-              @conversation_data[:priority] = value
-            elsif field.key == "subject" || field.key == "title"
-              @conversation_data[:title] = value
-            else
-              @conversation_data["data"] ||= {}
-              @conversation_data["data"][field.key] = value
-            end
-          when :contact_form
-            # usually the main message body
-            if field.key == "message"
-              @message_content = value
-            else
-              @conversation_data["data"] ||= {}
-              @conversation_data["data"][field.key] = value
-            end
+          if field.mapped_to.present?
+            map_to_internal_attribute(field, value)
+          else
+            store_in_jsonb_data(field, value)
           end
+        end
+      end
+
+      def map_to_internal_attribute(field, value)
+        case field.mapped_to
+        when "customer.name"       then @customer_data["name"] = value
+        when "customer.first_name" then @customer_data["first_name"] = value
+        when "customer.last_name"  then @customer_data["last_name"] = value
+        when "customer.email"      then @customer_data["email"] = value
+        when "conversation.title"  then @conversation_data[:title] = value
+        when "conversation.priority" then @conversation_data[:priority] = value
+        when "message.content"     then @message_content = value
+        end
+      end
+
+      def store_in_jsonb_data(field, value)
+        case field.entity_type.to_sym
+        when :customer
+          @customer_data["data"] ||= {}
+          @customer_data["data"][field.key] = value
+        when :conversation, :contact_form
+          @conversation_data["data"] ||= {}
+          @conversation_data["data"][field.key] = value
         end
       end
 
