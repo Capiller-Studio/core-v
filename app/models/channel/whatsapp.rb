@@ -35,7 +35,8 @@
 #  fk_rails_...  (account_id => accounts.id) ON DELETE => cascade
 #
 module Channel
-  class Whatsapp < ApplicationRecord
+  class Whatsapp < ShardRecord
+    include Routable
     include Reauthorizable
 
     belongs_to :account

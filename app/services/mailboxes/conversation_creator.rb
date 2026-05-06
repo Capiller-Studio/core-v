@@ -16,14 +16,17 @@ module Mailboxes
     end
 
     def call
-      # TODO: Important -> Use correct shard based on current-account
-      self.parsed_mail = ::Parser::MailParser.call(mail:)
-      find_inbox
+      Current.set(account: account) do
+        ShardRecord.with_shard do
+          self.parsed_mail = ::Parser::MailParser.call(mail:)
+          find_inbox
 
-      ActiveRecord::Base.transaction do
-        find_or_create_sender
-        find_or_create_conversation
-        create_message
+          ActiveRecord::Base.transaction do
+            find_or_create_sender
+            find_or_create_conversation
+            create_message
+          end
+        end
       end
     end
 

@@ -23,7 +23,8 @@
 #  index_channel_contact_forms_on_secret                 (secret) UNIQUE
 #
 module Channel
-  class ContactForm < ApplicationRecord
+  class ContactForm < ShardRecord
+    include Routable
     include FlagShihTzu
 
     belongs_to :account

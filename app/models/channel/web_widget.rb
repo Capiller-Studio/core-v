@@ -32,7 +32,8 @@
 #  fk_rails_...  (account_id => accounts.id) ON DELETE => cascade
 #
 module Channel
-  class WebWidget < ApplicationRecord
+  class WebWidget < ShardRecord
+    include Routable
     include FlagShihTzu
 
     belongs_to :account

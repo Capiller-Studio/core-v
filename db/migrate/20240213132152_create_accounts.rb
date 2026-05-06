@@ -17,6 +17,7 @@ class CreateAccounts < ActiveRecord::Migration[7.1]
       t.datetime :referral_approved_at
       t.datetime :referral_paid_at
       t.string   :identifier,    null: false
+      t.string   :shard_key,     null: false, default: "de"
       t.string   :referral_code, null: false
 
       t.references :address, null: true, type: :uuid, foreign_key: { on_delete: :nullify }, index: false

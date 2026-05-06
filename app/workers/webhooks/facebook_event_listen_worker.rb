@@ -25,11 +25,15 @@ module Webhooks
       )
 
       RedisUtilities::MutexHelpers.with_lock(lock_key) do
-        Channel::FacebookPage.where(page_identifier: search_id).find_each do |channel|
-          Channels::FacebookPages::ConversationCreator.call(
-            facebook_page_channel: channel,
-            parsed_message: parsed_message
-          )
+        GlobalRouting.where(identity_type: "facebook_page", identity_value: search_id).find_each do |routing|
+          Current.set(account: routing.account) do
+            Channel::FacebookPage.where(page_identifier: search_id, account_id: routing.account_id).find_each do |channel|
+              Channels::FacebookPages::ConversationCreator.call(
+                facebook_page_channel: channel,
+                parsed_message: parsed_message
+              )
+            end
+          end
         end
       end
     end
@@ -40,15 +44,18 @@ module Webhooks
 
       status = event_name == :read ? :read : :delivered
 
-      # For read/delivery receipts, the recipient is our page
-      Channel::FacebookPage.where(page_identifier: parsed_message.recipient_id).find_each do |channel|
-        params = {
-          watermark: watermark,
-          customer_external_id: parsed_message.sender_id,
-          channel_class: channel.class.name,
-          channel_id: channel.id
-        }
-        Messages::StatusUpdateWorker.perform_async(channel.account_id, status, params)
+      GlobalRouting.where(identity_type: "facebook_page", identity_value: parsed_message.recipient_id).find_each do |routing|
+        Current.set(account: routing.account) do
+          Channel::FacebookPage.where(page_identifier: parsed_message.recipient_id, account_id: routing.account_id).find_each do |channel|
+            params = {
+              watermark: watermark,
+              customer_external_id: parsed_message.sender_id,
+              channel_class: channel.class.name,
+              channel_id: channel.id
+            }
+            Messages::StatusUpdateWorker.perform_async(channel.account_id, status, params)
+          end
+        end
       end
     end
   end

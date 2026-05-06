@@ -32,7 +32,8 @@
 #  fk_rails_...  (account_id => accounts.id) ON DELETE => cascade
 #
 module Channel
-  class FacebookPage < ApplicationRecord
+  class FacebookPage < ShardRecord
+    include Routable
     SUBSCRIBE_FIELDS = %w[
       messages
       message_echoes
