@@ -49,11 +49,12 @@ class Message < ShardRecord
   enum :status, { sent: 0, delivered: 1, read: 2, failed: 3 }
   enum :content_type, { text: 0, input_email: 1, activity: 2, template: 3, input_csat: 4 }
   enum :visibility, { personal: 0, global: 1 }
-  enum :source, { email: 0, facebook: 1, whatsapp: 2, instagram: 3, api: 4, web_widget: 5, sms: 6, telegram: 7 }, suffix: true
+  enum :source, { email: 0, facebook: 1, whatsapp: 2, instagram: 3, api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8 }, suffix: true
 
   has_many :attachments, as: :resource, dependent: :destroy
 
   after_create_commit :broadcast_message_creation
+  after_create_commit :deliver_contact_form_reply, if: -> { outgoing? && source == "help_center" }
   after_update_commit :broadcast_message_update, if: :saved_change_to_status?
 
   def incoming?
@@ -85,6 +86,10 @@ class Message < ShardRecord
   end
 
   private
+
+  def deliver_contact_form_reply
+    Messages::ContactFormDeliveryWorker.perform_async(id)
+  end
 
   # TODO: Refactor to separate concern
   def broadcast_message_creation

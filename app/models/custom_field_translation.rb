@@ -11,7 +11,7 @@
 #  options         :jsonb            not null
 #  placeholder     :string
 #  created_at      :datetime         not null
-#  updated_at      :datetime         not null
+#  updated_at     :datetime         not null
 #  custom_field_id :uuid             not null
 #
 # Indexes
@@ -23,6 +23,7 @@
 #
 #  fk_rails_...  (custom_field_id => custom_fields.id) ON DELETE => cascade
 #
+
 class CustomFieldTranslation < ShardRecord
   belongs_to :custom_field
 
@@ -36,7 +37,7 @@ class CustomFieldTranslation < ShardRecord
   # [
   #   { "value": "billing",   "label": "Billing" },
   #   { "value": "technical", "label": "Technical Support" },
-  #   { "value": "sales",     "label": "Sales" }
+  #   { "value": Sales",     "label": "Sales" }
   # ]
   # Filtering/querying is always done on the "value" key, never on "label",
   # so queries remain locale-neutral across all translations.

@@ -77,6 +77,11 @@ en:
     system:
       workspace_request:
         subject: "Workspace Joining Request"
+    contact_form:
+      reply:
+        subject: "Re: %{title}"
+      confirmation:
+        subject: "We received your message: %{title}"
   billing:
     plans:
       starter:

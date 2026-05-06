@@ -26,13 +26,31 @@
 #  index_custom_fields_on_account_id_and_key            (account_id,key) UNIQUE
 #  index_custom_fields_on_account_id_and_position       (account_id,position)
 #
+
 class CustomField < ShardRecord
   include FlagShihTzu
+  include Translateable
 
   belongs_to :account
-
   has_many :translations, class_name: "CustomFieldTranslation", dependent: :destroy
   has_many :field_resources, class_name: "CustomFieldResource", dependent: :destroy
+
+  accepts_nested_attributes_for :translations, allow_destroy: true
+
+  def localized_options(locale = I18n.locale)
+    # 1. Try to find translation for the specific locale
+    trans = translations.detect { |t| t.locale.to_s == locale.to_s }
+    # 2. Fallback to default locale if missing
+    trans ||= translations.detect { |t| t.locale.to_s == I18n.default_locale.to_s }
+    
+    opts = trans&.options || []
+    # 3. If options are empty but we have allowed_values in validations, use those as fallback
+    if opts.blank? && validations["allowed_values"].present?
+      opts = validations["allowed_values"].map { |v| { "value" => v, "label" => v.to_s.titleize } }
+    end
+
+    opts
+  end
 
   # field_type controls input rendering and value validation:
   #   text (0), email (1), phone (2), number (3), textarea (4),
@@ -46,7 +64,7 @@ class CustomField < ShardRecord
   #   customer (0)     → Customer.data jsonb     e.g. customer.data["department"] = "sales"
   #   conversation (1) → Conversation.data jsonb e.g. conversation.data["priority_tier"] = "gold"
   #   contact_form (2) → Conversation.data jsonb (written on contact form submission)
-  enum :entity_type, { customer: 0, conversation: 1, contact_form: 2 }
+  enum :entity_type, { customer: 0, conversation: 1, contact_form: 2 }, prefix: true
 
   # flags (FlagShihTzu bit fields):
   #   searchable — include this field's values in full-text search indexing
