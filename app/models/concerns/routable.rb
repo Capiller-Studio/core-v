@@ -23,7 +23,7 @@ module Routable
   private
 
   def register_global_routing
-    return unless routing_identifier.present?
+    return if routing_identifier.blank?
 
     # We use update_all or find_or_initialize to avoid infinite loops if saved again
     # This must be done on the Primary DB

@@ -22,7 +22,6 @@ class GlobalRouting < ApplicationRecord
   validates :route_type, presence: true
   validates :route_value, presence: true
   validates :shard_key, presence: true
-  validates :account_id, presence: true
 
   # Ensure the route is unique across the entire platform
   validates :route_value, uniqueness: { scope: :route_type }
