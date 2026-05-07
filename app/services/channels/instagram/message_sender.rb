@@ -37,7 +37,7 @@ module Channels
 
         return log_error(response) if response["error"].present?
 
-        message.update!(external_id: response["message_id"]) if response["message_id"].present?
+        message.update!(external_id: response["message_id"], status: :delivered) if response["message_id"].present?
       end
 
       def params
