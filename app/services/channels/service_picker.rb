@@ -42,8 +42,19 @@ module Channels
     # --- Delivery Services ---
 
     def channel_email_service
-      # Standard email delivery via background worker
-      Messages::EmailDeliveryWorker.perform_async(message.id)
+      # Called from Messages::DeliveryWorker (background context)
+      ConversationReplyMailer.reply(conversation, message).deliver_now
+
+      # Update status on success
+      # rubocop:disable Rails/SkipsModelValidations
+      message.update_column(:status, :delivered)
+      # rubocop:enable Rails/SkipsModelValidations
+    rescue StandardError => e
+      Rails.logger.error "ServicePicker Email Delivery Error: #{e.message}"
+      # rubocop:disable Rails/SkipsModelValidations
+      message.update_column(:status, :failed)
+      # rubocop:enable Rails/SkipsModelValidations
+      raise e # Re-raise to trigger Sidekiq retry if needed
     end
 
     def channel_whatsapp_service
@@ -93,10 +104,9 @@ module Channels
     end
 
     def find_customer_inbox
-      customer_member = conversation.conversation_members.find_by(member_type: "Customer")
-      return nil unless customer_member
-
-      CustomerInbox.find_by(customer_id: customer_member.member_id, inbox_id: inbox.id)
+      # Use detect on pre-loaded customer_inboxes to avoid any database queries here.
+      # The DeliveryWorker eager loads conversation -> customer_inboxes
+      conversation.customer_inboxes.detect { |ci| ci.inbox_id == inbox.id }
     end
   end
 end

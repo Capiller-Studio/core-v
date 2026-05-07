@@ -23,9 +23,11 @@ module Channels
             body: message.content
           )
 
-          message.update!(external_id: response.sid)
+          message.update!(external_id: response.sid, status: :delivered)
         rescue ::Twilio::REST::TwilioError => e
           Rails.logger.error("Twilio SMS failed to send: #{e.message}")
+          message.update!(status: :failed)
+          raise e
         end
 
         private
