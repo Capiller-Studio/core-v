@@ -70,7 +70,7 @@ module HelpCenter
 
     translates :title, :slug, :content, :meta_title, :meta_description
 
-    searchkick
+    searchkick word_start: ["translations.title", "translations.content"]
 
     def search_data
       {

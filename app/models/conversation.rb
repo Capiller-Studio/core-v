@@ -75,6 +75,10 @@ class Conversation < ShardRecord
   scope :current_conversations, ->(current_user) {
  joins(:conversation_members).where(conversation_members: { member: current_user }) }
 
+  scope :not_assigned_to_user, -> {
+    where.not(id: joins(:conversation_members).where(conversation_members: { member_type: "User" }).select(:id))
+  }
+
   def event_payload
     {
       id:,

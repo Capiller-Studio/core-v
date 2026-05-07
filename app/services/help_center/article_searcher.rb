@@ -20,7 +20,7 @@ module HelpCenter
         where: {
           account_id: account.id,
           portal_id: portal.id,
-          status: "active"
+          status: "published"
         },
         fields: [ "translations.title^3", "translations.content" ],
         match: :word_start,
