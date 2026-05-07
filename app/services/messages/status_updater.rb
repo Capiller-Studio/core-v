@@ -19,8 +19,10 @@ module Messages
     end
 
     def call
-      update_by_external_ids if external_ids.present?
-      update_by_watermark if watermark.present? && customer_external_id.present?
+      Account.find(account_id).with_shard do
+        update_by_external_ids if external_ids.present?
+        update_by_watermark if watermark.present? && customer_external_id.present?
+      end
     end
 
     private
