@@ -45,6 +45,7 @@ class Message < ShardRecord
   belongs_to :inbox
   belongs_to :account
   belongs_to :sender, polymorphic: true
+  belongs_to :outbound_channel, polymorphic: true, optional: true
 
   enum :status, { sent: 0, delivered: 1, read: 2, failed: 3 }
   enum :content_type, { text: 0, input_email: 1, activity: 2, template: 3, input_csat: 4 }

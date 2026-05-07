@@ -98,7 +98,8 @@ module Channels
           identifier: SecureRandom.uuid,
           title: @conversation_data[:title] || "New Contact Form Submission",
           priority: @conversation_data[:priority] || "medium",
-          data: @conversation_data["data"] || {}
+          data: @conversation_data["data"] || {},
+          outbound_channel: contact_form_channel.outbound_channel
         )
 
         conversation.conversation_members.create!(member: customer, account: account)
