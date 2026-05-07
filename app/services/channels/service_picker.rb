@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 1.0.0
+# VERSION: 1.2.0
 # Website: https://techbolic.com/
 
 module Channels
@@ -10,10 +10,16 @@ module Channels
 
     def initialize(conversation:, message:)
       self.conversation      = conversation
-      self.channel           = conversation.inbox.channel
       self.inbox             = conversation.inbox
+      # Priority: 
+      # 1. Conversation's specific outbound channel (polymorphic)
+      # 2. Inbox's default channel
+      self.channel           = conversation.outbound_channel || conversation.inbox.channel
       self.customer_inbox    = find_customer_inbox
       self.message           = message
+      
+      # Persist the outbound channel used for historical tracking on the message
+      message.update(outbound_channel: self.channel) if message.outgoing? && message.outbound_channel.nil?
     end
 
     def call
@@ -23,36 +29,74 @@ module Channels
     private
 
     def deliver_message
-      send("#{inbox.channel_type.underscore.parameterize(separator: "_")}_service")
+      # Resolve service method based on channel class (e.g. Channel::Email -> channel_email_service)
+      service_method = "channel_#{channel.class.name.demodulize.underscore}_service"
+      
+      if respond_to?(service_method, true)
+        send(service_method)
+      else
+        Rails.logger.warn "ServicePicker: No delivery service implemented for #{channel.class.name} (method: #{service_method})"
+      end
     end
+
+    # --- Delivery Services ---
 
     def channel_email_service
-    end
-
-    def channel_short_message_external_id_service
+      # Standard email delivery via background worker
+      Messages::EmailDeliveryWorker.perform_async(message.id)
     end
 
     def channel_whatsapp_service
-      Channels::Whatsapp::CloudApi::MessageSender.call(whatsapp_channel: channel, customer: customer_inbox.customer,
-message: message)
-    end
-
-    def channel_api_service
-    end
-
-    def channel_web_widget_service
-      # No external delivery needed. Agent replies to web_widget conversations
-      # are delivered in real-time via ActionCable. Message#broadcast_message_creation
-      # broadcasts to the customer's connection_token automatically.
+      Channels::Whatsapp::CloudApi::MessageSender.call(
+        whatsapp_channel: channel, 
+        customer: customer_inbox.customer,
+        message: message
+      )
     end
 
     def channel_facebook_page_service
-      Channels::FacebookPages::MessageSender.call(facebook_page_channel: channel, customer_inbox: customer_inbox,
-message: message)
+      Channels::FacebookPages::MessageSender.call(
+        facebook_page_channel: channel, 
+        customer_inbox: customer_inbox,
+        message: message
+      )
+    end
+
+    def channel_instagram_service
+      # Instagram message sending service
+      Channels::Instagram::MessageSender.call(
+        instagram_channel: channel,
+        customer_inbox: customer_inbox,
+        message: message
+      )
+    end
+
+    def channel_short_message_service
+      # Unified SMS delivery (Twilio, SignalWire, AWS SNS)
+      Channels::ShortMessage::MessageSender.call(
+        short_message_channel: channel,
+        message: message
+      )
+    end
+
+    def channel_web_widget_service
+      # Handled via ActionCable real-time broadcast in Message callback
+    end
+
+    def channel_api_service
+      # Handled via Webhooks
+    end
+
+    def channel_contact_form_service
+      # Contact-form will only send a reply via email-channel or helpcenter login.
+      # This function is deliberately empty as per routing policy.
     end
 
     def find_customer_inbox
-      CustomerInbox.where(customer_id: conversation.conversation_members.where(member_type: "Customer").last.member_id).first
+      customer_member = conversation.conversation_members.find_by(member_type: "Customer")
+      return nil unless customer_member
+
+      CustomerInbox.find_by(customer_id: customer_member.member_id, inbox_id: inbox.id)
     end
   end
 end

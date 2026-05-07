@@ -31,6 +31,7 @@ module Channel
     # portal is optional — a contact form can be used standalone (embedded on own website)
     # or linked to a Help Center portal for the /contact page feature
     belongs_to :portal, class_name: "HelpCenter::Portal", optional: true
+    belongs_to :outbound_channel, polymorphic: true, optional: true
 
     # Gets its own Inbox via the standard channel polymorphic pattern.
     # Conversations from form submissions land in this Inbox with source: :help_center
