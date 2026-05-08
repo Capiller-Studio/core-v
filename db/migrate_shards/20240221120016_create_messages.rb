@@ -21,7 +21,7 @@ class CreateMessages < ActiveRecord::Migration[7.1]
       t.references :inbox,          null: false, foreign_key: { on_delete: :cascade },  type: :uuid, index: true
       t.references :conversation,   null: false, foreign_key: { on_delete: :cascade },  type: :uuid, index: true
       t.references :sender,         null: false, polymorphic: true,                     type: :uuid, index: true
-      t.references :outbound_channel, null: true, polymorphic: true, type: :uuid, index: true, foreign_key: { on_delete: :nullify }
+      t.references :outbound_channel, null: true, polymorphic: true, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
