@@ -23,7 +23,7 @@ class CreateChannelContactForms < ActiveRecord::Migration[8.1]
       # portal_id is optional — a contact form can exist independently (embeddable on own website)
       # and be linked to a portal when the portal's contact page feature is enabled
       t.references :portal, foreign_key: false, type: :uuid, index: true
-      t.references :outbound_channel, polymorphic: true, type: :uuid, index: true, foreign_key: { on_delete: :nullify }
+      t.references :outbound_channel, polymorphic: true, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

@@ -241,6 +241,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_000002) do
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.integer "flags", default: 0, null: false
     t.string "name"
+    t.uuid "outbound_channel_id"
+    t.string "outbound_channel_type"
     t.uuid "portal_id"
     t.string "secret", null: false
     t.integer "status", default: 0, null: false
@@ -248,6 +250,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_000002) do
     t.index ["account_id", "created_at"], name: "index_channel_contact_forms_on_account_id_and_created_at"
     t.index ["account_id", "status"], name: "index_channel_contact_forms_on_account_id_and_status"
     t.index ["account_id"], name: "index_channel_contact_forms_on_account_id"
+    t.index ["outbound_channel_type", "outbound_channel_id"], name: "index_channel_contact_forms_on_outbound_channel"
     t.index ["portal_id"], name: "index_channel_contact_forms_on_portal_id"
     t.index ["secret"], name: "index_channel_contact_forms_on_secret", unique: true
   end
@@ -489,6 +492,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_000002) do
     t.uuid "inbox_id", null: false
     t.datetime "last_activity_at"
     t.string "locale"
+    t.uuid "outbound_channel_id"
+    t.string "outbound_channel_type"
     t.integer "priority", default: 0, null: false
     t.integer "source"
     t.integer "status", default: 0, null: false
@@ -505,6 +510,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_000002) do
     t.index ["account_id"], name: "index_conversations_on_account_id"
     t.index ["campaign_id"], name: "index_conversations_on_campaign_id"
     t.index ["inbox_id"], name: "index_conversations_on_inbox_id"
+    t.index ["outbound_channel_type", "outbound_channel_id"], name: "index_conversations_on_outbound_channel"
   end
 
   create_table "custom_field_resources", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1002,6 +1008,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_000002) do
     t.string "external_reply_to_id"
     t.uuid "inbox_id", null: false
     t.string "locale"
+    t.uuid "outbound_channel_id"
+    t.string "outbound_channel_type"
     t.uuid "sender_id", null: false
     t.string "sender_type", null: false
     t.jsonb "sentiment", default: {}, null: false
@@ -1016,6 +1024,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_000002) do
     t.index ["conversation_id", "status"], name: "index_messages_on_conversation_id_and_status"
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["inbox_id"], name: "index_messages_on_inbox_id"
+    t.index ["outbound_channel_type", "outbound_channel_id"], name: "index_messages_on_outbound_channel"
     t.index ["sender_type", "sender_id"], name: "index_messages_on_sender"
   end
 
