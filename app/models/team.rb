@@ -25,7 +25,16 @@
 #  index_teams_on_account_id_and_status      (account_id,status)
 #
 class Team < ShardRecord
+  include SlugGenerator.new(source: :name, column: :identifier, scope: :account_id)
+
   belongs_to :account
 
+  has_many :team_users, dependent: :destroy
+  has_many :users, through: :team_users
+
   enum :status, { active: 0 }
+
+  validates :name, presence: true
+  validates :identifier, presence: true, uniqueness: { scope: :account_id }
 end
+

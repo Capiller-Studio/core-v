@@ -13,7 +13,7 @@ module LimitEnforceable
   # "max" comes from the plan, "current" is tracked here.
   # -1 means unlimited.
 
-  RESOURCES = %w[users channels customers conversations_monthly messages_monthly].freeze
+  RESOURCES = %w[users channels customers automations conversations_monthly messages_monthly].freeze
 
   def within_limit?(resource)
     plan = current_plan

@@ -6,7 +6,7 @@
 #
 #  id               :uuid             not null, primary key
 #  actions          :jsonb            not null
-#  automation_type  :integer          default("macro"), not null
+#  automation_type  :integer          default("event_trigger"), not null
 #  conditions       :jsonb            not null
 #  configurations   :jsonb            not null
 #  description      :text
@@ -19,7 +19,6 @@
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  account_id       :uuid             not null
-#  user_id          :uuid
 #
 # Indexes
 #
@@ -29,19 +28,14 @@
 #  index_automations_on_account_id_and_created_at  (account_id,created_at)
 #  index_automations_on_account_id_and_is_system   (account_id,is_system)
 #  index_automations_on_account_id_and_name        (account_id,name)
-#  index_automations_on_user_id                    (user_id)
 #
 class Automation < ShardRecord
+  include Actionable
   include FlagShihTzu
 
   belongs_to :account
-  # Macros have an author (the agent who created them); event/time triggers are account-level (user is nil).
-  belongs_to :user, optional: true
 
-  has_many :executions, class_name: "AutomationExecution", dependent: :destroy
-
-  enum :automation_type, { macro: 0, event_trigger: 1, time_trigger: 2 }
-  enum :status, { active: 0, inactive: 1 }
+  enum :automation_type, { event_trigger: 1, time_trigger: 2 }
 
   # stop_processing: if this rule fires, skip all subsequent rules in the execution chain.
   # Mimics Zendesk's "stop processing subsequent triggers" behaviour.
@@ -50,21 +44,44 @@ class Automation < ShardRecord
             column: "flags"
 
   validates :name, presence: true
-  validates :event_name, presence: true, if: -> { event_trigger? || time_trigger? }
-  validates :user_id, presence: true, if: :macro?
+  validates :event_name, presence: true
+  validate :validate_conditions_jsonb
 
-  # Scopes for the three execution paths
+  before_create :assign_next_position
+
+  # --- Scopes ---
+
   scope :event_triggers_for, ->(event_name) {
     where(automation_type: :event_trigger, event_name: event_name, status: :active).order(:position)
   }
   scope :time_triggers, -> {
     where(automation_type: :time_trigger, status: :active).order(:position)
   }
-  scope :macros_for_user, ->(user) {
-    where(automation_type: :macro, status: :active, user: user).or(
-      where(automation_type: :macro, status: :active, is_system: true)
-    )
-  }
+
+  # --- Instance Methods ---
+
+  def duplicate(new_name: nil)
+    dup.tap do |copy|
+      copy.name = new_name || "#{name} (copy)"
+      copy.status = :inactive
+      copy.is_system = false
+      copy.position = nil # Will be auto-assigned by before_create
+    end
+  end
+
+  # --- Custom Position Management ---
+
+  # Reorder automations by an ordered list of IDs.
+  # Updates positions in a single UPDATE statement for performance.
+  def self.reorder!(ordered_ids)
+    return if ordered_ids.blank?
+
+    transaction do
+      ordered_ids.each_with_index do |id, index|
+        where(id: id).update_all(position: index + 1) # rubocop:disable Rails/SkipsModelValidations
+      end
+    end
+  end
 
   # conditions jsonb structure:
   # {
@@ -75,13 +92,6 @@ class Automation < ShardRecord
   #       "conditions": [
   #         { "attribute": "status", "operator": "equals", "value": "active" },
   #         { "attribute": "status", "operator": "equals", "value": "snoozed" }
-  #       ]
-  #     },
-  #     {
-  #       "operator": "AND",
-  #       "conditions": [
-  #         { "attribute": "priority", "operator": "equals", "value": "urgent" },
-  #         { "attribute": "inbox.name", "operator": "contains", "value": "VIP" }
   #       ]
   #     }
   #   ]
@@ -102,23 +112,27 @@ class Automation < ShardRecord
   #   Custom Fields: custom_field.<key> (reads from entity's data jsonb)
   #   Time:         hours_since_created, hours_since_updated, hours_since_resolved, hours_since_last_activity
 
-  # actions jsonb structure:
-  # [
-  #   { "action": "assign_agent",   "params": { "agent_id": "uuid" } },
-  #   { "action": "set_priority",   "params": { "priority": "urgent" } },
-  #   { "action": "add_label",      "params": { "label_ids": ["uuid-1"] } },
-  #   { "action": "send_message",   "params": { "content": "...", "visibility": "global" } }
-  # ]
-  #
-  # Full Action Catalog:
-  #   assign_agent, assign_team, unassign, set_status, set_priority,
-  #   add_label, remove_label, set_custom_field, send_message,
-  #   send_email_to_customer, send_email_to_team, add_note,
-  #   snooze, resolve, mute_conversation, trigger_webhook, set_locale
-
   # configurations jsonb structure (mainly for time_trigger scheduling):
   # {
   #   "interval_hours"    => 1,    (evaluation interval — default hourly, matching Zendesk/Freshdesk)
   #   "max_cascade_depth" => 3     (max depth for cascading trigger execution to prevent infinite loops)
   # }
+
+  private
+
+  def validate_conditions_jsonb
+    return if conditions.blank?
+
+    validator = Automations::AutomationValidator.new(conditions: conditions)
+    validator.call.each { |msg| errors.add(:base, msg) }
+  end
+
+  def assign_next_position
+    return if position.present?
+
+    max_pos = account.automations
+                     .where(automation_type: automation_type)
+                     .maximum(:position) || 0
+    self.position = max_pos + 1
+  end
 end

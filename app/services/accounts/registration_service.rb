@@ -4,19 +4,25 @@ module Accounts
   class RegistrationService < ApplicationService
     Result = Struct.new(:success?, :user, :account, :errors, keyword_init: true)
 
-    def call(params)
+    attr_reader :params
+
+    def initialize(**params)
+      @params = params
+    end
+
+    def call
       user = nil
       account = nil
 
       ActiveRecord::Base.transaction do
-        user = create_user!(params)
+        user = create_user!
 
         if params[:as_affiliate]
           create_affiliate_profile!(user)
         end
 
         if params[:account_name].present?
-          account = create_account_with_owner!(user, params)
+          account = create_account_with_owner!(user)
         elsif params[:invitation_token].present?
           account = accept_invitation!(user, params[:invitation_token])
         end
@@ -29,7 +35,7 @@ module Accounts
 
     private
 
-    def create_user!(params)
+    def create_user!
       User.create!(
         email: params[:email],
         password: params[:password],
@@ -44,19 +50,34 @@ module Accounts
       user.create_affiliate_profile!
     end
 
-    def create_account_with_owner!(user, params)
+    def create_account_with_owner!(user)
       account = Account.create!(
         name: params[:account_name],
         email: user.email
       )
 
-      AccountUser.create!(
+      account_user = AccountUser.create!(
         account: account,
         user: user,
         role: :owner
       )
 
+      # Assign the Owner Access::Role to the owner user.
+      # RoleGenerator runs via Account.after_create and creates Owner/Administrator/Agent roles.
+      # We wire the owner to the "Owner" role here so the JSONB permission system is connected.
+      assign_owner_role!(account, account_user)
+
       account
+    end
+
+    def assign_owner_role!(account, account_user)
+      owner_role = account.roles.find_by!(name: "Owner")
+
+      Access::AccountUserRole.create!(
+        account: account,
+        account_user_id: account_user.id,
+        role: owner_role
+      )
     end
 
     def accept_invitation!(user, token)

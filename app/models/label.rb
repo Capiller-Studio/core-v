@@ -23,5 +23,11 @@
 #  index_labels_on_account_id_and_title       (account_id,title)
 #
 class Label < ShardRecord
+  include SlugGenerator.new(source: :title, column: :identifier, scope: :account_id)
+
   belongs_to :account
+
+  validates :title, presence: true
+  validates :identifier, presence: true, uniqueness: { scope: :account_id }
 end
+
