@@ -24,6 +24,7 @@ module Automations
         next unless conditions_match?(rule, payload)
 
         Automations::ExecutionWorker.perform_async(
+          "Automation",
           rule.id,
           resource_type,
           resource_id,

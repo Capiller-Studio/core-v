@@ -1,13 +1,11 @@
 class CreateAutomationExecutions < ActiveRecord::Migration[8.1]
   def change
     create_table :automation_executions, id: :uuid do |t|
-      # Which rule fired
-      t.references :automation, null: false, type: :uuid,
-                   foreign_key: { to_table: :automations, on_delete: :cascade }, index: true
+      # Polymorphic: which rule/macro fired (Automation or Macro)
+      t.references :executable, polymorphic: true, null: false, type: :uuid
 
       # What entity the rule acted on (Conversation, Customer, etc.)
-      t.string :resource_type, null: false
-      t.uuid   :resource_id,   null: false
+      t.references :resource, polymorphic: true, null: false, type: :uuid
 
       # status: success (0) — all actions completed, failed (1) — one or more actions errored,
       #         skipped (2) — conditions didn't match (logged for debugging)
@@ -33,12 +31,10 @@ class CreateAutomationExecutions < ActiveRecord::Migration[8.1]
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
-      t.index [:resource_type, :resource_id]
+      t.index [:executable_type, :executable_id, :executed_at], name: "idx_automation_executions_executable_timeline"
       t.index [:account_id, :status]
       t.index [:account_id, :triggered_by]
       t.index [:account_id, :executed_at]
-      # Fast lookup: "show me all executions for this automation rule, most recent first"
-      t.index [:automation_id, :executed_at], name: "idx_automation_executions_timeline"
     end
   end
 end

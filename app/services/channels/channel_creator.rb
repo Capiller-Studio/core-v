@@ -27,6 +27,25 @@ module Channels
       send("#{channel_type.underscore.parameterize(separator: "_")}_channel")
     end
 
+    def web_widget_channel
+      existing_channel = Channel::WebWidget.find_by(account: current_account, name: channel_params[:name])
+
+      raise("Invalid Record") if existing_channel
+
+      channel = Channel::WebWidget.create!(
+        name: channel_params[:name],
+        website_url: channel_params[:website_url],
+        ui_configurations: channel_params[:ui_configurations] || {},
+        configurations: channel_params[:configurations] || {},
+        account: current_account
+      )
+
+      channel.inboxes.create!(
+        name: channel_params[:name],
+        account: current_account
+      )
+    end
+
     def email_channel
       existing_channel = Channel::Email.find_by(account: current_account, email: channel_params[:email])
 

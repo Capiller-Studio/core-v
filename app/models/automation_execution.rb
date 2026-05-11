@@ -6,6 +6,8 @@
 #
 #  id                    :uuid             not null, primary key
 #  error_message         :text
+#  executable_type       :string           not null
+#  executable_id         :uuid             not null
 #  executed_actions      :jsonb            not null
 #  executed_at           :datetime         not null
 #  execution_duration_ms :integer
@@ -16,24 +18,9 @@
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
 #  account_id            :uuid             not null
-#  automation_id         :uuid             not null
-#
-# Indexes
-#
-#  idx_automation_executions_timeline                          (automation_id,executed_at)
-#  index_automation_executions_on_account_id                   (account_id)
-#  index_automation_executions_on_account_id_and_executed_at   (account_id,executed_at)
-#  index_automation_executions_on_account_id_and_status        (account_id,status)
-#  index_automation_executions_on_account_id_and_triggered_by  (account_id,triggered_by)
-#  index_automation_executions_on_automation_id                (automation_id)
-#  index_automation_executions_on_resource                     (resource_type,resource_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (automation_id => automations.id) ON DELETE => cascade
 #
 class AutomationExecution < ShardRecord
-  belongs_to :automation
+  belongs_to :executable, polymorphic: true # Automation or Macro
   belongs_to :account
   belongs_to :resource, polymorphic: true
 
@@ -56,7 +43,7 @@ class AutomationExecution < ShardRecord
   #   { "action": "set_priority", "params": { "priority": "urgent" }, "result": "success" },
   #   { "action": "send_email_to_customer", "params": { ... }, "result": "failed", "error": "Template not found" }
   # ]
-  # Each entry mirrors the automation's actions array but includes the execution result.
-  # This snapshot is immutable — even if the automation rule is later edited,
+  # Each entry mirrors the executable's actions array but includes the execution result.
+  # This snapshot is immutable — even if the rule/macro is later edited,
   # the execution log preserves exactly what ran at that point in time.
 end

@@ -49,6 +49,11 @@ class AccountUser < ApplicationRecord
   after_create_commit :on_agent_added
   after_destroy_commit :on_agent_removed
 
+  # --- Owner Protections ---
+  validate :role_immutable_for_owner, on: :update
+  validate :single_owner_per_account, on: :create
+  before_destroy :prevent_owner_deletion
+
   private
 
   def enforce_user_limit!
@@ -65,5 +70,29 @@ class AccountUser < ApplicationRecord
 
   def on_agent_removed
     account.decrement_usage!(:users)
+  end
+
+  # Owner role cannot be changed once assigned
+  def role_immutable_for_owner
+    return unless role_changed? && role_was == "owner"
+
+    errors.add(:role, "cannot be changed for the account owner")
+  end
+
+  # Only one owner per account
+  def single_owner_per_account
+    return unless owner?
+
+    if AccountUser.where(account: account, role: :owner).exists?
+      errors.add(:role, "an owner already exists for this account")
+    end
+  end
+
+  # Owner cannot be removed from the account
+  def prevent_owner_deletion
+    return unless owner?
+
+    errors.add(:base, "Account owner cannot be removed")
+    throw(:abort)
   end
 end

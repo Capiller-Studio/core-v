@@ -2,14 +2,15 @@
 
 module Automations
   class ActionExecutor < ApplicationService
-    attr_reader :automation, :resource, :account
+    attr_reader :executable, :resource, :account
 
-    # Executes all actions defined in an automation rule against a resource.
+    # Executes all actions defined in an Actionable record against a resource.
+    # Works with both Automation and Macro models.
     # Returns an array of action result hashes for the execution log.
     #
     # Usage:
     #   results = Automations::ActionExecutor.call(
-    #     automation: rule,
+    #     executable: rule_or_macro,
     #     resource: conversation,
     #     account: account
     #   )
@@ -35,14 +36,14 @@ module Automations
       "set_locale"             => Automations::Actions::SetLocale
     }.freeze
 
-    def initialize(automation:, resource:, account:)
-      @automation = automation
+    def initialize(executable:, resource:, account:)
+      @executable = executable
       @resource = resource
       @account = account
     end
 
     def call
-      actions = automation.actions || []
+      actions = executable.actions || []
       results = []
 
       actions.each do |action_config|

@@ -5,31 +5,32 @@ module Automations
     include Sidekiq::Worker
     sidekiq_options queue: "automations", retry: 2
 
-    # Executes a single automation rule against a resource.
+    # Executes an Actionable record (Automation or Macro) against a resource.
     # Called by:
     #   - EventDispatcher (event_trigger rules)
     #   - TimeTriggerWorker (time_trigger rules)
-    #   - Controller (manual macro execution)
+    #   - MacrosController (manual macro execution)
     #
-    # @param automation_id [String] UUID of the Automation to execute
+    # @param executable_type [String] "Automation" or "Macro"
+    # @param executable_id [String] UUID of the Automation/Macro to execute
     # @param resource_type [String] "Conversation", "Customer", "Message"
     # @param resource_id [String] UUID of the target resource
     # @param triggered_by [String] "event", "schedule", or "manual"
     # @param cascade_depth [Integer] current cascade depth (prevents infinite loops)
-    def perform(automation_id, resource_type, resource_id, triggered_by = "event", cascade_depth = 0)
+    def perform(executable_type, executable_id, resource_type, resource_id, triggered_by = "event", cascade_depth = 0)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond)
 
-      automation = Automation.find_by(id: automation_id)
-      return unless automation&.active?
+      executable = executable_type.constantize.find_by(id: executable_id)
+      return unless executable&.active?
 
       resource = resource_type.constantize.find_by(id: resource_id)
       return unless resource
 
-      account = automation.account
+      account = executable.account
 
       # Execute all actions
       results = Automations::ActionExecutor.call(
-        automation: automation,
+        executable: executable,
         resource: resource,
         account: account
       )
@@ -39,7 +40,7 @@ module Automations
 
       # Log the execution
       AutomationExecution.create!(
-        automation: automation,
+        executable: executable,
         account: account,
         resource: resource,
         status: has_failures ? :failed : :success,
@@ -50,9 +51,11 @@ module Automations
         executed_at: Time.current
       )
 
-      # Cascade: if this automation changed the resource, re-evaluate event triggers.
-      # Only if cascade depth allows and the automation type is event_trigger.
-      if cascade_depth < Automations::EventDispatcher::MAX_CASCADE_DEPTH && automation.event_trigger?
+      # Cascade: if this executable changed the resource, re-evaluate event triggers.
+      # Only for Automation records (not Macros) within cascade depth.
+      if executable.is_a?(Automation) &&
+         cascade_depth < Automations::EventDispatcher::MAX_CASCADE_DEPTH &&
+         executable.event_trigger?
         resource.reload
         Automations::EventDispatcher.call(
           event_name: "conversation.updated",
@@ -66,11 +69,11 @@ module Automations
       Rails.logger.error("[Automations::ExecutionWorker] Failed: #{e.message}")
 
       # Still log the failed execution if we have enough context
-      if automation && resource
+      if executable && resource
         duration_ms = Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond) - start_time rescue 0
         AutomationExecution.create(
-          automation: automation,
-          account: automation.account,
+          executable: executable,
+          account: executable.account,
           resource: resource,
           status: :failed,
           triggered_by: triggered_by,

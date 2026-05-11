@@ -5,15 +5,14 @@ class CreateAutomations < ActiveRecord::Migration[8.1]
       t.text    :description
 
       # automation_type determines trigger mechanism:
-      #   macro (0)         — manually triggered by an agent clicking "Run" on a conversation
       #   event_trigger (1) — fires instantly when a matching event occurs (e.g., conversation.created)
       #   time_trigger (2)  — evaluated hourly by a scheduled cron job (e.g., hours since last activity)
-      t.integer :automation_type, null: false, default: 0
+      # NOTE: Macros live in a separate 'macros' table — see CreateMacros migration.
+      t.integer :automation_type, null: false, default: 1
 
       # event_name: which event activates this rule.
       # For event_trigger: "conversation.created", "message.created", etc. (see Event Catalog)
       # For time_trigger:  "hours_since_created", "hours_since_updated", etc.
-      # For macro:         NULL (triggered manually)
       #
       # Full Event Catalog:
       #   conversation.created, conversation.updated, conversation.status_changed,
@@ -85,7 +84,7 @@ class CreateAutomations < ActiveRecord::Migration[8.1]
       #   set_locale          { locale }
       t.jsonb :actions, null: false, default: []
 
-      t.integer :position   # Processing order within automation_type (lower = first). NULL for macros.
+      t.integer :position   # Processing order within automation_type (lower = first).
       t.integer :status,    null: false, default: 0
       t.integer :flags,     null: false, default: 0
       # flags (FlagShihTzu bit fields):
@@ -93,7 +92,6 @@ class CreateAutomations < ActiveRecord::Migration[8.1]
 
       # is_system: true for platform-provided automations (e.g., auto-close after 48h).
       # Users can toggle on/off but cannot delete system automations.
-      # Naming matches AccessRole.is_system for consistency.
       t.boolean :is_system, null: false, default: false
 
       # configurations jsonb — type-specific settings (currently for time_trigger scheduling):
@@ -104,8 +102,6 @@ class CreateAutomations < ActiveRecord::Migration[8.1]
       t.jsonb :configurations, null: false, default: {}
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true
-      # user_id is the author. Required for macros (personal to an agent), NULL for account-level triggers.
-      t.references :user, foreign_key: false, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
