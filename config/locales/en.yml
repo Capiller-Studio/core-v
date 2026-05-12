@@ -118,6 +118,11 @@ en:
           <p style="color: #666; font-size: 12px;">
             You are receiving this because of your notification preferences.
           </p>
+  activities:
+    presenter:
+      translation_updated: "Updated translation contents for locale %{target_locale}"
+      enum_changed: "Changed %{attribute} from '%{old}' to '%{new}'"
+      attribute_updated: "Updated %{attribute}"
   activerecord:
     errors:
       models:

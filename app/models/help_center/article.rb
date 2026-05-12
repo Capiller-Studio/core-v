@@ -37,6 +37,7 @@
 module HelpCenter
   class Article < ShardRecord
     include Translateable
+    include Trackable
 
     belongs_to :account
     belongs_to :portal
@@ -88,6 +89,16 @@ module HelpCenter
           }
         end
       }
+    end
+
+    attr_accessor :save_revision
+
+    private
+
+    # Competitor-aligned formal Revision Checkpoint tracking
+    # Ignores minor continuous typing auto-saves on published articles to preserve pristine milestone logs
+    def should_track_changes?
+      super && (saved_change_to_status? || save_revision)
     end
   end
 end
