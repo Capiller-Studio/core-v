@@ -7,6 +7,8 @@ module Assignable
     after_create_commit :auto_assign_agent, if: :should_auto_assign?
   end
 
+  # --- Agent Assignment ---
+
   def assignee
     conversation_members.assignees.agents.first&.member
   end
@@ -35,6 +37,24 @@ module Assignable
     # rubocop:disable Rails/SkipsModelValidations
     conversation_members.assignees.agents.update_all(role: :participant)
     # rubocop:enable Rails/SkipsModelValidations
+  end
+
+  # --- Team Assignment ---
+
+  def assign_team!(team)
+    return if team_id == team&.id
+
+    update!(team: team)
+  end
+
+  def unassign_team!
+    return if team_id.nil?
+
+    update!(team: nil)
+  end
+
+  def team_assigned?
+    team_id.present?
   end
 
   private

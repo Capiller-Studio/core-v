@@ -16,14 +16,15 @@ module Seeds
       account, owner = create_account_with_owner
       admin = create_admin(account, owner)
       agents = create_agents(account, owner)
-      teams = create_teams(account, agents)
       inbox = create_web_widget(account, agents + [admin])
       email_inbox = create_email_channel(account)
+      teams = create_teams(account, agents, [inbox, email_inbox].compact)
       labels = create_labels(account)
       customers = create_customers(account, inbox)
-      create_sample_conversations(account, inbox, customers, agents)
+      create_sample_conversations(account, inbox, customers, agents, teams)
       create_sample_automation(account)
       create_sample_macro(account)
+      create_team_macro(account, teams)
 
       print_summary(account, owner, admin, agents, teams, inbox, email_inbox, labels, customers)
     end
@@ -124,28 +125,39 @@ module Seeds
 
     # --- Teams ---
 
-    def create_teams(account, agents)
+    def create_teams(account, agents, inboxes)
       puts "  🏢 Creating teams..."
 
       support_team = account.teams.find_or_create_by!(name: "Support") do |t|
         t.description = "Front-line customer support team"
+        t.configurations = { "assignment_policy" => "round_robin" }
       end
 
       engineering_team = account.teams.find_or_create_by!(name: "Engineering") do |t|
         t.description = "Technical escalation team"
+        t.configurations = { "assignment_policy" => "round_robin", "max_conversations_per_agent" => 10 }
       end
 
-      # Assign agents to teams
-      agents[0..1].each do |agent|
-        TeamUser.find_or_create_by!(team: support_team, user: agent)
+      # Assign agents to teams with roles
+      agents[0..1].each_with_index do |agent, idx|
+        tu = TeamUser.find_or_create_by!(team: support_team, user: agent)
+        tu.update!(role: :lead) if idx == 0 # First agent is team lead
       end
 
-      agents[1..2].each do |agent|
-        TeamUser.find_or_create_by!(team: engineering_team, user: agent)
+      agents[1..2].each_with_index do |agent, idx|
+        tu = TeamUser.find_or_create_by!(team: engineering_team, user: agent)
+        tu.update!(role: :lead) if idx == 0
       end
 
-      puts "    ✓ Support (#{support_team.team_users.count} members)"
-      puts "    ✓ Engineering (#{engineering_team.team_users.count} members)"
+      puts "    ✓ Support (#{support_team.team_users.count} members, lead: #{support_team.lead&.display_name})"
+      puts "    ✓ Engineering (#{engineering_team.team_users.count} members, lead: #{engineering_team.lead&.display_name})"
+
+      # Link teams to inboxes
+      inboxes.each do |inbox|
+        InboxTeam.find_or_create_by!(inbox: inbox, team: support_team)
+        InboxTeam.find_or_create_by!(inbox: inbox, team: engineering_team)
+      end
+      puts "    ✓ Teams linked to #{inboxes.count} inboxes"
 
       [support_team, engineering_team]
     end
@@ -257,13 +269,14 @@ module Seeds
 
     # --- Sample Conversations ---
 
-    def create_sample_conversations(account, inbox, customers, agents)
+    def create_sample_conversations(account, inbox, customers, agents, teams)
       puts "  💬 Creating sample conversations..."
 
       conversations_data = [
         {
           customer: customers[0],
           agent: agents[0],
+          team: teams[0],
           identifier: "seed-conv-001",
           messages: [
             { sender: :customer, content: "Hi, I need help setting up my account." },
@@ -274,6 +287,7 @@ module Seeds
         {
           customer: customers[1],
           agent: agents[1],
+          team: teams[1],
           identifier: "seed-conv-002",
           messages: [
             { sender: :customer, content: "The dashboard is loading slowly. Is there an issue?" },
@@ -283,6 +297,7 @@ module Seeds
         {
           customer: customers[2],
           agent: nil,
+          team: nil,
           identifier: "seed-conv-003",
           messages: [
             { sender: :customer, content: "I'd like to request a new feature: dark mode for the widget!" }
@@ -296,6 +311,11 @@ module Seeds
           source: :web_widget,
           identifier: conv_data[:identifier]
         ) { |c| c.data = {} }
+
+        # Assign team if present
+        if conv_data[:team] && conversation.team_id.nil?
+          conversation.update!(team: conv_data[:team])
+        end
 
         # Link customer
         conversation.conversation_members.find_or_create_by!(
@@ -369,6 +389,29 @@ module Seeds
       end
 
       puts "    ✓ Macro: Close & Thank"
+    end
+
+    # --- Team Macro ---
+
+    def create_team_macro(account, teams)
+      return if teams.blank?
+
+      puts "  🏢 Creating team macro..."
+
+      account.macros.find_or_create_by!(
+        name: "Escalate to Engineering",
+        scopeable_type: "Team",
+        scopeable_id: teams[1]&.id
+      ) do |m|
+        m.visibility = :team
+        m.status = :active
+        m.actions = [
+          { "action" => "set_priority", "params" => { "priority" => "high" } },
+          { "action" => "add_note", "params" => { "content" => "Escalated to Engineering team for investigation." } }
+        ]
+      end
+
+      puts "    ✓ Macro: Escalate to Engineering (team-scoped)"
     end
 
     # --- Helpers ---

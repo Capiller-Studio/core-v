@@ -5,6 +5,7 @@
 # Table name: team_users
 #
 #  id         :uuid             not null, primary key
+#  role       :integer          default("member"), not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
 #  team_id    :uuid             not null
@@ -24,4 +25,22 @@
 class TeamUser < ShardRecord
   belongs_to :team
   belongs_to :user
+
+  enum :role, { member: 0, lead: 1 }
+
+  validates :user_id, uniqueness: { scope: :team_id, message: "is already a member of this team" }
+  validate :user_belongs_to_team_account
+
+  private
+
+  # Ensure the user actually belongs to the same account as the team.
+  # User <-> Account relationship is through AccountUser in the primary DB,
+  # so we check AccountUser existence.
+  def user_belongs_to_team_account
+    return if team.blank? || user.blank?
+
+    unless AccountUser.exists?(account_id: team.account_id, user_id: user_id)
+      errors.add(:user, "does not belong to the same account as this team")
+    end
+  end
 end

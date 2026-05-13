@@ -43,6 +43,8 @@ class Inbox < ShardRecord
   has_many :customer_inboxes, dependent: :destroy
   has_many :inbox_users, dependent: :destroy
   has_many :users, through: :inbox_users, disable_joins: true
+  has_many :inbox_teams, dependent: :destroy
+  has_many :teams, through: :inbox_teams
   has_many :customers, through: :customer_inboxes
   has_many :sla_inboxes, dependent: :destroy
   has_many :sla_policies, through: :sla_inboxes

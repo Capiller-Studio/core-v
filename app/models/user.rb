@@ -72,6 +72,10 @@ class User < ApplicationRecord
   has_many :accounts, through: :account_users
   has_one :affiliate_profile, class_name: "Affiliate::Profile", dependent: :destroy, inverse_of: :user
 
+  # Sharded associations — require shard context
+  has_many :team_users, dependent: :destroy
+  has_many :teams, through: :team_users
+
   before_save :configure_display_name
 
   enum :status, { active: 0 }

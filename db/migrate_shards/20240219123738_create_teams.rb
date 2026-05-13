@@ -8,6 +8,7 @@ class CreateTeams < ActiveRecord::Migration[7.1]
 
       t.integer :status,            null: false, default: 0
       t.integer :flags,             null: false, default: 0
+      t.jsonb   :configurations,    null: false, default: {}
 
       t.references :account, null: false, foreign_key: false,  type: :uuid, index: true
 
