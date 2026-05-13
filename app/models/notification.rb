@@ -42,7 +42,8 @@ class Notification < ShardRecord
     trial_expiring: 9,
     payment_failed: 10,
     limit_approaching: 11,
-    limit_reached: 12
+    limit_reached: 12,
+    team_assigned: 13
   }
 
   scope :unread, -> { where(read_at: nil) }

@@ -22,6 +22,7 @@
 #  campaign_id       :uuid
 #  external_id       :string
 #  inbox_id          :uuid             not null
+#  team_id           :uuid
 #
 # Indexes
 #
@@ -44,9 +45,11 @@
 class Conversation < ShardRecord
   include Assignable
   include SlaTrackable
+  include Trackable
 
   belongs_to :account
   belongs_to :inbox
+  belongs_to :team, optional: true
   belongs_to :campaign, optional: true
   belongs_to :outbound_channel, polymorphic: true, optional: true
 
@@ -74,11 +77,15 @@ class Conversation < ShardRecord
 
 
   scope :current_conversations, ->(current_user) {
- joins(:conversation_members).where(conversation_members: { member: current_user }) }
+    joins(:conversation_members).where(conversation_members: { member: current_user })
+  }
 
   scope :not_assigned_to_user, -> {
     where.not(id: joins(:conversation_members).where(conversation_members: { member_type: "User" }).select(:id))
   }
+
+  scope :for_team, ->(team) { where(team: team) }
+  scope :unassigned_team, -> { where(team_id: nil) }
 
   def event_payload
     {
@@ -90,6 +97,7 @@ class Conversation < ShardRecord
       locale:,
       identifier:,
       inbox_id:,
+      team_id:,
       last_activity_at:,
       created_at:,
       updated_at:

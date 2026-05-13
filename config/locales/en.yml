@@ -14,6 +14,7 @@ en:
       payment_failed: "Payment failed"
       limit_approaching: "You are approaching your plan limit"
       limit_reached: "Plan limit reached"
+      team_assigned: "Conversation assigned to your team"
     push:
       conversation_created:
         title: "New Conversation"
@@ -54,6 +55,9 @@ en:
       limit_reached:
         title: "Limit Reached"
         body: "You've reached your %{resource} limit. Upgrade your plan to continue."
+      team_assigned:
+        title: "Team Assignment"
+        body: "Conversation #%{identifier} has been assigned to %{team_name}"
   mailers:
     conversation_reply:
       subject: "Re: %{subject}"
@@ -74,6 +78,8 @@ en:
         subject: "Payment failed — action required"
       trial_expiring:
         subject: "Your free trial ends in %{days} days"
+      team_assigned:
+        subject: "Conversation #%{identifier} assigned to %{team_name}"
     system:
       workspace_request:
         subject: "Workspace Joining Request"
@@ -123,6 +129,8 @@ en:
       translation_updated: "Updated translation contents for locale %{target_locale}"
       enum_changed: "Changed %{attribute} from '%{old}' to '%{new}'"
       attribute_updated: "Updated %{attribute}"
+      team_assigned: "Assigned to team %{team_name}"
+      team_unassigned: "Removed team assignment"
   activerecord:
     errors:
       models:
@@ -140,3 +148,15 @@ en:
               taken_in_account: "is already taken for this account"
             key:
               invalid_format: "only lowercase letters, numbers, and underscores"
+        team:
+          attributes:
+            name:
+              blank: "can't be blank"
+            identifier:
+              taken: "is already taken for this account"
+        team_user:
+          attributes:
+            user_id:
+              taken: "is already a member of this team"
+            user:
+              invalid: "does not belong to the same account as this team"

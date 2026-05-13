@@ -3,6 +3,7 @@ class CreateTeamUsers < ActiveRecord::Migration[7.1]
     create_table :team_users, id: :uuid do |t|
       t.references :team, null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: true
       t.references :user, null: false, foreign_key: false, type: :uuid, index: true
+      t.integer    :role, null: false, default: 0
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

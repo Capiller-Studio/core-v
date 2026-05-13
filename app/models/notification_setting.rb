@@ -39,6 +39,7 @@ class NotificationSetting < ShardRecord
             11 => :email_payment_failed,
             12 => :email_limit_approaching,
             13 => :email_limit_reached,
+            14 => :email_team_assigned,
             column: "email_flags"
 
   has_flags 1 => :push_conversation_created,
@@ -54,6 +55,7 @@ class NotificationSetting < ShardRecord
             11 => :push_payment_failed,
             12 => :push_limit_approaching,
             13 => :push_limit_reached,
+            14 => :push_team_assigned,
             column: "push_flags",
             flag_query_mode: :bit_operator
 

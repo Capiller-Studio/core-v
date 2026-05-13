@@ -25,14 +25,16 @@ module Activities
       # Offload to background worker for performance, passing the pre-captured snapshot
       ActivityLogWorker.perform_async(
         account.id,
-        trackable_type: trackable.class.name,
-        trackable_id: trackable.id,
-        event_type: event_type,
-        actor_type: actor&.class&.name,
-        actor_id: actor&.id,
-        changes: changes,
-        snapshot: snapshot,
-        metadata: request_metadata
+        {
+          trackable_type: trackable.class.name,
+          trackable_id:   trackable.id,
+          event_type:     event_type.to_s,
+          actor_type:     actor&.class&.name,
+          actor_id:       actor&.id,
+          changes:        changes,
+          snapshot:       snapshot,
+          metadata:       request_metadata
+        }.as_json
       )
     end
 
