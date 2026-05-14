@@ -5,12 +5,11 @@ RSpec.describe Automation, type: :model do
 
   describe 'Associations' do
     it { is_expected.to belong_to(:account) }
-    it { is_expected.to belong_to(:user).optional }
-    it { is_expected.to have_many(:executions).class_name('AutomationExecution').dependent(:destroy) }
+    it { is_expected.to have_many(:executions).dependent(:destroy) }
   end
 
   describe 'Enums' do
-    it { is_expected.to define_enum_for(:automation_type).with_values(macro: 0, event_trigger: 1, time_trigger: 2) }
+    it { is_expected.to define_enum_for(:automation_type).with_values(event_trigger: 1, time_trigger: 2) }
     it { is_expected.to define_enum_for(:status).with_values(active: 0, inactive: 1) }
   end
 
@@ -21,12 +20,6 @@ RSpec.describe Automation, type: :model do
       subject { build(:automation, automation_type: :event_trigger) }
 
       it { is_expected.to validate_presence_of(:event_name) }
-    end
-
-    context 'when macro' do
-      subject { build(:automation, :macro) }
-
-      it { is_expected.to validate_presence_of(:user_id) }
     end
   end
 

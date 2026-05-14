@@ -74,7 +74,7 @@ class User < ApplicationRecord
 
   # Sharded associations — require shard context
   has_many :team_users, dependent: :destroy
-  has_many :teams, through: :team_users
+  has_many :teams, through: :team_users, disable_joins: true
 
   before_save :configure_display_name
 

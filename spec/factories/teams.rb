@@ -5,5 +5,6 @@ FactoryBot.define do
     sequence(:identifier) { |n| "TEAM#{n}_#{SecureRandom.hex(4)}" }
     status { :active }
     auto_assign { true }
+    configurations { { "assignment_policy" => "round_robin" } }
   end
 end
