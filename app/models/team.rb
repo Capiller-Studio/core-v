@@ -32,7 +32,7 @@ class Team < ShardRecord
   belongs_to :account
 
   has_many :team_users, dependent: :destroy
-  has_many :users, through: :team_users
+  has_many :users, through: :team_users, disable_joins: true
 
   has_many :inbox_teams, dependent: :destroy
   has_many :inboxes, through: :inbox_teams
@@ -60,21 +60,21 @@ class Team < ShardRecord
 
   # Returns all lead users
   def leads
-    users.merge(TeamUser.lead)
+    User.where(id: team_users.lead.pluck(:user_id))
   end
 
   # Returns all non-lead members
   def members
-    users.merge(TeamUser.member)
+    User.where(id: team_users.member.pluck(:user_id))
   end
 
   def member?(user)
-    team_users.exists?(user: user)
+    team_users.exists?(user_id: user.id)
   end
 
   def online_members
-    users.where(
-      id: AccountUser.where(account: account, availability: :online).select(:user_id)
+    User.where(id: team_users.pluck(:user_id)).where(
+      id: AccountUser.where(account_id: account_id, availability: :online).select(:user_id)
     )
   end
 

@@ -8,11 +8,5 @@ FactoryBot.define do
     conditions { { operator: 'AND', groups: [] } }
     actions { [] }
     configurations { {} }
-
-    trait :macro do
-      automation_type { :macro }
-      user
-      event_name { nil }
-    end
   end
 end
