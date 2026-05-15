@@ -2,15 +2,19 @@
 
 module Access
   class RoleGenerator < ApplicationService
+    attr_accessor :account
+
     def initialize(account)
-      @account = account
+      self.account = account
     end
 
     def call
-      Account.transaction do
-        create_owner_role
-        create_admin_role
-        create_agent_role
+      account.with_shard do
+        Access::Role.transaction do
+          create_owner_role
+          create_admin_role
+          create_agent_role
+        end
       end
     end
 
@@ -20,7 +24,8 @@ module Access
     # Assigned automatically to the first user during account creation.
     # Cannot be deleted or modified by users.
     def create_owner_role
-      @account.roles.find_or_create_by!(name: "Owner") do |r|
+      account.roles.find_or_create_by!(identifier: "owner") do |r|
+        r.name = "Owner"
         r.is_system = true
         r.permissions = {
           "conversations" => { "read" => true, "write" => true, "delete" => true },
@@ -38,7 +43,8 @@ module Access
     end
 
     def create_admin_role
-      @account.roles.find_or_create_by!(name: "Administrator") do |r|
+      account.roles.find_or_create_by!(identifier: "administrator") do |r|
+        r.name = "Administrator"
         r.is_system = true
         r.permissions = {
           "conversations" => { "read" => true, "write" => true, "delete" => true },
@@ -54,7 +60,8 @@ module Access
     end
 
     def create_agent_role
-      @account.roles.find_or_create_by!(name: "Agent") do |r|
+      account.roles.find_or_create_by!(identifier: "agent") do |r|
+        r.name = "Agent"
         r.is_system = true
         r.permissions = {
           "conversations" => { "read" => true, "write" => true },

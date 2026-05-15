@@ -83,6 +83,7 @@ class Account < ApplicationRecord
   # Primary DB Associations
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
+  has_many :account_invitations, dependent: :destroy
 
   # Sharded DB Associations
   # IMPORTANT: These associations reside in a separate database shard.
