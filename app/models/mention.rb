@@ -7,6 +7,7 @@
 #  id             :uuid             not null, primary key
 #  mentioned_type :string           not null
 #  resource_type  :string           not null
+#  read_at        :datetime
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  account_id     :uuid             not null
@@ -15,13 +16,21 @@
 #
 # Indexes
 #
-#  index_mentions_on_account_id     (account_id)
-#  index_mentions_on_mentioned      (mentioned_type,mentioned_id)
-#  index_mentions_on_resource       (resource_type,resource_id)
-#  index_mentions_on_unique_record  (resource_id,resource_type,mentioned_id,mentioned_type) UNIQUE
+#  index_mentions_on_account_id                        (account_id)
+#  index_mentions_on_account_user_read                 (account_id,mentioned_id,read_at)
+#  index_mentions_on_mentioned                         (mentioned_type,mentioned_id)
+#  index_mentions_on_resource                          (resource_type,resource_id)
+#  index_mentions_on_unique_record                     (resource_id,resource_type,mentioned_id,mentioned_type) UNIQUE
 #
 class Mention < ShardRecord
+  include UnreadTrackable
+
   belongs_to :account
   belongs_to :resource, polymorphic: true
   belongs_to :mentioned, polymorphic: true
+  
+  def mark_as_read!
+    update!(read_at: Time.current)
+    UnreadCounts::Reset.call(self, mentioned)
+  end
 end

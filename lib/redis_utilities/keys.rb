@@ -22,5 +22,10 @@ module RedisUtilities
     WALLET_LOCK = "WALLET_LOCK:%{account_id}"
     CHARGE_LOCK = "CHARGE_LOCK:%{account_id}"
     RENEWAL_LOCK = "RENEWAL_LOCK:%{account_id}"
+
+    UNREAD_CONVERSATION_COUNT = "UNREAD:%{account_id}:%{member_id}:CONVERSATIONS"
+    UNREAD_CONVERSATION_SET = "UNREAD:%{account_id}:%{member_id}:CONVERSATIONS_SET"
+    UNREAD_MENTION_COUNT = "UNREAD:%{account_id}:%{member_id}:MENTIONS"
+    UNREAD_INBOX_COUNT = "UNREAD:%{account_id}:%{member_id}:INBOXES"
   end
 end

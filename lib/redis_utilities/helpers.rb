@@ -24,8 +24,8 @@ module RedisUtilities
       CONNECTION_POOL.with { |redis| redis.exists?(key) }
     end
 
-    def self.increment(key)
-      CONNECTION_POOL.with { |redis| redis.incr(key) }
+    def self.increment(key, amount = 1)
+      CONNECTION_POOL.with { |redis| redis.incrby(key, amount) }
     end
 
     def self.size(key)
@@ -62,6 +62,26 @@ module RedisUtilities
 
     def self.hash_multi_get(key, fields)
       CONNECTION_POOL.with { |redis| redis.hmget(key, *fields) }
+    end
+
+    def self.hash_increment(key, field, amount = 1)
+      CONNECTION_POOL.with { |redis| redis.hincrby(key, field, amount) }
+    end
+
+    def self.hash_delete(key, field)
+      CONNECTION_POOL.with { |redis| redis.hdel(key, field) }
+    end
+
+    def self.hash_get_all(key)
+      CONNECTION_POOL.with { |redis| redis.hgetall(key) }
+    end
+
+    def self.set_add(key, value)
+      CONNECTION_POOL.with { |redis| redis.sadd(key, value) }
+    end
+
+    def self.set_remove(key, value)
+      CONNECTION_POOL.with { |redis| redis.srem(key, value) }
     end
 
     def self.add_with_score(key, score, value)
