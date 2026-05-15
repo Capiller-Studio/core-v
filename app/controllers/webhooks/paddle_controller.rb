@@ -139,7 +139,7 @@ module Webhooks
 
       subscription.update!(status: :past_due)
 
-      owner = subscription.account.account_users.find_by(role: :owner)&.user
+      owner = subscription.account.account_users.find_by(owner: true)&.user
       return unless owner
 
       Notification.create!(

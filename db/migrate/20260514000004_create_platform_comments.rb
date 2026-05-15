@@ -9,7 +9,5 @@ class CreatePlatformComments < ActiveRecord::Migration[8.1]
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end
-
-    add_index :platform_comments, [:commentable_type, :commentable_id]
   end
 end

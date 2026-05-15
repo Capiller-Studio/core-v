@@ -24,8 +24,7 @@ module Automations
       private
 
       def system_sender
-        AccountUser.find_by(account: account, role: :owner)&.user ||
-          AccountUser.find_by(account: account, role: :admin)&.user
+        AccountUser.find_by(account: account, owner: true)&.user
       end
     end
   end

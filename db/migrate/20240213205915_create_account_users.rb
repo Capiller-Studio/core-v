@@ -1,9 +1,9 @@
 class CreateAccountUsers < ActiveRecord::Migration[7.1]
   def change
     create_table :account_users, id: :uuid do |t|
-      t.integer    :role,         null: false, default: AccountUser.roles[:agent]
+      t.boolean    :owner,        null: false, default: false
       t.integer    :status,       null: false, default: 0
-      t.integer    :availability, null: false, default: AccountUser.availabilities[:offline]
+      t.integer    :availability, null: false, default: 0
       t.datetime   :status_changed_at
       t.datetime   :availability_changed_at
       t.datetime   :last_activity_at
@@ -15,10 +15,10 @@ class CreateAccountUsers < ActiveRecord::Migration[7.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
       t.index :status
-      t.index :role
       t.index :created_at
       t.index :availability
       t.index [:account_id, :user_id], unique: true
+      t.index [:account_id, :owner], unique: true, where: "(owner = true)"
     end
   end
 end
