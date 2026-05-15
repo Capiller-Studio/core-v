@@ -160,3 +160,26 @@ en:
               taken: "is already a member of this team"
             user:
               invalid: "does not belong to the same account as this team"
+        account_invitation:
+          attributes:
+            role_ids:
+              at_least_one: "must contain at least one role"
+              invalid_roles: "contains invalid roles for this account"
+  accounts:
+    invitations:
+      errors:
+        already_member: "User is already a member of this account"
+        already_accepted: "Invitation has already been accepted"
+        expired: "Invitation has expired"
+        no_valid_roles: "The roles for this invitation no longer exist. Please ask your administrator to re-invite you."
+  mailers:
+    account_invitation:
+      invite:
+        subject: "You've been invited to join %{account_name} on Deskbolic"
+        header: "You're Invited!"
+        body_main: "Hi there, %{inviter_name} has invited you to join the %{account_name} team on Deskbolic."
+        roles_label: "Your assigned roles:"
+        body_footer: "Deskbolic is the all-in-one platform for high-performance customer support. Join your team now to start managing conversations, mentions, and more."
+        cta: "Join the Team"
+        expiry: "This invitation will expire on %{expiry_date}."
+        footer: "© %{year} Deskbolic. All rights reserved. If you didn't expect this invitation, you can safely ignore this email."
