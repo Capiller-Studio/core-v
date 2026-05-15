@@ -54,7 +54,7 @@ class TrialExpirationWorker
   end
 
   def notify_trial_expiring(subscription)
-    owner = subscription.account.account_users.find_by(role: :owner)&.user
+    owner = subscription.account.account_users.find_by(owner: true)&.user
     return unless owner
 
     Notification.create!(

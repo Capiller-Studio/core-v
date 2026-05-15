@@ -68,7 +68,7 @@ class SubscriptionRenewalWorker < BaseMutexWorker
     else
       subscription.update!(status: :past_due)
 
-      owner = account.account_users.find_by(role: :owner)&.user
+      owner = account.account_users.find_by(owner: true)&.user
       return unless owner
 
       Notification.create!(

@@ -111,7 +111,7 @@ module LimitEnforceable
   end
 
   def create_limit_notification(event, resource)
-    owner = account_users.find_by(role: :owner)&.user
+    owner = account_users.find_by(owner: true)&.user
     return unless owner
 
     Notification.create(

@@ -87,12 +87,11 @@ module Seeds
       )
 
       account_user = AccountUser.find_or_create_by!(account: account, user: user) do |au|
-        au.role = :admin
         au.availability = :online
         au.invited_by = invited_by
       end
 
-      assign_role!(account, account_user, "Administrator")
+      assign_role!(account, account_user, "administrator")
       puts "    ✓ Admin: #{user.email}"
       user
     end
@@ -112,12 +111,11 @@ module Seeds
         user = find_or_create_user(**agent_data)
 
         account_user = AccountUser.find_or_create_by!(account: account, user: user) do |au|
-          au.role = :agent
           au.availability = :online
           au.invited_by = invited_by
         end
 
-        assign_role!(account, account_user, "Agent")
+        assign_role!(account, account_user, "agent")
         puts "    ✓ Agent: #{user.email}"
         user
       end
@@ -427,8 +425,8 @@ module Seeds
       )
     end
 
-    def assign_role!(account, account_user, role_name)
-      role = account.roles.find_by(name: role_name)
+    def assign_role!(account, account_user, identifier)
+      role = account.roles.find_by(identifier: identifier)
       return unless role
 
       Access::AccountUserRole.find_or_create_by!(

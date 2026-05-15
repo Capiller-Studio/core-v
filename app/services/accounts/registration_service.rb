@@ -59,7 +59,7 @@ module Accounts
       account_user = AccountUser.create!(
         account: account,
         user: user,
-        role: :owner
+        owner: true
       )
 
       # Assign the Owner Access::Role to the owner user.
@@ -71,7 +71,7 @@ module Accounts
     end
 
     def assign_owner_role!(account, account_user)
-      owner_role = account.roles.find_by!(name: "Owner")
+      owner_role = account.roles.find_by!(identifier: "owner")
 
       Access::AccountUserRole.create!(
         account: account,

@@ -41,7 +41,6 @@ module Accounts
         # We use find_or_create_by! to handle race conditions where a user might be 
         # manually added to the account while the invitation is being accepted.
         account.account_users.find_or_create_by!(user: user) do |au|
-          au.role = :agent # Default role for the link, granular roles are in the shard
           au.invited_by = invitation.invited_by
         end
       end

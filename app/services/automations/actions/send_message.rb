@@ -29,8 +29,7 @@ module Automations
       # TODO: When a Bot/System user model is added, use that as the sender.
       # For now, we use the first admin user as a fallback.
       def system_sender
-        AccountUser.find_by(account: account, role: :owner)&.user ||
-          AccountUser.find_by(account: account, role: :admin)&.user
+        AccountUser.find_by(account: account, owner: true)&.user
       end
     end
   end
