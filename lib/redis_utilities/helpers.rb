@@ -84,6 +84,10 @@ module RedisUtilities
       CONNECTION_POOL.with { |redis| redis.srem(key, value) }
     end
 
+    def self.set_members(key)
+      CONNECTION_POOL.with { |redis| redis.smembers(key) }
+    end
+
     def self.add_with_score(key, score, value)
       CONNECTION_POOL.with { |redis| redis.zadd(key, score, value) }
     end

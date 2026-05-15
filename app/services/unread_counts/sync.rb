@@ -2,26 +2,28 @@
 
 module UnreadCounts
   class Sync < ApplicationService
+    attr_accessor :member, :account_id
+
     def initialize(member:, account_id:)
-      @member = member
-      @account_id = account_id
+      self.member = member
+      self.account_id = account_id
     end
 
     def call
       sync_conversations
       sync_mentions
-      UnreadCounts::Broadcast.call(member: @member, account_id: @account_id)
+      UnreadCounts::Broadcast.call(member: member, account_id: account_id)
     end
 
     private
 
     def sync_conversations
       # Find all conversations the member has access to
-      direct_memberships = ConversationMember.where(member: @member, account_id: @account_id).index_by(&:conversation_id)
+      direct_memberships = ConversationMember.where(member: member, account_id: account_id).index_by(&:conversation_id)
       
-      if @member.is_a?(User)
-        team_ids = TeamUser.where(user: @member).pluck(:team_id)
-        team_conversation_ids = Conversation.where(team_id: team_ids, account_id: @account_id).pluck(:id)
+      if member.is_a?(User)
+        team_ids = TeamUser.where(user: member).pluck(:team_id)
+        team_conversation_ids = Conversation.where(team_id: team_ids, account_id: account_id).pluck(:id)
       else
         team_conversation_ids = []
       end
@@ -40,7 +42,7 @@ module UnreadCounts
         
         unread_count = conversation.messages
                                    .where("created_at > ?", last_seen)
-                                   .where.not(sender_id: @member.id)
+                                   .where.not(sender_id: member.id)
                                    .count
         
         if unread_count > 0
@@ -52,24 +54,24 @@ module UnreadCounts
     end
 
     def sync_mentions
-      mention_count = Mention.where(mentioned: @member, account_id: @account_id, read_at: nil).count
+      mention_count = Mention.where(mentioned: member, account_id: account_id, read_at: nil).count
       RedisUtilities::Helpers.set(mention_key, mention_count)
     end
 
     def conv_key
-      RedisUtilities::Keys::UNREAD_CONVERSATION_COUNT % { account_id: @account_id, member_id: @member.id }
+      RedisUtilities::Keys::UNREAD_CONVERSATION_COUNT % { account_id: account_id, member_id: member.id }
     end
 
     def set_key
-      RedisUtilities::Keys::UNREAD_CONVERSATION_SET % { account_id: @account_id, member_id: @member.id }
+      RedisUtilities::Keys::UNREAD_CONVERSATION_SET % { account_id: account_id, member_id: member.id }
     end
 
     def inbox_key
-      RedisUtilities::Keys::UNREAD_INBOX_COUNT % { account_id: @account_id, member_id: @member.id }
+      RedisUtilities::Keys::UNREAD_INBOX_COUNT % { account_id: account_id, member_id: member.id }
     end
 
     def mention_key
-      RedisUtilities::Keys::UNREAD_MENTION_COUNT % { account_id: @account_id, member_id: @member.id }
+      RedisUtilities::Keys::UNREAD_MENTION_COUNT % { account_id: account_id, member_id: member.id }
     end
   end
 end
