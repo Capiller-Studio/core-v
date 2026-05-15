@@ -110,6 +110,11 @@ class Conversation < ShardRecord
     # rubocop:enable Rails/SkipsModelValidations
   end
 
+  def mark_as_read_for(user)
+    member = conversation_members.find_by(member: user)
+    member&.mark_as_read!
+  end
+
   private
 
   # TODO: Refactor to separate concern

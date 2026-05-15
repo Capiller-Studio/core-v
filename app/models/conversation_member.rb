@@ -41,6 +41,11 @@ class ConversationMember < ShardRecord
 
   validate :single_assignee_per_conversation, if: :assignee?
 
+  def mark_as_read!
+    update!(last_seen_at: Time.current)
+    UnreadCounts::Reset.call(conversation, member)
+  end
+
   private
 
   # Ensure only one assignee per conversation at any time

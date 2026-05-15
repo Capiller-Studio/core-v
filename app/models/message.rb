@@ -41,6 +41,8 @@
 #  fk_rails_...  (inbox_id => inboxes.id) ON DELETE => cascade
 #
 class Message < ShardRecord
+  include UnreadTrackable
+
   belongs_to :conversation
   belongs_to :inbox
   belongs_to :account
