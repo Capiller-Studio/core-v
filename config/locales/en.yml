@@ -165,6 +165,39 @@ en:
             role_ids:
               at_least_one: "must contain at least one role"
               invalid_roles: "contains invalid roles for this account"
+        domain:
+          attributes:
+            value:
+              blank: "can't be blank"
+              taken: "is already taken"
+              invalid: "contains invalid characters"
+              reserved: "'%{slug}' is reserved and cannot be used as a subdomain"
+              too_short: "subdomain must be at least %{min} characters"
+              too_long: "subdomain must be at most %{max} characters"
+              invalid_subdomain_format: "subdomain can only contain lowercase letters, numbers, and hyphens (cannot start or end with a hyphen)"
+              invalid_custom_domain_format: "is not a valid domain name (e.g., support.example.com)"
+              helpbolic_subdomain_as_custom: "cannot use helpbolic.com subdomains as custom domains — use 'subdomain' type instead"
+            base:
+              custom_domain_limit_reached: "Custom domain limit reached for your current plan. Please upgrade to add more domains."
+  domains:
+    dns_instructions:
+      record_type: "CNAME"
+      description: "Create a CNAME record pointing %{domain} to %{target}"
+    statuses:
+      dns:
+        dns_unverified: "DNS Unverified"
+        dns_pending: "DNS Pending"
+        dns_verified: "DNS Verified"
+        dns_failed: "DNS Failed"
+      ssl:
+        ssl_none: "No SSL"
+        ssl_pending: "SSL Pending"
+        ssl_active: "SSL Active"
+        ssl_expired: "SSL Expired"
+        ssl_failed: "SSL Failed"
+      domain_type:
+        subdomain: "Subdomain"
+        custom: "Custom"
   accounts:
     invitations:
       errors:
