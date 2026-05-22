@@ -38,6 +38,9 @@ module HelpCenter
   class Article < ShardRecord
     include Translateable
     include Trackable
+    include Publishable
+
+    publishable_fields :title, :content
 
     belongs_to :account
     belongs_to :portal
@@ -69,7 +72,7 @@ module HelpCenter
     #   "estimated_read_time"      => 5               (minutes; auto-computed from content length or manually overridden)
     # }
 
-    translates :title, :slug, :content, :meta_title, :meta_description
+    translates :title, :slug, :content, :meta_title, :meta_description, :draft_title, :draft_content
 
     searchkick word_start: ["translations.title", "translations.content"]
 

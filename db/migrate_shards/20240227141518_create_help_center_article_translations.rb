@@ -8,6 +8,10 @@ class CreateHelpCenterArticleTranslations < ActiveRecord::Migration[7.1]
       t.string  :meta_keywords, array: true, default: [], null: false
       t.string  :locale, null: false
 
+      # Draft fields for editor UI
+      t.string  :draft_title
+      t.text    :draft_content
+
       # slug is locale-specific for proper multi-language SEO URLs
       # e.g. /en/guides/setup-whatsapp vs /es/guias/configurar-whatsapp
       # Stores only the slug segment — locale prefix is handled by the router

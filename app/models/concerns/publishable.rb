@@ -1,135 +1,180 @@
 # frozen_string_literal: true
 
-# Provides a safe draft/publish workflow for translatable records.
-#
-# Editor UI reads/writes draft fields (draft_body, draft_design).
-# Publishing copies draft → live fields and triggers compilation.
-# Mailers and public-facing code only read published fields (body, compiled_html).
+# Provides a draft/publish workflow for translatable records.
 #
 # Requirements for including models:
-#   - Translation table must have: body, design, compiled_html, draft_body, draft_design
+#   - Translation table must have the live and draft fields configured via `publishable_fields`
 #   - Model must include Translateable with these fields in TRANSLATABLE_FIELDS
-#   - Model should implement #compile_body(mjml_source) returning HTML string
 #
-# Reusable for: EmailTemplate, EmailTemplateLayout, HelpCenter::Article (future)
 module Publishable
   extend ActiveSupport::Concern
 
-  # Publish the current draft for a specific locale.
-  # Copies draft fields → published fields, compiles MJML → HTML.
-  def publish!(locale: I18n.locale)
-    with_locale_and_fresh_cache(locale) do
-      raise I18n.t("errors.publishable.no_draft_content") if draft_body.blank?
-
-      self.body = draft_body
-      self.design = draft_design
-
-      # Compile MJML → HTML if the model supports it
-      self.compiled_html = compile_body(body) if respond_to?(:compile_body, true)
-
-      save!
-    end
-
-    # If this is a layout, recompile child templates
-    recompile_child_templates(locale:) if respond_to?(:recompile_child_templates, true)
+  included do
+    # Lifecycle hooks that models can override
+    def before_publish_draft!(locale); end
+    def after_publish_assignments!(locale); end
+    def after_publish!(locale); end
+    def before_discard_draft!(locale); end
+    def after_discard_draft!(locale); end
+    def before_save_draft!(locale); end
+    def after_save_draft!(locale); end
+    def before_initialize_draft!(locale); end
+    def after_initialize_draft!(locale); end
+    def before_copy_draft_locale!(from:, to:); end
+    def after_copy_draft_locale!(from:, to:); end
   end
 
-  # Discard unpublished draft changes, reset to published version.
-  def discard_draft!(locale: I18n.locale)
-    with_locale_and_fresh_cache(locale) do
-      target = translations.find { |t| t.locale.to_s == locale.to_s }
-      return unless target
-
-      self.draft_body = target.body
-      self.draft_design = nil if respond_to?(:draft_design=)
-      target.draft_subject = nil if target.respond_to?(:draft_subject=)
+  class_methods do
+    # Generates draft/publish methods for the specified fields without any runtime reflection.
+    # E.g., `publishable_fields :subject, :body, :design`
+    def publishable_fields(*fields)
+      raise ArgumentError, "Must provide at least one field to publishable_fields" if fields.empty?
       
-      save!
-    end
-  end
-
-  # Check if draft content differs from published content.
-  def has_unpublished_changes?(locale: I18n.locale)
-    with_locale_and_fresh_cache(locale) do
-      target = translations.find { |t| t.locale.to_s == locale.to_s }
-      return false unless target
-
-      body_changed = target.draft_body.present? && target.draft_body != target.body
-      subject_changed = target.respond_to?(:draft_subject) && target.draft_subject.present? && target.draft_subject != target.subject
+      # For publish!
+      publish_assignments = fields.map do |f|
+        "self.#{f} = self.draft_#{f}"
+      end.join("\n        ")
       
-      body_changed || subject_changed
-    end
-  end
+      # For has_unpublished_changes?
+      has_changes_checks = fields.map do |f|
+        "!target.draft_#{f}.nil? && target.draft_#{f} != target.#{f}"
+      end.join(" ||\n            ")
 
-  # Save only draft fields (called by editor "Save Draft" action).
-  def save_draft!(draft_body_content:, draft_design_content:, draft_subject_content: nil, locale: I18n.locale)
-    with_locale_and_fresh_cache(locale) do
-      target = translations.find { |t| t.locale.to_s == locale.to_s } || translations.build(locale: locale.to_s)
-      target.draft_body = draft_body_content
-      target.draft_design = draft_design_content if target.respond_to?(:draft_design=)
-      target.draft_subject = draft_subject_content if target.respond_to?(:draft_subject=) && draft_subject_content.present?
+      # For discard_draft!
+      discard_assignments = fields.map do |f|
+        "self.draft_#{f} = target.#{f}"
+      end.join("\n        ")
 
-      self.draft_body = draft_body_content
-      self.draft_design = draft_design_content if respond_to?(:draft_design=)
+      # For save_draft!
+      # We need to map kwargs to the respective draft fields.
+      save_kwargs = fields.map { |f| "draft_#{f}_content: nil" }.join(", ")
       
-      save!
-    end
-  end
+      save_target_assignments = fields.map do |f|
+        "target.draft_#{f} = draft_#{f}_content unless draft_#{f}_content.nil?"
+      end.join("\n            ")
 
-  # Initialize draft from published content (for first-time edit).
-  def initialize_draft!(locale: I18n.locale)
-    with_locale_and_fresh_cache(locale) do
-      target = translations.find { |t| t.locale.to_s == locale.to_s } || translations.build(locale: locale.to_s)
-      
-      # We must check the specific target translation because calling self.draft_body 
-      # falls back to the default locale and falsely appears present!
-      return if target.draft_body.present?
+      save_self_assignments = fields.map do |f|
+        "self.draft_#{f} = draft_#{f}_content unless draft_#{f}_content.nil?"
+      end.join("\n            ")
 
-      if target.new_record?
-        if target.respond_to?(:subject=) && target.subject.blank?
-          target.subject = subject.presence || "New Subject"
+      # For initialize_draft!
+      # Initialize draft fields with the fallback of live fields.
+      init_new_record_fallbacks = fields.map do |f|
+        "target.#{f} = public_send(:#{f}).presence if target.#{f}.blank?"
+      end.join("\n          ")
+
+      init_assignments = fields.map do |f|
+        "self.draft_#{f} = target.#{f}"
+      end.join("\n        ")
+
+      # For copy_draft_locale!
+      copy_assignments = fields.map do |f|
+        "target.draft_#{f} = source.draft_#{f}.presence || source.#{f}"
+      end.join("\n        ")
+
+      # The first field is treated as the primary "content" field to check if a draft exists at all
+      primary_draft_field = "draft_#{fields.first}"
+
+      generated_code = <<-RUBY
+        def publish!(locale: I18n.locale)
+          with_locale_and_fresh_cache(locale) do
+            raise I18n.t("errors.publishable.no_draft_content") if self.#{primary_draft_field}.blank?
+
+            before_publish_draft!(locale)
+
+            #{publish_assignments}
+
+            after_publish_assignments!(locale)
+
+            save!
+          end
+          after_publish!(locale)
         end
-        if target.respond_to?(:body=) && target.body.blank?
-          target.body = body.presence || "<mjml><mj-body></mj-body></mjml>"
+
+        def discard_draft!(locale: I18n.locale)
+          with_locale_and_fresh_cache(locale) do
+            target = translations.find { |t| t.locale.to_s == locale.to_s }
+            return unless target
+
+            before_discard_draft!(locale)
+
+            #{discard_assignments}
+
+            after_discard_draft!(locale)
+
+            save!
+          end
         end
-      end
 
-      self.draft_body = target.body
-      self.draft_design = design || {}
-      target.draft_subject = target.subject if target.respond_to?(:draft_subject=)
-      
-      save!
+        def has_unpublished_changes?(locale: I18n.locale)
+          with_locale_and_fresh_cache(locale) do
+            target = translations.find { |t| t.locale.to_s == locale.to_s }
+            return false unless target
+
+            #{has_changes_checks}
+          end
+        end
+
+        def save_draft!(#{save_kwargs}, locale: I18n.locale)
+          with_locale_and_fresh_cache(locale) do
+            target = translations.find { |t| t.locale.to_s == locale.to_s } || translations.build(locale: locale.to_s)
+            
+            before_save_draft!(locale)
+
+            #{save_target_assignments}
+            #{save_self_assignments}
+
+            after_save_draft!(locale)
+
+            save!
+          end
+        end
+
+        def initialize_draft!(locale: I18n.locale)
+          with_locale_and_fresh_cache(locale) do
+            target = translations.find { |t| t.locale.to_s == locale.to_s } || translations.build(locale: locale.to_s)
+            
+            return if target.#{primary_draft_field}.present?
+
+            before_initialize_draft!(locale)
+
+            if target.new_record?
+              #{init_new_record_fallbacks}
+            end
+
+            #{init_assignments}
+
+            after_initialize_draft!(locale)
+
+            save!
+          end
+        end
+
+        def copy_draft_locale!(from:, to:)
+          source = translations.find_by(locale: from.to_s)
+          raise I18n.t("errors.publishable.source_locale_missing", locale: from.to_s.upcase) unless source
+
+          target = translations.find_or_initialize_by(locale: to.to_s)
+          
+          before_copy_draft_locale!(from: from, to: to)
+
+          #{copy_assignments}
+
+          after_copy_draft_locale!(from: from, to: to)
+          
+          target.save!
+          @_translations_cache = nil
+        end
+      RUBY
+
+      class_eval(generated_code, __FILE__, __LINE__)
     end
-  end
-
-  # Copy draft content from one locale to another.
-  # Enables users to clone a design between locales instead of recreating from scratch.
-  def copy_draft_locale!(from:, to:)
-    source = translations.find_by(locale: from.to_s)
-    raise I18n.t("errors.publishable.source_locale_missing", locale: from.to_s.upcase) unless source
-
-    target = translations.find_or_initialize_by(locale: to.to_s)
-    target.draft_body = source.draft_body.presence || source.body
-    target.draft_design = source.draft_design.presence || source.design
-    
-    if target.respond_to?(:draft_subject=)
-      target.draft_subject = source.draft_subject.presence || source.subject
-    end
-    target.subject = source.subject if target.respond_to?(:subject=) && target.subject.blank?
-    target.save!
-
-    # Clear cache so the editor picks up the new content
-    @_translations_cache = nil
   end
 
   private
 
-  # Wraps operations in a locale context with a fresh translation cache.
-  # The Translateable concern caches translations per attribute without
-  # locale awareness, so we must reset it when switching locales.
   def with_locale_and_fresh_cache(locale)
     I18n.with_locale(locale) do
-      # Reset Translateable's internal cache to avoid cross-locale data leaks
       @_translations_cache = nil
       yield
     ensure
