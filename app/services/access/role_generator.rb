@@ -37,7 +37,8 @@ module Access
           "settings" => { "manage" => true },
           "billing" => { "manage" => true },
           "roles" => { "read" => true, "manage" => true },
-          "agents" => { "read" => true, "manage" => true, "invite" => true, "remove" => true }
+          "agents" => { "read" => true, "manage" => true, "invite" => true, "remove" => true },
+          "email_templates" => { "read" => true, "manage" => true }
         }
       end
     end
@@ -54,7 +55,8 @@ module Access
           "macros" => { "read" => true, "manage" => true, "execute" => true },
           "reports" => { "view" => true },
           "settings" => { "manage" => true },
-          "billing" => { "manage" => true }
+          "billing" => { "manage" => true },
+          "email_templates" => { "read" => true, "manage" => true }
         }
       end
     end

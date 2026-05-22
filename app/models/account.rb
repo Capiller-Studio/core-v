@@ -64,6 +64,7 @@ class Account < ApplicationRecord
             7 => :custom_branding_enabled,
             8 => :contact_form_enabled,
             9 => :help_center_enabled,
+            10 => :custom_email_templates_enabled,
             column: "features"
 
   def feature_enabled?(feature)
@@ -107,6 +108,7 @@ class Account < ApplicationRecord
   has_many :portals, class_name: "HelpCenter::Portal", dependent: :destroy
   has_many :roles, class_name: "Access::Role", dependent: :destroy
   has_many :email_templates, dependent: :destroy
+  has_many :email_template_layouts, dependent: :destroy
   has_many :notification_settings, dependent: :destroy
   has_many :campaigns, dependent: :destroy
   has_many :filters, dependent: :destroy
@@ -123,6 +125,7 @@ class Account < ApplicationRecord
 
   after_create :generate_default_roles
   after_create :generate_default_custom_fields
+  after_create :generate_default_email_templates
 
   private
 
@@ -132,5 +135,9 @@ class Account < ApplicationRecord
 
   def generate_default_custom_fields
     Accounts::DefaultCustomFieldsCreator.call(account: self)
+  end
+
+  def generate_default_email_templates
+    Seeds::EmailTemplateSeeder.seed(self)
   end
 end

@@ -105,25 +105,28 @@ en:
   seeds:
     email_templates:
       conversation_reply:
-        subject: "Re: {{ subject }}"
-        body: |
-          <p>{{ agent_name }} replied:</p>
-          <div>{{ message_content }}</div>
-          <hr>
-          <p style="color: #666; font-size: 12px;">
-            Reply to this email to continue the conversation.
-          </p>
+        subject: "Re: {{conversation.subject}}"
       agent_notification:
-        subject: "{{ event_title }}: Conversation #{{ identifier }}"
-        body: |
-          <p>Hi {{ agent_name }},</p>
-          <p>{{ event_description }}</p>
-          <p><strong>Conversation:</strong> #{{ identifier }}</p>
-          <p><strong>Inbox:</strong> {{ inbox_name }}</p>
-          <hr>
-          <p style="color: #666; font-size: 12px;">
-            You are receiving this because of your notification preferences.
-          </p>
+        subject: "New notification: {{event.title}}"
+      welcome_email:
+        subject: "Welcome to {{account.name}}!"
+      password_reset:
+        subject: "Reset your password"
+      email_verification:
+        subject: "Verify your email address"
+      team_invitation:
+        subject: "You've been invited to join {{account.name}}"
+  errors:
+    publishable:
+      no_draft_content: "No draft content to publish. Please make changes first."
+      source_locale_missing: "No content found for locale %{locale}. Please create content in that locale first."
+    attachments:
+      invalid_resource: "Invalid resource type."
+      resource_not_found: "Resource not found."
+      file_too_large: "File is too large. Maximum size is %{max_size}."
+      invalid_content_type: "File type is not allowed. Only images are permitted."
+      in_use: "This attachment is referenced by a published template and cannot be deleted."
+
   activities:
     presenter:
       translation_updated: "Updated translation contents for locale %{target_locale}"
@@ -179,6 +182,14 @@ en:
               helpbolic_subdomain_as_custom: "cannot use helpbolic.com subdomains as custom domains — use 'subdomain' type instead"
             base:
               custom_domain_limit_reached: "Custom domain limit reached for your current plan. Please upgrade to add more domains."
+        email_template:
+          attributes:
+            name:
+              blank: "can't be blank"
+        email_template_layout:
+          attributes:
+            name:
+              blank: "can't be blank"
   domains:
     dns_instructions:
       record_type: "CNAME"
