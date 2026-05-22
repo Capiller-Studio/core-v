@@ -50,13 +50,22 @@ module Seeds
         account = user&.accounts&.first
         if user && account
           puts "    ✓ Already exists"
+          enable_all_features!(account)
           return [account, user]
         end
         raise "Registration failed: #{result.errors.inspect}"
       end
 
       account = result.account
-      # Enable all features for development
+      enable_all_features!(account)
+
+      puts "    ✓ Account: #{account.name} (#{account.identifier})"
+      puts "    ✓ Owner:   #{result.user.email}"
+
+      [account, result.user]
+    end
+
+    def enable_all_features!(account)
       account.update!(
         api_access_enabled: true,
         sla_enabled: true,
@@ -66,13 +75,9 @@ module Seeds
         csat_enabled: true,
         custom_branding_enabled: true,
         contact_form_enabled: true,
-        help_center_enabled: true
+        help_center_enabled: true,
+        custom_email_templates_enabled: true
       )
-
-      puts "    ✓ Account: #{account.name} (#{account.identifier})"
-      puts "    ✓ Owner:   #{result.user.email}"
-
-      [account, result.user]
     end
 
     # --- Admin ---
