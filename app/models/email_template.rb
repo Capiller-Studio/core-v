@@ -16,6 +16,8 @@ class EmailTemplate < ShardRecord
   include Translateable
   include Publishable
 
+  publishable_fields :subject, :body, :design
+
   TRANSLATABLE_FIELDS = %i[subject body design compiled_html draft_subject draft_body draft_design].freeze
 
   # System templates seeded for every account
@@ -119,11 +121,11 @@ class EmailTemplate < ShardRecord
     account.locale || I18n.default_locale
   end
 
-  private
+  # Model-specific lifecycle callbacks for Publishable concern
 
-  # Called by Publishable#publish! to compile MJML → HTML.
-  def compile_body(mjml_source)
+  def after_publish_assignments!(locale)
+    # Compile MJML → HTML before the record is saved
     layout_body = email_template_layout&.body
-    Emails::TemplateCompilerService.compile_with_layout(mjml_source, layout_body: layout_body)
+    self.compiled_html = Emails::TemplateCompilerService.compile_with_layout(body, layout_body: layout_body)
   end
 end

@@ -14,6 +14,8 @@ class EmailTemplateLayout < ShardRecord
   include Translateable
   include Publishable
 
+  publishable_fields :body, :design
+
   TRANSLATABLE_FIELDS = %i[body design compiled_html draft_body draft_design].freeze
 
   CONTENT_PLACEHOLDER = "[[CONTENT_FOR_LAYOUT]]"
@@ -26,22 +28,22 @@ class EmailTemplateLayout < ShardRecord
 
   validates :name, presence: true
 
-  private
+  # Model-specific lifecycle callbacks for Publishable concern
 
-  # Called by Publishable#publish! to compile MJML → HTML.
-  def compile_body(mjml_source)
-    Emails::TemplateCompilerService.compile(mjml_source)
+  def after_publish_assignments!(locale)
+    # Compile MJML → HTML before the record is saved
+    self.compiled_html = Emails::TemplateCompilerService.compile(body)
   end
 
-  # Called by Publishable#publish! after layout is published.
-  # Recompile all child templates that reference this layout.
-  def recompile_child_templates(locale: I18n.locale)
+  def after_publish!(locale)
+    # Recompile all child templates that reference this layout.
     email_templates.find_each do |template|
       I18n.with_locale(locale) do
         template.instance_variable_set(:@_translations_cache, nil)
         next unless template.body.present?
 
-        template.compiled_html = template.send(:compile_body, template.body)
+        # We need to manually recompile the child's MJML with our new layout body
+        template.compiled_html = Emails::TemplateCompilerService.compile_with_layout(template.body, layout_body: body)
         template.save!
       end
     end
