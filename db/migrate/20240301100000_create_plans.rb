@@ -10,13 +10,14 @@ class CreatePlans < ActiveRecord::Migration[7.1]
       t.jsonb   :limits, null: false, default: {}
       t.integer :trial_days, null: false, default: 0
       t.integer :position, null: false, default: 0
-      t.boolean :contact_us, null: false, default: false
+      t.integer :visibility, null: false, default: 0
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
-      t.index :name, unique: true
+      t.index [:name, :currency], unique: true
       t.index :status
       t.index :position
+      t.index :visibility
     end
   end
 end

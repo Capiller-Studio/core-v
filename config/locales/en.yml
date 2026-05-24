@@ -96,10 +96,10 @@ en:
       momentum:
         display_name: "Momentum"
         description: "For growing teams. Unlimited agents and all channels with 6-month data retention."
-      pinnacle:
+      kinetic:
         display_name: "Pinnacle"
         description: "For scaling businesses. SLA policies, API access, and 12-month data retention."
-      enterprise:
+      supernova:
         display_name: "Enterprise"
         description: "Custom solutions for large organizations. Unlimited data retention and dedicated support."
   seeds:

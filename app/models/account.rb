@@ -68,7 +68,7 @@ class Account < ApplicationRecord
             column: "features"
 
   def feature_enabled?(feature)
-    # 1. Check if manually enabled via bitmask (overrides/enterprise overrides)
+    # 1. Check if manually enabled via bitmask (overrides)
     # We use the "_enabled" suffix for flags to avoid naming conflicts with associations (like teams/automations)
     feature_method = feature.to_s.end_with?("_enabled") ? "#{feature}?" : "#{feature}_enabled?"
     return true if respond_to?(feature_method) && send(feature_method)

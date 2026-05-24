@@ -12,7 +12,7 @@ module Core
 
     config.autoload_paths << config.root.join("lib")
 
-    config.i18n.available_locales = %i[en de es fr ur hi ar zh]
+    config.i18n.available_locales = Core::SUPPORTED_LOCALES
     config.i18n.default_locale = :en
     config.i18n.fallbacks = true
 

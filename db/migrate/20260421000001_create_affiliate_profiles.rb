@@ -8,6 +8,7 @@ class CreateAffiliateProfiles < ActiveRecord::Migration[8.1]
       t.decimal :max_earnings_per_account, precision: 10, scale: 2
       t.integer :holding_days
       t.string :currency, default: "USD", null: false
+      t.boolean :payouts_enabled, default: false, null: false
       t.jsonb :bank_account_data, default: {}
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }

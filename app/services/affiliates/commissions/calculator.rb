@@ -12,18 +12,12 @@ module Affiliates
       def call
         return unless transaction.charge? && transaction.completed?
 
-        # Strangle Race Conditions organically matching the Webhooks pipeline
-        lock_key = format(::RedisUtilities::Keys::MESSAGE_CREATION_LOCK, account_id: transaction.account_id, id: transaction.id)
-        return if ::RedisUtilities::Helpers.get(lock_key).present?
-
-        ::RedisUtilities::Helpers.set(lock_key, 1, expiry: 1.hour)
-
-        begin
+        lock_key = format(::RedisUtilities::Keys::COMMISSION_LOCK, transaction_id: transaction.id)
+        
+        ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
           ActiveRecord::Base.transaction do
             process_commission
           end
-        ensure
-          ::RedisUtilities::Helpers.delete(lock_key)
         end
       rescue StandardError => e
         Rails.logger.error("Commission Calculation Failed: #{e.message}")
@@ -71,6 +65,7 @@ module Affiliates
           original_currency: transaction.currency,
           exchange_rate: exchange_rate,
           amount: final_localized_amount,
+          currency: profile.currency,
           status: profile.holding_days.to_i.zero? ? :available : :pending
         )
       end

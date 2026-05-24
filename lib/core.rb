@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+module Core
+  # Constants must be defined before requiring the engine so it can use them
+  SUPPORTED_LOCALES = %i[en es de fr pt-BR ar ko].freeze
+  SUPPORTED_CURRENCIES = %w[USD EUR GBP KRW].freeze
+end
+
 require "core/version"
 require "core/engine"
 
@@ -40,6 +46,4 @@ require "twilio-ruby"
 require "signalwire"
 require "dotenv/load" if defined?(Dotenv)
 
-module Core
-  # Your code goes here...
-end
+

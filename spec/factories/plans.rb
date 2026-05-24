@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :plan do
-    name { Plan::STARTER }
+    name { Plan::ANABOLIC }
     display_name { 'Starter Plan' }
     description { 'Everything you need to get started.' }
     base_price { 0 }
@@ -10,22 +10,22 @@ FactoryBot.define do
     status { :active }
 
     trait :momentum do
-      name { Plan::MOMENTUM }
+      name { Plan::HYPERBOLIC }
       display_name { 'Momentum Plan' }
       base_price { 49 }
       annual_price { 490 }
     end
 
-    trait :pinnacle do
-      name { Plan::PINNACLE }
-      display_name { 'Pinnacle Plan' }
+    trait :kinetic do
+      name { Plan::KINETIC }
+      display_name { 'Kinetic Plan' }
       base_price { 99 }
       annual_price { 990 }
     end
 
-    trait :enterprise do
-      name { Plan::ENTERPRISE }
-      display_name { 'Enterprise Plan' }
+    trait :supernova do
+      name { Plan::SUPERNOVA }
+      display_name { 'Supernova Plan' }
       base_price { 299 }
       annual_price { 2990 }
     end

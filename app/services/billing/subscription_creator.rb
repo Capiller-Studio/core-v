@@ -2,12 +2,13 @@
 
 module Billing
   class SubscriptionCreator < ApplicationService
-    attr_accessor :account, :plan, :billing_cycle
+    attr_accessor :account, :plan, :billing_cycle, :quantity
 
-    def initialize(account:, plan:, billing_cycle: :monthly)
+    def initialize(account:, plan:, billing_cycle: :monthly, quantity: 1)
       self.account = account
       self.plan = plan
       self.billing_cycle = billing_cycle
+      self.quantity = quantity
     end
 
     def call
@@ -36,6 +37,8 @@ module Billing
         account:,
         plan:,
         billing_cycle:,
+        quantity:,
+        currency: plan.currency,
         provider: PaymentGateway::Resolver.default_provider
       }
 
@@ -64,19 +67,23 @@ module Billing
       end
 
       subscription = Subscription.create!(attrs)
+
+      if defined?(result) && result && result[:transactions].present?
+        Transaction.where(id: result[:transactions].map(&:id)).update_all(subscription_id: subscription.id)
+      end
+
       sync_plan_limits
       subscription
     end
 
     def charge_for_subscription
-      agent_count = [ account.account_users.count, 1 ].max
-      amount = plan.price_for(billing_cycle) * agent_count
+      amount = plan.price_for(billing_cycle) * quantity
 
       Billing::ChargeProcessor.call(
         account:,
         amount:,
-        currency: account.currency,
-        description: "#{plan.name.capitalize} plan subscription"
+        currency: plan.currency,
+        description: "#{plan.name.capitalize} plan subscription (#{quantity} seats)"
       )
     end
 

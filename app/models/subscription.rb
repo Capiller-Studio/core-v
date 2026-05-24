@@ -17,6 +17,9 @@ class Subscription < ApplicationRecord
 
   validates :account_id, uniqueness: { conditions: -> { where(status: [ :active, :trialing ]) },
                                        message: :active_subscription_exists }
+  validates :quantity, presence: true, numericality: { greater_than_or_equal_to: 1 }
+  validates :currency, presence: true, inclusion: { in: Core::SUPPORTED_CURRENCIES }
+  validate :quantity_within_plan_limits
 
   def trialing?
     status == "trialing" && trial_end_at.present? && trial_end_at > Time.current
@@ -58,10 +61,40 @@ class Subscription < ApplicationRecord
   end
 
   def billable_agents
-    [ data["max_agents_in_period"] || 0, account.users_count ].max
+    quantity
   end
 
   def total_price
-    plan.price_for(billing_cycle) * billable_agents
+    case billing_cycle.to_s
+    when "annual" then plan.annual_price * quantity
+    else plan.base_price * quantity
+    end
+  end
+
+  def remaining_days_in_cycle
+    return 0 unless current_period_end && current_period_start
+    return 0 if current_period_end <= Time.current
+
+    (current_period_end.to_date - Date.current).to_i
+  end
+
+  def total_days_in_cycle
+    return 30 unless current_period_end && current_period_start
+
+    (current_period_end.to_date - current_period_start.to_date).to_i
+  end
+
+  private
+
+  def quantity_within_plan_limits
+    return unless plan && quantity
+
+    if quantity < plan.min_users
+      errors.add(:quantity, "must be at least #{plan.min_users} for this plan")
+    end
+
+    if plan.max_users != -1 && quantity > plan.max_users
+      errors.add(:quantity, "cannot exceed #{plan.max_users} for this plan")
+    end
   end
 end
