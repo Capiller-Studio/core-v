@@ -135,9 +135,6 @@ module Seeds
     def create_help_center_data(account, portal)
       categories_data = [
         {
-          identifier: "getting-started",
-          code: "GS",
-          permalink: "getting-started",
           name: "Getting Started",
           description: "Learn the basics of using our platform.",
           articles: [
@@ -147,9 +144,6 @@ module Seeds
           ]
         },
         {
-          identifier: "managing-conversations",
-          code: "MC",
-          permalink: "managing-conversations",
           name: "Managing Conversations",
           description: "Tips for handling customer conversations efficiently.",
           articles: [
@@ -158,9 +152,6 @@ module Seeds
           ]
         },
         {
-          identifier: "account-billing",
-          code: "AB",
-          permalink: "account-billing",
           name: "Account & Billing",
           description: "Manage your subscription, invoices, and payment methods.",
           articles: [
@@ -170,11 +161,10 @@ module Seeds
         }
       ]
 
-      categories_data.each do |cat_data|
-        category = HelpCenter::Category.find_or_initialize_by(
-          portal: portal, account: account, identifier: cat_data[:identifier]
-        )
-        category.assign_attributes(code: cat_data[:code], permalink: cat_data[:permalink], status: :active)
+      categories_data.each_with_index do |cat_data, index|
+        category = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: 'en', name: cat_data[:name] })
+        category ||= portal.categories.build(account: account)
+        category.assign_attributes(status: :active, position: index)
         category.save!
 
         unless category.translated_to?(:en)

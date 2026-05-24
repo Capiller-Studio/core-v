@@ -45,6 +45,13 @@ module HelpCenter
     belongs_to :account
     belongs_to :portal
     belongs_to :author, class_name: "User", optional: true
+    belongs_to :primary_category, class_name: "HelpCenter::Category", optional: true
+
+    has_many :category_resources, as: :resource, class_name: "HelpCenter::CategoryResource", dependent: :destroy
+    has_many :categories, through: :category_resources
+
+    has_many :related_resources, as: :resource, class_name: "HelpCenter::RelatedResource", dependent: :destroy
+    has_many :related_articles, through: :related_resources, source: :linked_resource, source_type: "HelpCenter::Article"
 
     has_many_attached :images       # Inline images embedded within article content
     has_one_attached  :banner_image # Hero/banner displayed at the top of the article page
@@ -74,6 +81,8 @@ module HelpCenter
 
     translates :title, :slug, :content, :meta_title, :meta_description, :draft_title, :draft_content
 
+    # before_validation :set_default_primary_category
+
     searchkick word_start: ["translations.title", "translations.content"]
 
     def search_data
@@ -82,11 +91,13 @@ module HelpCenter
         account_id: account_id,
         portal_id: portal_id,
         status: status,
+        visibility: visibility,
         views_count: views_count,
         translations: translations.map do |t|
           {
             locale: t.locale,
             title: t.title,
+            slug: t.slug,
             content: t.content,
             search_excerpt: t.search_excerpt
           }
@@ -96,6 +107,10 @@ module HelpCenter
 
     attr_accessor :save_revision
 
+    def to_param
+      slug || id
+    end
+
     private
 
     # Competitor-aligned formal Revision Checkpoint tracking
@@ -103,5 +118,9 @@ module HelpCenter
     def should_track_changes?
       super && (saved_change_to_status? || save_revision)
     end
+
+    # def set_default_primary_category
+    #   self.primary_category_id ||= categories.first&.id
+    # end
   end
 end

@@ -4,12 +4,8 @@ class CreateHelpCenterCategories < ActiveRecord::Migration[7.1]
       t.integer :ancestry_depth, null: false, default: 0
       t.integer :children_count, null: false, default: 0
       t.jsonb   :configurations, null: false, default: {}
-      t.string  :permalink,  null: false
-      t.string  :identifier, null: false
-      t.string  :code, null: false
       t.string  :ancestry
       t.integer :position
-      t.boolean :featured,   null: false, default: false  # Marks category as featured tile on portal landing page
       t.string  :icon_key                                 # Key from predefined icon set e.g. "book-open" (rendered per-app via Lucide)
 
       # visibility: everyone (0) — visible to all, unlisted (1) — accessible via link only, internal (2) — agents only
@@ -29,11 +25,8 @@ class CreateHelpCenterCategories < ActiveRecord::Migration[7.1]
       t.index [:portal_id, :status]
       t.index [:portal_id, :ancestry]
       t.index [:portal_id, :position]
-      t.index [:portal_id, :permalink], unique: true
-      t.index [:portal_id, :identifier], unique: true
       t.index [:portal_id, :flags]
       t.index [:portal_id, :created_at]
-      t.index [:portal_id, :featured]   # Fast querying of featured categories for portal landing page
       t.index [:portal_id, :visibility]
     end
   end

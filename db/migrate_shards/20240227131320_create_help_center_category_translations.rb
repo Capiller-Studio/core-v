@@ -7,6 +7,7 @@ class CreateHelpCenterCategoryTranslations < ActiveRecord::Migration[7.1]
       t.text    :meta_description
       t.string  :meta_keywords, array: true, default: [], null: false
       t.string  :locale, null: false
+      t.string  :slug
 
       t.references :category, null: false, type: :uuid, foreign_key: { to_table: :help_center_categories, on_delete: :cascade }, index: true
 
@@ -15,6 +16,7 @@ class CreateHelpCenterCategoryTranslations < ActiveRecord::Migration[7.1]
       t.index :locale
       t.index [:name, :locale]
       t.index [:category_id, :locale], unique: true
+      t.index [:category_id, :slug]
     end
   end
 end
