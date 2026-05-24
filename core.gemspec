@@ -65,7 +65,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'pundit'
   spec.add_dependency 'stringex'
   spec.add_dependency 'money'
-  spec.add_dependency 'prawn'
+  spec.add_dependency 'prawn', '>= 2.5.0'
   spec.add_dependency 'prawn-table'
   spec.add_dependency 'inline_svg'
   spec.add_dependency 'groupdate'

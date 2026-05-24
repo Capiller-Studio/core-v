@@ -36,6 +36,34 @@ module HelpCenter
     validates :locale, presence: true
     validates :title,  presence: true
 
+    before_validation :generate_slug, on: :create
+
+    private
+
+    def generate_slug
+      return if slug.present? || title.blank?
+      
+      base = title.parameterize
+      candidate = base
+      counter = 1
+      
+      while slug_exists?(candidate)
+        counter += 1
+        candidate = "#{base}-#{counter}"
+      end
+      
+      self.slug = candidate
+    end
+
+    def slug_exists?(candidate)
+      return false unless article
+
+      self.class.joins(:article)
+          .where(locale: locale, slug: candidate, help_center_articles: { portal_id: article.portal_id })
+          .where.not(id: id)
+          .exists?
+    end
+
     # slug is locale-specific for proper multi-language SEO.
     # Stores only the path segment (e.g. "setup-whatsapp-channel").
     # The locale prefix (/en/, /es/) is prepended by the router, not stored here.

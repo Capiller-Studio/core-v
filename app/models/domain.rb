@@ -156,10 +156,10 @@ class Domain < ApplicationRecord
   def set_custom_domain_defaults
     self.cname_target = CNAME_TARGET
 
-    # Only set initial statuses on new records
+    # Only set initial statuses on new records if not explicitly set
     if new_record?
-      self.dns_status = :dns_unverified
-      self.ssl_status = :ssl_none
+      self.dns_status = :dns_unverified unless dns_status_changed?
+      self.ssl_status = :ssl_none unless ssl_status_changed?
     end
   end
 

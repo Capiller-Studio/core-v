@@ -23,6 +23,7 @@ class CreateHelpCenterArticles < ActiveRecord::Migration[7.1]
       t.references :portal,  null: false, foreign_key: { to_table: :help_center_portals, on_delete: :cascade }, type: :uuid, index: true
       # author_id references users table — the agent/user who authored this article
       t.references :author,  foreign_key: false, type: :uuid, index: true
+      t.references :primary_category, foreign_key: { to_table: :help_center_categories, on_delete: :nullify }, type: :uuid, index: true, null: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

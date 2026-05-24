@@ -29,6 +29,14 @@
 module HelpCenter
   class Portal < ShardRecord
     include FlagShihTzu
+    include Translateable
+
+    translates :hero_title, :hero_subtitle, :header_tagline, :contact_page_title, :contact_page_subtitle, :footer_text, :search_placeholder
+
+    # TODO: If Portal UI needs a description we should add it along with meta description
+    def description
+      hero_subtitle
+    end
 
     belongs_to :account
     belongs_to :domain
