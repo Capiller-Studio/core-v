@@ -12,6 +12,7 @@ class CreateAffiliateCommissions < ActiveRecord::Migration[8.1]
       
       # The final actual calculation inside the Affiliate's currency mapped mathematically 
       t.decimal :amount, null: false, precision: 10, scale: 2
+      t.string  :currency, null: false
       
       t.integer :commission_type, default: 0
       t.integer :status, default: 0

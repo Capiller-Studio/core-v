@@ -49,10 +49,10 @@ class Domain < ApplicationRecord
 
   # --- Validations ---
   validates :value, presence: true,
-                    uniqueness: { case_sensitive: false, message: "is already taken" }
+                    uniqueness: { case_sensitive: false }
   validates :value, format: {
     with: /\A[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*\z/i,
-    message: "contains invalid characters"
+    message: :invalid
   }, allow_blank: true
   validates :domain_type, presence: true
 
@@ -92,9 +92,9 @@ class Domain < ApplicationRecord
     download downloads upload uploads file files backup backups
     login signin signup register auth oauth oauth2 sso saml
     dashboard panel cpanel control manage manager management
-    root system internal private public enterprise pro premium
+    root system internal private public supernova kinetic pro premium
     fraud phishing spam scam hack hacker exploit malware virus
-    deskbolic helpbolic techbolic
+    deskbolic helpbolic techbolic enterprise business corporate
     account accounts user users profile settings config
     portal portals helpcenter helpcenters kb knowledgebase
     search sitemap robots feed rss atom

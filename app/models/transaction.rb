@@ -5,6 +5,8 @@ class Transaction < ApplicationRecord
 
   belongs_to :account
   belongs_to :subscription, optional: true
+  belongs_to :original_transaction, class_name: "Transaction", optional: true
+  has_many :refunds, class_name: "Transaction", foreign_key: "original_transaction_id", dependent: :nullify
 
   enum :transaction_type, { charge: 0, refund: 1, topup: 2, credit: 3 }
   enum :status, { pending: 0, completed: 1, failed: 2, refunded: 3 }

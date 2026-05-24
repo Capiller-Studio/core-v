@@ -459,7 +459,7 @@ module Seeds
       agents.each { |a| puts "     Agent: #{a.email}  (password: password123)" }
       puts ""
       puts "  🏢 Teams: #{teams.map(&:name).join(', ')}"
-      puts "  📬 Inboxes: #{inbox.name}, #{email_inbox.name}"
+      puts "  📬 Inboxes: #{[inbox&.name, email_inbox&.name].compact.join(', ')}"
       puts "  🏷  Labels: #{labels.map(&:title).join(', ')}"
       puts "  👥 Customers: #{customers.count}"
       puts ""

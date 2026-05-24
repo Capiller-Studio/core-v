@@ -27,6 +27,7 @@ module Billing
     def process_charge
       remaining = amount
       wallet = account.wallet
+      transactions = []
 
       # Step 1: Deduct from wallet first
       if wallet && wallet.balance.positive?
@@ -35,7 +36,7 @@ module Billing
           wallet.deduct!(wallet_deduction, description: "Payment: #{description}")
           remaining -= wallet_deduction
 
-          create_transaction(
+          transactions << create_transaction(
             amount: wallet_deduction,
             provider: :wallet,
             status: :completed,
@@ -47,24 +48,25 @@ module Billing
       # Step 2: Charge remaining via payment gateway
       if remaining.positive?
         result = charge_via_gateway(remaining)
+        transactions << result[:transaction] if result[:transaction]
         raise(ActiveRecord::Rollback, "Payment failed") if result[:status] == :failed
 
-        result
+        { status: result[:status], amount: amount, transactions: transactions, error: result[:error] }
       else
-        { status: :completed, amount: }
+        { status: :completed, amount: amount, transactions: transactions }
       end
     end
 
     def charge_via_gateway(charge_amount)
       payment_method = account.default_payment_method
       unless payment_method
-        txn = create_transaction(
+        transaction = create_transaction(
           amount: charge_amount,
           provider: PaymentGateway::Resolver.default_provider,
           status: :failed,
           description: "No payment method: #{description}"
         )
-        return { status: :failed, error: "No payment method", transaction: txn }
+        return { status: :failed, error: "No payment method", transaction: transaction }
       end
 
       gateway = PaymentGateway::Resolver.for(account)
@@ -75,7 +77,7 @@ module Billing
         payment_method_id: payment_method.external_id
       )
 
-      txn = create_transaction(
+      transaction = create_transaction(
         amount: charge_amount,
         provider: payment_method.provider,
         status: result[:status],
@@ -83,7 +85,7 @@ module Billing
         description:
       )
 
-      { status: result[:status], amount: txn.amount, transaction: txn, error: result[:error] }
+      { status: result[:status], amount: transaction.amount, transaction: transaction, error: result[:error] }
     end
 
     def create_transaction(amount:, provider:, status:, external_id: nil, description: nil)

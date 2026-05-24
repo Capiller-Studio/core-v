@@ -22,6 +22,10 @@ module RedisUtilities
     WALLET_LOCK = "WALLET_LOCK:%{account_id}"
     CHARGE_LOCK = "CHARGE_LOCK:%{account_id}"
     RENEWAL_LOCK = "RENEWAL_LOCK:%{account_id}"
+    COMMISSION_LOCK = "COMMISSION_LOCK:%{transaction_id}"
+    PAYOUT_LOCK = "PAYOUT_LOCK:%{profile_id}"
+    PAYMENT_METHOD_LOCK = "PAYMENT_METHOD_LOCK:%{account_id}"
+    WEBHOOK_EVENT_LOCK = "WEBHOOK_EVENT_LOCK:%{provider}:%{event_id}"
 
     UNREAD_CONVERSATION_COUNT = "UNREAD:%{account_id}:%{member_id}:CONVERSATIONS"
     UNREAD_CONVERSATION_SET = "UNREAD:%{account_id}:%{member_id}:CONVERSATIONS_SET"

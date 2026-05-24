@@ -38,7 +38,7 @@ module Billing
 
       raise("Payment failed: #{result[:error]}") if result[:status] == :failed
 
-      txn = Transaction.create!(
+      transaction = Transaction.create!(
         account:,
         transaction_type: :topup,
         status: :completed,
@@ -49,9 +49,9 @@ module Billing
         description: "Wallet top-up"
       )
 
-      account.wallet.credit!(amount, description: "Top-up via #{payment_method.display_name}", reference: txn)
+      account.wallet.credit!(amount, description: "Top-up via #{payment_method.display_name}", reference: transaction)
 
-      txn
+      transaction
     end
   end
 end

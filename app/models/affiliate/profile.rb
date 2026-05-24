@@ -19,6 +19,7 @@ module Affiliate
       self.tenure_months ||= 6
       self.holding_days ||= 30
       self.currency ||= "USD"
+      self.payouts_enabled = false if payouts_enabled.nil?
       # max_earnings_per_account defaults to nil inherently
     end
 

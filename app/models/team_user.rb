@@ -28,7 +28,7 @@ class TeamUser < ShardRecord
 
   enum :role, { member: 0, lead: 1 }
 
-  validates :user_id, uniqueness: { scope: :team_id, message: "is already a member of this team" }
+  validates :user_id, uniqueness: { scope: :team_id }
   validate :user_belongs_to_team_account
 
   private
@@ -40,7 +40,7 @@ class TeamUser < ShardRecord
     return if team.blank? || user.blank?
 
     unless AccountUser.exists?(account_id: team.account_id, user_id: user_id)
-      errors.add(:user, "does not belong to the same account as this team")
+      errors.add(:user, :invalid)
     end
   end
 end

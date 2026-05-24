@@ -6,14 +6,15 @@ class Plan < ApplicationRecord
   TRANSLATABLE_FIELDS = %i[display_name description].freeze
 
   # Unique plan names for Deskbolic
-  STARTER    = "starter"
-  MOMENTUM   = "momentum"
-  PINNACLE   = "pinnacle"
-  ENTERPRISE = "enterprise"
+  SYMBOLIC   = "symbolic"
+  ANABOLIC   = "anabolic"
+  HYPERBOLIC = "hyperbolic"
+  PARABOLIC  = "parabolic"
 
-  NAMES = [ STARTER, MOMENTUM, PINNACLE, ENTERPRISE ].freeze
+  NAMES = [ SYMBOLIC, ANABOLIC, HYPERBOLIC, PARABOLIC ].freeze
 
   enum :status, { active: 0, archived: 1 }
+  enum :visibility, { public_plan: 0, private_plan: 1 }
 
   has_many :subscriptions, dependent: :restrict_with_error
 
@@ -23,7 +24,8 @@ class Plan < ApplicationRecord
   scope :free, -> { where(base_price: 0) }
   scope :paid, -> { where("base_price > 0") }
 
-  validates :name, presence: true, uniqueness: true, inclusion: { in: NAMES }
+  validates :name, presence: true, uniqueness: { scope: :currency }, inclusion: { in: NAMES }
+  validates :currency, presence: true, inclusion: { in: Core::SUPPORTED_CURRENCIES }
 
   def free?
     base_price.zero?
@@ -33,8 +35,12 @@ class Plan < ApplicationRecord
     !free?
   end
 
-  def contact_us?
-    contact_us
+  def min_users
+    limit_for(:users_min) == -1 ? 1 : limit_for(:users_min)
+  end
+
+  def max_users
+    limit_for(:users_max)
   end
 
   # Limit helpers — returns -1 for unlimited

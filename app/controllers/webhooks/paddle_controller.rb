@@ -9,18 +9,23 @@ module Webhooks
       event_type = params["event_type"]
       data = params["data"]
 
-      ActiveRecord::Base.transaction do
-        case event_type
-        when "transaction.completed"
-          handle_transaction_completed(data)
-        when "subscription.created"
-          handle_subscription_created(data)
-        when "subscription.updated"
-          handle_subscription_updated(data)
-        when "subscription.canceled"
-          handle_subscription_canceled(data)
-        when "subscription.past_due"
-          handle_subscription_past_due(data)
+      alert_id = params["alert_id"] || data["id"]
+      lock_key = format(::RedisUtilities::Keys::WEBHOOK_EVENT_LOCK, provider: "paddle", event_id: alert_id)
+
+      ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+        ActiveRecord::Base.transaction do
+          case event_type
+          when "transaction.completed"
+            handle_transaction_completed(data)
+          when "subscription.created"
+            handle_subscription_created(data)
+          when "subscription.updated"
+            handle_subscription_updated(data)
+          when "subscription.canceled"
+            handle_subscription_canceled(data)
+          when "subscription.past_due"
+            handle_subscription_past_due(data)
+          end
         end
       end
 
@@ -98,6 +103,8 @@ module Webhooks
       Subscription.create!(
         account:,
         plan:,
+        quantity: [account.users_count, 1].max,
+        currency: plan.currency,
         status: :active,
         billing_cycle: billing_cycle.to_sym,
         provider: :paddle,

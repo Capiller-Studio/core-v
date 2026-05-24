@@ -62,18 +62,20 @@ module Seeds
       
       unless form
         creator = Channels::ChannelCreator.new(
-          account,
-          {
+          channel_type: "contact_form",
+          channel_params: {
             name: "Support Request Form",
             success_message_i18n_key: "contact_form.success",
             require_login: "false",
             allow_attachments: "false",
             send_confirmation_email: "false"
-          }
+          },
+          current_account: account
         )
         
         # We need to manually link the created form to the portal since ChannelCreator doesn't accept portal
-        form = creator.contact_form_channel
+        inbox = creator.send(:contact_form_channel)
+        form = inbox.channel
         form.update!(portal: portal, status: :active)
       end
 

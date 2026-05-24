@@ -9,6 +9,8 @@ class CreateSubscriptions < ActiveRecord::Migration[7.1]
       t.datetime :cancelled_at
       t.string   :external_id
       t.integer  :provider, null: false, default: 0
+      t.integer  :quantity, null: false, default: 1
+      t.string   :currency, limit: 4, null: false, default: "USD"
       t.jsonb    :data, null: false, default: {}
 
       t.references :account, null: false, type: :uuid, foreign_key: { on_delete: :cascade }, index: true

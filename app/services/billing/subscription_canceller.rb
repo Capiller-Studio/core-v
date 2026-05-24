@@ -45,13 +45,15 @@ module Billing
     end
 
     def downgrade_to_free_plan
-      free_plan = Plan.find_by(name: Plan::STARTER)
+      free_plan = Plan.find_by(name: Plan::SYMBOLIC, currency: subscription.plan.currency)
       return unless free_plan
 
       account = subscription.account
       Subscription.create!(
-        account:,
+        account: account,
         plan: free_plan,
+        quantity: [account.users_count, 1].max,
+        currency: subscription.plan.currency,
         status: :active,
         billing_cycle: :monthly,
         current_period_start: Time.current,

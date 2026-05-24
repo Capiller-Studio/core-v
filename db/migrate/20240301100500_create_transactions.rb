@@ -13,6 +13,7 @@ class CreateTransactions < ActiveRecord::Migration[7.1]
 
       t.references :account, null: false, type: :uuid, foreign_key: { on_delete: :cascade }, index: true
       t.references :subscription, null: true, type: :uuid, foreign_key: { on_delete: :nullify }, index: true
+      t.references :original_transaction, null: true, type: :uuid, foreign_key: { to_table: :transactions, on_delete: :nullify }, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

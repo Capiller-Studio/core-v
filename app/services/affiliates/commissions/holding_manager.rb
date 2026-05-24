@@ -11,8 +11,12 @@ module Affiliates
           profile = commission.profile
           days_held = (Time.current.to_date - commission.created_at.to_date).to_i
 
-          if days_held >= profile.holding_days
-            commission.available!
+          lock_key = format(::RedisUtilities::Keys::COMMISSION_LOCK, transaction_id: commission.transaction_record_id)
+
+          ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+            if days_held >= profile.holding_days
+              commission.available!
+            end
           end
         rescue StandardError => e
           Rails.logger.error("Failed evaluating Commission ##{commission.id}: #{e.message}")

@@ -9,20 +9,24 @@ module Webhooks
       event = construct_event
       return head(:bad_request) unless event
 
-      ActiveRecord::Base.transaction do
-        case event.type
-        when "checkout.session.completed"
-          handle_checkout_completed(event.data.object)
-        when "invoice.paid"
-          handle_invoice_paid(event.data.object)
-        when "invoice.payment_failed"
-          handle_payment_failed(event.data.object)
-        when "customer.subscription.updated"
-          handle_subscription_updated(event.data.object)
-        when "customer.subscription.deleted"
-          handle_subscription_deleted(event.data.object)
-        when "payment_method.attached"
-          handle_payment_method_attached(event.data.object)
+      lock_key = format(::RedisUtilities::Keys::WEBHOOK_EVENT_LOCK, provider: "stripe", event_id: event.id)
+
+      ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+        ActiveRecord::Base.transaction do
+          case event.type
+          when "checkout.session.completed"
+            handle_checkout_completed(event.data.object)
+          when "invoice.paid"
+            handle_invoice_paid(event.data.object)
+          when "invoice.payment_failed"
+            handle_payment_failed(event.data.object)
+          when "customer.subscription.updated"
+            handle_subscription_updated(event.data.object)
+          when "customer.subscription.deleted"
+            handle_subscription_deleted(event.data.object)
+          when "payment_method.attached"
+            handle_payment_method_attached(event.data.object)
+          end
         end
       end
 
