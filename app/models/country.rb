@@ -21,4 +21,5 @@
 #  index_countries_on_lower_iso_name  (lower((iso_name)::text)) UNIQUE
 #
 class Country < ApplicationRecord
+  has_many :states, dependent: :destroy
 end

@@ -12,6 +12,7 @@ module Affiliates
       def call
         return unless profile
         raise("Payouts disabled for this affiliate") unless profile.payouts_enabled?
+        raise("Invalid Bank Details") unless profile.valid_bank_details?
 
         lock_key = format(::RedisUtilities::Keys::PAYOUT_LOCK, profile_id: profile.id)
 
