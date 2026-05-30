@@ -33,13 +33,17 @@ module Affiliates
         private
 
         def validate_bank_data!
-          bank_data = payout.profile.bank_account_data
-          if bank_data.blank? || bank_data["iban"].blank? || bank_data["account_holder_name"].blank?
-            payout.update!(status: :failed)
-            payout.update!(data: payout.data.merge("error" => "Missing IBAN or Account Holder Name"))
+          result = Affiliates::BankDetailsValidator.call(payout.profile)
+          unless result.success?
+            fail_payout!(result.error)
             return false
           end
           true
+        end
+        
+        def fail_payout!(reason)
+          payout.update!(status: :failed)
+          payout.update!(data: payout.data.merge("error" => reason))
         end
 
         def create_quote
@@ -61,23 +65,18 @@ module Affiliates
         end
 
         def create_account
-          bank_data = payout.profile.bank_account_data
-          
-          # Optional address parsing
-          details = { "iban" => bank_data["iban"] }
-          if bank_data["address"].present?
-            details["address"] = bank_data["address"] # Wise expects { "firstLine", "city", "postCode", "countryCode" }
-          end
+          profile = payout.profile
+          payload = profile.wise_bank_details_payload
           
           response = HTTParty.post(
             "#{api_endpoint}/v1/accounts",
             headers: api_headers,
             body: {
               "currency" => payout.currency,
-              "type" => "iban",
-              "accountHolderName" => bank_data["account_holder_name"],
-              "legalType" => "PRIVATE",
-              "details" => details
+              "type" => payload[:type],
+              "accountHolderName" => profile.payment_details["account_holder_name"],
+              "legalType" => profile.payment_details["legal_type"] || "PRIVATE",
+              "details" => payload[:details]
             }.to_json
           )
           

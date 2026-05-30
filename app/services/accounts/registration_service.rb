@@ -47,7 +47,11 @@ module Accounts
     end
 
     def create_affiliate_profile!(user)
-      user.create_affiliate_profile!
+      if params[:currency].present?
+        user.create_affiliate_profile!(currency: params[:currency])
+      else
+        user.create_affiliate_profile!
+      end
     end
 
     def create_account_with_owner!(user)
