@@ -59,8 +59,13 @@ class Inbox < ShardRecord
     configurations.fetch("auto_assign", true)
   end
 
+  before_create :set_primary_inbox_if_first
+
   private
 
+  def set_primary_inbox_if_first
+    self.primary_inbox = true if channel.present? && channel.inboxes.empty?
+  end
   def cleanup_integration_settings
     Integration.where("settings @> ?", { subscribed_inboxes: [ id ] }.to_json).find_each do |integration|
       remaining_inboxes = integration.subscribed_inboxes - [ id ]

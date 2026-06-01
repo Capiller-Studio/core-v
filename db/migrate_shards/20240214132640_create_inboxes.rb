@@ -9,7 +9,7 @@ class CreateInboxes < ActiveRecord::Migration[7.1]
 
       t.string :timezone, null: false, default: "UTC"
       t.string :default_locale, null: false, default: "en"
-      
+      t.boolean :primary_inbox, null: false, default: false
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true
       # t.references :address, null: true,  foreign_key: false, type: :uuid, index: false
@@ -21,6 +21,7 @@ class CreateInboxes < ActiveRecord::Migration[7.1]
       t.index [:account_id, :name]
       t.index [:account_id, :status]
       t.index [:account_id, :created_at]
+      t.index [:channel_type, :channel_id], unique: true, where: "primary_inbox = true", name: "index_inboxes_on_channel_primary"
     end
   end
 end

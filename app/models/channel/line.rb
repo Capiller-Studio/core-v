@@ -32,6 +32,9 @@ module Channel
     include Routable
     belongs_to :account
 
+    has_many :inboxes, as: :channel, dependent: :destroy
+    has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
+
     enum :status, { active: 0 }
   end
 end

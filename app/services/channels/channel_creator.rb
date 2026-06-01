@@ -42,7 +42,8 @@ module Channels
 
       channel.inboxes.create!(
         name: channel_params[:name],
-        account: current_account
+        account: current_account,
+        primary_inbox: true
       )
     end
 
@@ -59,7 +60,8 @@ module Channels
 
       channel.inboxes.create!(
         name: channel_params[:name],
-        account: current_account
+        account: current_account,
+        primary_inbox: true
       )
     end
 
@@ -82,7 +84,8 @@ module Channels
 
       channel.inboxes.create!(
         name: channel_params[:name],
-        account: current_account
+        account: current_account,
+        primary_inbox: true
       )
     end
 
@@ -101,7 +104,8 @@ page_identifier: JSON.parse(channel_params[:page_data])["id"])
 
       channel.inboxes.create!(
         name: JSON.parse(channel_params[:page_data])["name"],
-        account: current_account
+        account: current_account,
+        primary_inbox: true
       )
     end
 
@@ -123,7 +127,8 @@ phone_number_id: channel_params[:phone_number_id])
 
       channel.inboxes.create!(
         name: channel_params[:name],
-        account: current_account
+        account: current_account,
+        primary_inbox: true
       )
     end
   end

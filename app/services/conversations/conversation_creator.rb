@@ -17,7 +17,7 @@ module Conversations
       self.customer             = customer
       self.event                = event
       self.account              = account || channel.account
-      self.inbox                = channel.inboxes.first
+      self.inbox                = channel.primary_inbox
     end
 
     def call

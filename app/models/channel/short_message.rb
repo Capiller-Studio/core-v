@@ -38,6 +38,9 @@ module Channel
     include Routable
     belongs_to :account
 
+    has_many :inboxes, as: :channel, dependent: :destroy
+    has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
+
     enum :status,  { active: 0 }
     enum :service, { twilio: 0, signalwire: 1, aws_sns: 2 }
     enum :short_message_type,  { sms: 0 }

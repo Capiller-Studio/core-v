@@ -31,7 +31,7 @@ module Channels
       private
 
       def find_inbox
-        self.inbox = contact_form_channel.inboxes.first
+        self.inbox = contact_form_channel.primary_inbox
       end
 
       def process_custom_fields

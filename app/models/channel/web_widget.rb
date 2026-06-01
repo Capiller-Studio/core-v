@@ -40,6 +40,7 @@ module Channel
     belongs_to :portal, class_name: "HelpCenter::Portal", optional: true
 
     has_many :inboxes, as: :channel, dependent: :destroy
+    has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
 
     has_flags 1 => :anonymous_allowed,
               2 => :help_center_enabled,
