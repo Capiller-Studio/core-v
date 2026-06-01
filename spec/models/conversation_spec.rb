@@ -119,7 +119,7 @@ RSpec.describe Conversation, type: :model do
         conversation.assign!(user)
         conversation.assign!(other_user)
         expect(conversation.assignee).to eq(other_user)
-        expect(conversation.conversation_members.assignees.count).to eq(1)
+        expect(conversation.conversation_members.where(member: other_user, role: :participant).count).to eq(1)
       end
     end
   end
