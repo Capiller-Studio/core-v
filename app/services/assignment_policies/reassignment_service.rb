@@ -31,16 +31,7 @@ module AssignmentPolicies
     private
 
     def assigned_conversations
-      Conversation
-        .joins(:conversation_members)
-        .where(
-          conversation_members: {
-            member_type: "User",
-            member_id: user.id,
-            role: :assignee
-          }
-        )
-        .where(account: account, status: [:active, :snoozed])
+      Conversation.where(assignee: user, account: account, status: [:active, :snoozed])
     end
   end
 end

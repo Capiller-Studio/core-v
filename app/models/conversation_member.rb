@@ -32,25 +32,16 @@ class ConversationMember < ShardRecord
   belongs_to :conversation
   belongs_to :member, polymorphic: true
 
-  enum :role, { participant: 0, assignee: 1, watcher: 2 }
+  enum :role, { participant: 0, watcher: 1 }
 
-  scope :assignees, -> { where(role: :assignee) }
   scope :participants, -> { where(role: :participant) }
   scope :watchers, -> { where(role: :watcher) }
   scope :agents, -> { where(member_type: "User") }
-
-  validate :single_assignee_per_conversation, if: :assignee?
 
   def mark_as_read!
     update!(last_seen_at: Time.current)
     UnreadCounts::Reset.call(conversation, member)
   end
 
-  private
 
-  # Ensure only one assignee per conversation at any time
-  def single_assignee_per_conversation
-    existing = conversation.conversation_members.assignees.where.not(id:)
-    errors.add(:role, "conversation already has an assignee") if existing.exists?
-  end
 end

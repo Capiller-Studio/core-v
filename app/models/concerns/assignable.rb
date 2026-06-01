@@ -9,34 +9,23 @@ module Assignable
 
   # --- Agent Assignment ---
 
-  def assignee
-    conversation_members.assignees.agents.first&.member
-  end
-
   def assigned?
-    conversation_members.assignees.agents.exists?
+    assignee_id.present?
   end
 
   def assign!(user)
     ActiveRecord::Base.transaction do
-      # Demote current assignee to participant
-      # rubocop:disable Rails/SkipsModelValidations
-      conversation_members.assignees.agents.update_all(role: :participant)
-      # rubocop:enable Rails/SkipsModelValidations
+      update!(assignee: user)
 
-      # Set new assignee
-      member = conversation_members.find_or_initialize_by(
-        member: user,
-        account:
-      )
-      member.update!(role: :assignee)
+      # Ensure assignee is added as a participant so they can track unread/seen states
+      conversation_members.find_or_create_by!(member: user, account: account) do |cm|
+        cm.role = :participant
+      end
     end
   end
 
   def unassign!
-    # rubocop:disable Rails/SkipsModelValidations
-    conversation_members.assignees.agents.update_all(role: :participant)
-    # rubocop:enable Rails/SkipsModelValidations
+    update!(assignee: nil)
   end
 
   # --- Team Assignment ---

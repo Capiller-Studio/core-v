@@ -19,11 +19,9 @@ module AssignmentPolicies
       return [] if agent_ids.blank?
 
       # Count open (active + snoozed) conversations assigned to each agent
-      assigned_counts = ConversationMember
-        .where(member_type: "User", member_id: agent_ids, role: :assignee)
-        .joins(:conversation)
-        .merge(Conversation.where(status: [:active, :snoozed]))
-        .group(:member_id)
+      assigned_counts = Conversation
+        .where(assignee_id: agent_ids, status: [:active, :snoozed])
+        .group(:assignee_id)
         .count
 
       # Filter out agents who have reached or exceeded the capacity limit

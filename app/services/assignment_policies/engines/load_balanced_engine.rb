@@ -17,17 +17,15 @@ module AssignmentPolicies
         return User.find_by(id: eligible_agent_ids.first) if eligible_agent_ids.size == 1
 
         # Count open (active + snoozed) conversations assigned to each agent
-        counts = ConversationMember
-          .where(member_type: "User", member_id: eligible_agent_ids, role: :assignee)
-          .joins(:conversation)
-          .merge(Conversation.where(status: [:active, :snoozed]))
-          .group(:member_id)
+        counts = Conversation
+          .where(assignee_id: eligible_agent_ids, status: [:active, :snoozed])
+          .group(:assignee_id)
           .count
 
         # Find last assignment time for tie-breaking
-        last_assignments = ConversationMember
-          .where(member_type: "User", member_id: eligible_agent_ids, role: :assignee)
-          .group(:member_id)
+        last_assignments = Conversation
+          .where(assignee_id: eligible_agent_ids)
+          .group(:assignee_id)
           .maximum(:updated_at)
 
         # Select agent with lowest conversation count

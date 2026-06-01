@@ -98,11 +98,9 @@ module AssignmentPolicies
       def load_balanced_select(agent_ids)
         return User.find_by(id: agent_ids.first) if agent_ids.size == 1
 
-        counts = ConversationMember
-          .where(member_type: "User", member_id: agent_ids, role: :assignee)
-          .joins(:conversation)
-          .merge(Conversation.where(status: [:active, :snoozed]))
-          .group(:member_id)
+        counts = Conversation
+          .where(assignee_id: agent_ids, status: [:active, :snoozed])
+          .group(:assignee_id)
           .count
 
         selected_id = agent_ids.min_by { |id| counts[id] || 0 }
