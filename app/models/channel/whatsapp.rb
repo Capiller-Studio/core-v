@@ -45,5 +45,6 @@ module Channel
     enum :service, { cloud_api: 0 }
 
     has_many :inboxes, as: :channel, dependent: :destroy
+    has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
   end
 end

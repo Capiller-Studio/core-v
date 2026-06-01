@@ -174,7 +174,7 @@ module Seeds
 
       existing = Channel::WebWidget.find_by(account: account, name: "Demo Widget")
       if existing
-        inbox = existing.inboxes.first
+        inbox = existing.primary_inbox
         puts "    ✓ Already exists → Inbox: #{inbox&.name}"
         return inbox
       end
@@ -213,7 +213,7 @@ module Seeds
 
       existing = Channel::Email.find_by(account: account, email: "support@deskbolic.test")
       if existing
-        inbox = existing.inboxes.first
+        inbox = existing.primary_inbox
         puts "    ✓ Already exists → Inbox: #{inbox&.name}"
         return inbox
       end

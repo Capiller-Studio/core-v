@@ -46,7 +46,7 @@ module Channels
         def find_inbox
           # TODO: Logic for finding the correct inbox. Maybe: One inbox will act as default and other inboxes will
           # receive conversations/messages based on Filters
-          self.inbox = whatsapp_channel.inboxes.first
+          self.inbox = whatsapp_channel.primary_inbox
         end
 
         def find_existing_message(external_id)

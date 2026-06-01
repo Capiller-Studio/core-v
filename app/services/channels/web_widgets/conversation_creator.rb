@@ -29,7 +29,7 @@ module Channels
       private
 
       def find_inbox
-        self.inbox = web_widget_channel.inboxes.first
+        self.inbox = web_widget_channel.primary_inbox
       end
 
       def find_or_create_customer

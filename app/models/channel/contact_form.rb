@@ -36,6 +36,7 @@ module Channel
     # Gets its own Inbox via the standard channel polymorphic pattern.
     # Conversations from form submissions land in this Inbox with source: :help_center
     has_many :inboxes, as: :channel, dependent: :destroy
+    has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
 
     # Custom fields attached to this form via CustomFieldResource (polymorphic)
     has_many :custom_field_resources, as: :resource, class_name: "CustomFieldResource", dependent: :destroy

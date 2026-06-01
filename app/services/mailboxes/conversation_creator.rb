@@ -35,7 +35,7 @@ module Mailboxes
     def find_inbox
       # TODO: Logic for finding the correct inbox. Maybe: One inbox will act as default and other inboxes will
       # receive conversations/messages based on Filters
-      self.inbox = email_channel.inboxes.first
+      self.inbox = email_channel.primary_inbox
     end
 
     def find_or_create_conversation

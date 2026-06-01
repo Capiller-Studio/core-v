@@ -38,6 +38,7 @@ module Channel
     enum :status, { active: 0 }
 
     has_many :inboxes, as: :channel, dependent: :destroy
+    has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
 
     # IMAP config: { address:, port:, username:, password:, enable_ssl: }
     def imap_enabled?

@@ -51,6 +51,7 @@ module Channel
 
     # TODO: WIP (Rough sketch to get going)
     has_many :inboxes, as: :channel, dependent: :destroy
+    has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
 
     enum :status, { active: 0 }
 

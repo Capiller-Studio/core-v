@@ -49,7 +49,7 @@ module Channels
         private
 
         def find_inbox
-          self.inbox = short_message_channel.inboxes.first
+          self.inbox = short_message_channel.primary_inbox
         end
 
         def find_or_create_customer
