@@ -65,6 +65,7 @@ class Account < ApplicationRecord
             8 => :contact_form_enabled,
             9 => :help_center_enabled,
             10 => :custom_email_templates_enabled,
+            11 => :assignment_policies_enabled,
             column: "features"
 
   def feature_enabled?(feature)
@@ -120,6 +121,9 @@ class Account < ApplicationRecord
   has_many :notification_subscriptions, dependent: :destroy
   has_many :business_hour_groups, dependent: :destroy
   has_many :business_hours, dependent: :destroy
+  has_many :assignment_policies, dependent: :destroy
+  has_many :skills, dependent: :destroy
+  has_many :user_skills, dependent: :destroy
   has_many :chat_bots, dependent: :destroy
   has_many :webhook_deliveries, dependent: :destroy
 

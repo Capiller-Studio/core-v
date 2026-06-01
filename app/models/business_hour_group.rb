@@ -20,4 +20,7 @@
 #
 class BusinessHourGroup < ShardRecord
   belongs_to :account
+
+  has_many :business_hours, dependent: :destroy
+  has_many :assignment_policies, dependent: :nullify
 end

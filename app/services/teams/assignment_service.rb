@@ -47,9 +47,9 @@ module Teams
       if agent
         conversation.assign!(agent)
       elsif team&.auto_assign?
-        # Reload to ensure the team association is fresh for round-robin
+        # Reload to ensure the team association is fresh for policy-based assignment
         conversation.reload
-        Conversations::RoundRobinAssignment.call(conversation: conversation)
+        AssignmentPolicies::Dispatcher.call(conversation: conversation)
       end
     end
 

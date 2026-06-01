@@ -23,6 +23,7 @@ module Seeds
           "email_templates" => false,
           "audit_logs" => false,
           "teams" => false,
+          "assignment_policies" => false,
           "channels" => {
             "web_widget" => true,
             "email" => false,
@@ -57,6 +58,7 @@ module Seeds
           "email_templates" => false,
           "audit_logs" => false,
           "teams" => true,
+          "assignment_policies" => false,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -91,6 +93,7 @@ module Seeds
           "email_templates" => true,
           "audit_logs" => true,
           "teams" => true,
+          "assignment_policies" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -126,6 +129,7 @@ module Seeds
           "audit_logs" => true,
           "teams" => true,
           "custom_branding" => true,
+          "assignment_policies" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,

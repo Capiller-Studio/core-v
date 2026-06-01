@@ -48,6 +48,8 @@ class Inbox < ShardRecord
   has_many :customers, through: :customer_inboxes
   has_many :sla_inboxes, dependent: :destroy
   has_many :sla_policies, through: :sla_inboxes
+  has_many :assignment_policy_inboxes, dependent: :destroy
+  has_many :assignment_policies, through: :assignment_policy_inboxes
 
   after_destroy :cleanup_integration_settings
 
