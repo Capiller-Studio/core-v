@@ -64,6 +64,6 @@ module Assignable
   end
 
   def auto_assign_agent
-    Conversations::RoundRobinAssignment.call(conversation: self)
+    AssignmentPolicies::Dispatcher.call(conversation: self)
   end
 end

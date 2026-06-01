@@ -190,6 +190,10 @@ en:
           attributes:
             name:
               blank: "can't be blank"
+        assignment_policy:
+          attributes:
+            business_hour_group:
+              required_with_business_hours: "must be selected when 'respect business hours' is enabled"
   domains:
     dns_instructions:
       record_type: "CNAME"

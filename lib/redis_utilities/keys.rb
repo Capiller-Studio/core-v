@@ -17,6 +17,7 @@ module RedisUtilities
     FACEBOOK_MESSAGE_CREATION_LOCK = "FACEBOOK_MESSAGE_CREATION_LOCK:%{receiver_id}:%{sender_id}"
     INBOX_ROUND_ROBIN = "INBOX:%{account_id}:%{inbox_id}:ROUND_ROBIN"
     TEAM_ROUND_ROBIN = "TEAM:%{account_id}:%{team_id}:ROUND_ROBIN"
+    POLICY_ROUND_ROBIN = "POLICY:%{account_id}:%{policy_id}:ROUND_ROBIN"
 
     SUBSCRIPTION_LOCK = "SUBSCRIPTION_LOCK:%{account_id}"
     WALLET_LOCK = "WALLET_LOCK:%{account_id}"
