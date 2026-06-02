@@ -36,6 +36,15 @@ class ConversationSla < ShardRecord
   scope :active, -> { where(status: :pending) }
   scope :breached, -> { where(status: :failed) }
 
+  # Call this when creating or recalculating SLA
+  def recalculate_targets!
+    update!(
+      target_first_response_at: calculate_target(sla_policy.initial_response_time_limit, conversation.created_at),
+      target_next_response_at: calculate_target(sla_policy.response_time_limit, last_customer_message_time),
+      target_resolution_at: calculate_target(sla_policy.resolution_time_limit, conversation.created_at)
+    )
+  end
+
   # Check if any SLA threshold has been breached
   def sla_breached?
     initial_response_breached? || response_breached? || resolution_breached?
@@ -51,41 +60,32 @@ class ConversationSla < ShardRecord
 
   private
 
-  # Time elapsed since conversation was created (in seconds)
-  def elapsed_time
-    @elapsed_time ||= Time.current - conversation.created_at
-  end
-
-  # Time since last agent response (in seconds)
-  def time_since_last_response
-    last_outgoing = conversation.messages.where(sender_type: "User").order(created_at: :desc).first
-    return elapsed_time unless last_outgoing
-
-    Time.current - last_outgoing.created_at
-  end
-
   def initial_response_breached?
-    limit = sla_policy.initial_response_time_limit
-    return false unless limit
-
-    conversation.first_respond_at.blank? && elapsed_time > limit
+    return false unless target_first_response_at
+    conversation.first_respond_at.blank? && Time.current > target_first_response_at
   end
 
   def response_breached?
-    limit = sla_policy.response_time_limit
-    return false unless limit
-
+    return false unless target_next_response_at
+    
     # Only check if there are unanswered customer messages
     last_message = conversation.messages.order(created_at: :desc).first
     return false unless last_message&.sender_type == "Customer"
 
-    time_since_last_response > limit
+    Time.current > target_next_response_at
   end
 
   def resolution_breached?
-    limit = sla_policy.resolution_time_limit
-    return false unless limit
+    return false unless target_resolution_at
+    !conversation.resolved? && !conversation.closed? && Time.current > target_resolution_at
+  end
 
-    !conversation.resolved? && !conversation.closed? && elapsed_time > limit
+  def calculate_target(limit, start_time)
+    return nil if limit.blank? || start_time.blank?
+    Sla::TargetCalculator.call(sla_policy: sla_policy, start_time: start_time, limit_in_seconds: limit)
+  end
+
+  def last_customer_message_time
+    conversation.messages.where(sender_type: "Customer").order(created_at: :desc).first&.created_at || conversation.created_at
   end
 end

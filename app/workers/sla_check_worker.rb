@@ -7,11 +7,23 @@ class SlaCheckWorker
   # TODO: Configure in scheduled.rb
 
   def perform
-    ConversationSla.active.includes(:sla_policy, conversation: :messages).find_each do |sla|
-      next unless sla.sla_breached?
+    time_now = Time.current
 
-      sla.mark_as_breached!
-      notify_breach(sla)
+    active_shards = Account.distinct.pluck(:shard_key)
+
+    active_shards.each do |shard_key|
+      ShardRecord.connected_to(shard: shard_key.to_sym, role: :writing) do
+        # Find SLAs where any of the targets have passed
+        breached_slas = ConversationSla.active.where(
+          "target_first_response_at < :now OR target_next_response_at < :now OR target_resolution_at < :now",
+          now: time_now
+        ).includes(:conversation, :sla_policy)
+
+        breached_slas.find_each do |sla|
+          sla.mark_as_breached!
+          notify_breach(sla)
+        end
+      end
     end
   end
 

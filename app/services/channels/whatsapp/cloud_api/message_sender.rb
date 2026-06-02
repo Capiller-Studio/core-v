@@ -26,6 +26,8 @@ module Channels
 
           if message.attachments.present?
             send_attachment_message
+          elsif message.input_csat?
+            send_csat_interactive_message
           elsif message.content_type == "interactive"
             # TODO: Add additional content types eg. buttons, textboxes, select input etc. Then replace this placeholder
             send_interactive_text_message
@@ -81,22 +83,36 @@ module Channels
           process_response(response)
         end
 
+        def send_csat_interactive_message
+          payload = {
+            type: "button",
+            body: { text: message.content },
+            action: {
+              buttons: [
+                {
+                  type: "reply",
+                  reply: { id: "csat_rate_#{message.data['csat_response_id']}", title: "Rate Now" }
+                }
+              ]
+            }
+          }
+
+          response = HTTParty.post(
+            "#{phone_number_endpoint}/messages",
+            headers: api_headers,
+            body: {
+              messaging_product: 'whatsapp',
+              to: customer.full_phone_number,
+              interactive: payload,
+              type: 'interactive'
+            }.to_json
+          )
+
+          process_response(response)
+        end
+
         def send_interactive_text_message
           # TODO: WIP
-
-          # response = HTTParty.post(
-          #   "#{phone_number_endpoint}/messages",
-          #   headers: api_headers,
-          #   body: {
-          #     messaging_product: 'whatsapp',
-          #     to: customer.full_phone_number,
-          #     interactive: payload,
-          #     type: 'interactive'
-          #   }.to_json
-          # )
-
-          # process_response(response)
-        end
 
         def process_response(response)
           if response.success?
