@@ -14,33 +14,16 @@ module SlaTrackable
 
   private
 
-  # Automatically apply the SLA policy linked to this conversation's inbox
+  # Delegate SLA tracking to the dedicated EventProcessor
   def apply_sla_policy
-    sla_policy = inbox.sla_policies.first
-    return unless sla_policy
-
-    conversation_slas.create!(
-      account:,
-      sla_policy:
-    )
+    process_sla
   end
 
-  # Track first agent response time
   def track_first_response
     # first_respond_at is set externally when the first outgoing message is created.
-    # This callback ensures the SLA is evaluated at that point.
   end
 
-  # When a conversation is resolved/closed, mark pending SLAs as successful
   def check_sla_on_resolve
-    return unless resolved? || closed?
-
-    conversation_slas.active.find_each do |sla|
-      if sla.sla_breached?
-        sla.mark_as_breached!
-      else
-        sla.mark_as_successful!
-      end
-    end
+    # The status change to resolved/closed will trigger process_sla via Conversation after_update_commit
   end
 end

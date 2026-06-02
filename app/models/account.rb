@@ -66,6 +66,7 @@ class Account < ApplicationRecord
             9 => :help_center_enabled,
             10 => :custom_email_templates_enabled,
             11 => :assignment_policies_enabled,
+            12 => :custom_csat_enabled,
             column: "features"
 
   def feature_enabled?(feature)
@@ -111,6 +112,8 @@ class Account < ApplicationRecord
   has_many :email_templates, dependent: :destroy
   has_many :email_template_layouts, dependent: :destroy
   has_many :notification_settings, dependent: :destroy
+  has_many :csat_surveys, class_name: "Csat::Survey", dependent: :destroy
+  has_many :csat_survey_responses, class_name: "Csat::SurveyResponse", dependent: :destroy
   has_many :campaigns, dependent: :destroy
   has_many :filters, dependent: :destroy
   has_many :mentions, dependent: :destroy
@@ -129,7 +132,14 @@ class Account < ApplicationRecord
 
   after_create :generate_default_roles
   after_create :generate_default_custom_fields
-  after_create :generate_default_email_templates
+
+  def event_payload
+    {
+      id: id,
+      name: name,
+      type: "Account"
+    }
+  end
 
   private
 
@@ -139,9 +149,5 @@ class Account < ApplicationRecord
 
   def generate_default_custom_fields
     Accounts::DefaultCustomFieldsCreator.call(account: self)
-  end
-
-  def generate_default_email_templates
-    Seeds::EmailTemplateSeeder.seed(self)
   end
 end

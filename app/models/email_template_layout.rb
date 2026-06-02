@@ -28,6 +28,27 @@ class EmailTemplateLayout < ShardRecord
 
   validates :name, presence: true
 
+  before_create :enforce_email_template_layouts_limit!
+  after_create_commit :increment_email_template_layouts_usage
+  after_destroy_commit :decrement_email_template_layouts_usage
+
+  private
+
+  def enforce_email_template_layouts_limit!
+    return if account.within_limit?(:email_template_layouts)
+
+    errors.add(:base, "Email template layouts limit reached for your plan. Please upgrade.")
+    throw(:abort)
+  end
+
+  def increment_email_template_layouts_usage
+    account.increment_usage!(:email_template_layouts)
+  end
+
+  def decrement_email_template_layouts_usage
+    account.decrement_usage!(:email_template_layouts)
+  end
+
   # Model-specific lifecycle callbacks for Publishable concern
 
   def after_publish_assignments!(locale)

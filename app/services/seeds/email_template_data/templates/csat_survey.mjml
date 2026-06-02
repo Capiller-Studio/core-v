@@ -1,0 +1,23 @@
+<mjml>
+  <mj-body>
+    <mj-section background-color="#ffffff" border-radius="8px" padding="40px 24px" box-shadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)">
+      <mj-column>
+        <mj-text align="center" color="#111827" font-size="24px" font-weight="700" padding-bottom="12px" font-family="Inter, -apple-system, sans-serif">
+          How did we do?
+        </mj-text>
+        
+        <mj-text align="center" color="#4B5563" font-size="16px" line-height="24px" padding-bottom="32px" font-family="Inter, -apple-system, sans-serif">
+          Hi {{customer.name}}, we recently resolved your conversation ({{conversation.identifier}}). We'd love to hear your feedback on your experience with {{agent.name}}.
+        </mj-text>
+
+        <mj-button href="{{csat.survey_url}}" background-color="#2563EB" color="white" font-size="16px" font-weight="600" border-radius="6px" padding="16px 32px" inner-padding="12px 24px" font-family="Inter, -apple-system, sans-serif">
+          Rate Your Experience
+        </mj-button>
+
+        <mj-text align="center" color="#9CA3AF" font-size="14px" padding-top="32px" font-family="Inter, -apple-system, sans-serif">
+          It only takes a minute and helps us improve our support.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

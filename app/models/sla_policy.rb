@@ -24,6 +24,7 @@
 #
 class SlaPolicy < ShardRecord
   belongs_to :account
+  belongs_to :business_hour_group, optional: true
 
   has_many :sla_inboxes, dependent: :destroy
   has_many :inboxes, through: :sla_inboxes

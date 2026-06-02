@@ -33,9 +33,15 @@
 #  fk_rails_...  (business_hour_group_id => business_hour_groups.id) ON DELETE => nullify
 #
 class Inbox < ShardRecord
+  include FlagShihTzu
+
   belongs_to :channel, polymorphic: true
   belongs_to :account
+  belongs_to :csat_survey, class_name: 'Csat::Survey', optional: true
+  belongs_to :conversation_reply_template, class_name: 'EmailTemplate', optional: true
   # belongs_to :address
+
+  has_flags 1 => :csat_survey_enabled, column: 'flags'
 
   enum :status, { active: 0 }
 

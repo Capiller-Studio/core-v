@@ -72,8 +72,12 @@ class Conversation < ShardRecord
                        class_name: "User", disable_joins: true
   has_many :messages, dependent: :destroy
   has_many :customer_inboxes, through: :customers
+  has_many :csat_survey_responses, class_name: 'Csat::SurveyResponse', dependent: :destroy
 
   after_create_commit :broadcast_conversation_creation
+  after_update_commit :process_sla, if: :saved_change_to_status?
+  after_update_commit :dispatch_csat, if: :saved_change_to_status?
+  after_update_commit :broadcast_conversation_update
   before_save :update_last_activity_at, if: :will_save_change_to_status?
 
 
@@ -114,11 +118,24 @@ class Conversation < ShardRecord
     member&.mark_as_read!
   end
 
+  def process_sla
+    Sla::EventProcessorWorker.perform_async(id) if account.feature_enabled?(:sla)
+  end
+
+  def dispatch_csat
+    return unless resolved? && account.feature_enabled?(:csat)
+    CsatDispatcherWorker.perform_async(id)
+  end
+
   private
 
   # TODO: Refactor to separate concern
   def broadcast_conversation_creation
     EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.created", connection_tokens, account_id)
+  end
+
+  def broadcast_conversation_update
+    EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.updated", connection_tokens, account_id)
   end
 
   def update_last_activity_at

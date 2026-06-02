@@ -55,9 +55,11 @@ class Message < ShardRecord
   enum :source, { email: 0, facebook: 1, whatsapp: 2, instagram: 3, api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8 }, suffix: true
 
   has_many :attachments, as: :resource, dependent: :destroy
+  has_one :csat_survey_response, class_name: 'Csat::SurveyResponse', dependent: :nullify
 
   after_create_commit :broadcast_message_creation
   after_create_commit :deliver_contact_form_reply, if: -> { outgoing? && source == "help_center" }
+  after_create_commit :process_sla
   after_update_commit :broadcast_message_update, if: :saved_change_to_status?
 
   def incoming?
@@ -83,7 +85,7 @@ class Message < ShardRecord
       incoming: incoming?,
       created_at:,
       updated_at:,
-      sender: sender.event_payload,
+      sender: sender&.event_payload,
       conversation: conversation.event_payload
     }
   end
@@ -105,5 +107,9 @@ class Message < ShardRecord
 
   def connection_tokens
     conversation.customer_inboxes.pluck(:connection_token) + conversation.users.pluck(:connection_token)
+  end
+
+  def process_sla
+    Sla::EventProcessorWorker.perform_async(conversation_id) if account.feature_enabled?(:sla)
   end
 end

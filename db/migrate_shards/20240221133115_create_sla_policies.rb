@@ -10,6 +10,7 @@ class CreateSlaPolicies < ActiveRecord::Migration[7.1]
       t.boolean :during_working_hours, null: false, default: false
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true
+      t.references :business_hour_group, null: true, foreign_key: { on_delete: :nullify }, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

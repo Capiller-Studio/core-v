@@ -20,6 +20,18 @@ module Routable
     self.class.name.demodulize.underscore
   end
 
+  def global_routing
+    GlobalRouting.find_by(
+      route_type: routing_type,
+      route_value: routing_identifier,
+      account_id: account_id
+    )
+  end
+
+  def global_routing_id
+    global_routing&.id
+  end
+
   private
 
   def register_global_routing

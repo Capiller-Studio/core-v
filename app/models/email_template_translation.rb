@@ -27,6 +27,6 @@ class EmailTemplateTranslation < ShardRecord
   belongs_to :email_template
 
   validates :locale, presence: true, uniqueness: { scope: :email_template_id }
-  validates :subject, presence: true
-  validates :body, presence: true
+  validates :subject, presence: true, if: -> { email_template&.active? }
+  validates :body, presence: true, if: -> { email_template&.active? }
 end

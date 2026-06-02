@@ -20,27 +20,20 @@ class EmailTemplate < ShardRecord
 
   TRANSLATABLE_FIELDS = %i[subject body design compiled_html draft_subject draft_body draft_design].freeze
 
-  # System templates seeded for every account
-  CONVERSATION_REPLY = "conversation_reply"
-  AGENT_NOTIFICATION = "agent_notification"
-  WELCOME_EMAIL      = "welcome_email"
-  PASSWORD_RESET     = "password_reset"
-  EMAIL_VERIFICATION = "email_verification"
-  TEAM_INVITATION    = "team_invitation"
+  enum :template_type, {
+    conversation_reply: 0,
+    agent_notification: 1,
+    welcome_email: 2,
+    password_reset: 3,
+    email_verification: 4,
+    team_invitation: 5,
+    csat_survey: 6
+  }
 
-  SYSTEM_TEMPLATES = [
-    CONVERSATION_REPLY,
-    AGENT_NOTIFICATION,
-    WELCOME_EMAIL,
-    PASSWORD_RESET,
-    EMAIL_VERIFICATION,
-    TEAM_INVITATION
-  ].freeze
+  SYSTEM_TEMPLATES = template_types.keys.freeze
 
-  # Available Liquid variables per template type (object.property pattern).
-  # Used by the editor UI to show context-aware variable insertion.
   TEMPLATE_VARIABLES = {
-    CONVERSATION_REPLY => {
+    "conversation_reply" => {
       "customer" => %w[name email],
       "agent"    => %w[name email],
       "message"  => %w[content],
@@ -48,30 +41,38 @@ class EmailTemplate < ShardRecord
       "inbox"    => %w[name],
       "account"  => %w[name]
     },
-    AGENT_NOTIFICATION => {
+    "agent_notification" => {
       "agent"    => %w[name email],
       "event"    => %w[title description],
       "conversation" => %w[identifier],
       "inbox"    => %w[name],
       "account"  => %w[name]
     },
-    WELCOME_EMAIL => {
+    "welcome_email" => {
       "user"    => %w[name email],
       "account" => %w[name]
     },
-    PASSWORD_RESET => {
+    "password_reset" => {
       "user"       => %w[name email],
       "reset_link" => []
     },
-    EMAIL_VERIFICATION => {
+    "email_verification" => {
       "user"              => %w[name email],
       "verification_link" => []
     },
-    TEAM_INVITATION => {
+    "team_invitation" => {
       "inviter" => %w[name],
       "team"    => %w[name],
       "invite_link" => [],
       "account" => %w[name]
+    },
+    "csat_survey" => {
+      "customer" => %w[name email],
+      "agent"    => %w[name email],
+      "conversation" => %w[subject identifier],
+      "inbox"    => %w[name],
+      "account"  => %w[name],
+      "csat"     => %w[survey_url]
     }
   }.freeze
 
@@ -84,8 +85,30 @@ class EmailTemplate < ShardRecord
   translates(*TRANSLATABLE_FIELDS)
 
   validates :name, presence: true
+  validates :template_type, presence: true
 
-  scope :system_templates, -> { where(name: SYSTEM_TEMPLATES) }
+  before_create :enforce_email_templates_limit!
+  after_create_commit :increment_email_templates_usage
+  after_destroy_commit :decrement_email_templates_usage
+
+  private
+
+  def enforce_email_templates_limit!
+    return if account.within_limit?(:email_templates)
+
+    errors.add(:base, "Email templates limit reached for your plan. Please upgrade.")
+    throw(:abort)
+  end
+
+  def increment_email_templates_usage
+    account.increment_usage!(:email_templates)
+  end
+
+  def decrement_email_templates_usage
+    account.decrement_usage!(:email_templates)
+  end
+
+  public
 
   # Render the template body using Liquid with variable interpolation.
   # Always uses the PUBLISHED compiled_html (never draft).
@@ -113,7 +136,7 @@ class EmailTemplate < ShardRecord
 
   # Returns the variable groups available for this template type.
   def variable_groups
-    TEMPLATE_VARIABLES[name] || {}
+    TEMPLATE_VARIABLES[template_type] || {}
   end
 
   # Fallback to the account's locale if a translation is missing
