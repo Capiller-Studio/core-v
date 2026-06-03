@@ -80,6 +80,7 @@ class Customer < ShardRecord
   has_many :conversation_members, dependent: :destroy, as: :member
   has_many :conversations, through: :conversation_members
   has_many :messages, as: :sender, dependent: :destroy
+  has_many :identities, dependent: :destroy
 
 
   def event_payload

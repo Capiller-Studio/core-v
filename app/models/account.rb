@@ -67,6 +67,7 @@ class Account < ApplicationRecord
             10 => :custom_email_templates_enabled,
             11 => :assignment_policies_enabled,
             12 => :custom_csat_enabled,
+            13 => :identity_sources_enabled,
             column: "features"
 
   def feature_enabled?(feature)

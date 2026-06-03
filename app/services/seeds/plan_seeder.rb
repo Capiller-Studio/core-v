@@ -24,6 +24,7 @@ module Seeds
           "audit_logs" => false,
           "teams" => false,
           "assignment_policies" => false,
+          "identity_sources" => false,
           "channels" => {
             "web_widget" => true,
             "email" => false,
@@ -59,6 +60,7 @@ module Seeds
           "audit_logs" => false,
           "teams" => true,
           "assignment_policies" => false,
+          "identity_sources" => false,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -94,6 +96,7 @@ module Seeds
           "audit_logs" => true,
           "teams" => true,
           "assignment_policies" => true,
+          "identity_sources" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -130,6 +133,7 @@ module Seeds
           "teams" => true,
           "custom_branding" => true,
           "assignment_policies" => true,
+          "identity_sources" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
