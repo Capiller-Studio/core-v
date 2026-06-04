@@ -2,14 +2,15 @@
 
 module Billing
   class ChargeProcessor < ApplicationService
-    attr_accessor :account, :amount, :currency, :description, :subscription
+    attr_accessor :account, :amount, :currency, :description, :subscription, :data
 
-    def initialize(account:, amount:, currency: "USD", description: nil, subscription: nil)
+    def initialize(account:, amount:, currency: "USD", description: nil, subscription: nil, data: {})
       self.account = account
       self.amount = amount
       self.currency = currency
       self.description = description
       self.subscription = subscription
+      self.data = data
     end
 
     def call
@@ -40,7 +41,7 @@ module Billing
             amount: wallet_deduction,
             provider: :wallet,
             status: :completed,
-            description: "Wallet deduction: #{description}"
+            description: description
           )
         end
       end
@@ -64,7 +65,7 @@ module Billing
           amount: charge_amount,
           provider: PaymentGateway::Resolver.default_provider,
           status: :failed,
-          description: "No payment method: #{description}"
+          description: description
         )
         return { status: :failed, error: "No payment method", transaction: transaction }
       end
@@ -73,7 +74,7 @@ module Billing
       result = gateway.charge(
         amount: charge_amount,
         currency:,
-        description:,
+        description: I18n.t(description, **data.symbolize_keys, default: description.to_s),
         payment_method_id: payment_method.external_id
       )
 
@@ -103,7 +104,7 @@ module Billing
           "line_items" => [ { "description" => description, "quantity" => 1, "unit_price" => amount.to_s, "amount" => amount.to_s } ],
           "period_start" => subscription&.current_period_start&.to_date&.to_s,
           "period_end" => subscription&.current_period_end&.to_date&.to_s
-        }
+        }.merge(data.deep_stringify_keys)
       )
     end
   end

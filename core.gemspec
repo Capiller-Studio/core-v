@@ -79,6 +79,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'signalwire'
   spec.add_dependency 'aws-sdk-sns'
   spec.add_dependency 'mrml'
+  spec.add_dependency 'stripe'
 
   # Development/Test tools for core engine development only
   spec.add_development_dependency 'dotenv-rails'
