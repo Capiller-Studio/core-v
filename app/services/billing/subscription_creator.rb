@@ -27,7 +27,6 @@ module Billing
     def validate!
       raise("Account already has an active subscription") if account.subscribed?
       raise("Plan is not available") unless plan.active?
-      raise("Enterprise plan requires contacting sales") if plan.contact_us?
     end
 
     def create_subscription

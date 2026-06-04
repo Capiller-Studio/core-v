@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "stripe"
 module PaymentGateway
   class Stripe < Base
     def create_customer
@@ -10,6 +11,11 @@ module PaymentGateway
       )
       store_customer_id(customer.id)
       customer
+    end
+
+    def create_setup_intent
+      customer_id = gateway_customer_id || create_customer.id
+      ::Stripe::SetupIntent.create(customer: customer_id)
     end
 
     def retrieve_customer(external_id = nil)

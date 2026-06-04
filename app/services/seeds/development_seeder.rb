@@ -60,11 +60,25 @@ module Seeds
 
       account = result.account
       enable_all_features!(account)
+      assign_billing_defaults!(account)
 
       puts "    ✓ Account: #{account.name} (#{account.identifier})"
       puts "    ✓ Owner:   #{result.user.email}"
 
       [account, result.user]
+    end
+
+    def assign_billing_defaults!(account)
+      plan = Plan.find_by!(name: Plan::ANABOLIC, currency: account.currency)
+      
+      unless account.subscribed?
+        Billing::SubscriptionCreator.call(account: account, plan: plan, quantity: 5)
+      end
+
+      # Add $50.00 to the wallet
+      unless account.wallet.balance >= 50.0
+        account.wallet.credit!(50.0, description: "Initial seeder credit")
+      end
     end
 
     def enable_all_features!(account)

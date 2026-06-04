@@ -24,7 +24,7 @@ module Billing
     private
 
     def validate!
-      raise("Subscription must be active to update") unless subscription.active?
+      raise("Subscription must be active or trialing to update") unless subscription.active? || subscription.trialing?
       raise("New quantity must be at least #{new_plan.min_users}") if new_quantity < new_plan.min_users
       raise("New quantity cannot exceed #{new_plan.max_users}") if new_plan.max_users != -1 && new_quantity > new_plan.max_users
       raise("New quantity cannot be less than currently active users (#{subscription.account.users_count})") if new_quantity < subscription.account.users_count
@@ -42,7 +42,14 @@ module Billing
       return if subscription.quantity == new_quantity && subscription.plan_id == new_plan.id
 
       seats_diff = new_quantity - subscription.quantity
-      
+      plan_changed = subscription.plan_id != new_plan.id
+
+      if subscription.trialing?
+        subscription.update!(quantity: new_quantity, plan: new_plan)
+        sync_plan_limits
+        return
+      end
+
       # Step 1: Calculate unused credit from the OLD plan
       old_daily_rate = subscription.total_price / subscription.total_days_in_cycle
       unused_credit = (old_daily_rate * subscription.remaining_days_in_cycle).round(2)
@@ -56,33 +63,54 @@ module Billing
       net_diff = (remaining_charge - unused_credit).round(2)
 
       if net_diff.positive?
-        charge_for_upgrade(net_diff, seats_diff)
+        charge_for_upgrade(net_diff, seats_diff, plan_changed)
       elsif net_diff.negative?
-        credit_for_downgrade(net_diff.abs, seats_diff.abs)
+        credit_for_downgrade(net_diff.abs, seats_diff, plan_changed)
       end
 
       subscription.update!(quantity: new_quantity, plan: new_plan)
       sync_plan_limits
     end
 
-    def charge_for_upgrade(amount, seats_added)
+    def charge_for_upgrade(amount, seats_diff, plan_changed)
       return if amount <= 0
+
+      desc, data = if plan_changed && seats_diff > 0
+                     ["billing.events.upgraded_plan_added_seats", { seats: seats_diff }]
+                   elsif plan_changed && seats_diff < 0
+                     ["billing.events.upgraded_plan_removed_seats", { seats: seats_diff.abs }]
+                   elsif plan_changed
+                     ["billing.events.upgraded_plan", {}]
+                   else
+                     ["billing.events.added_seats", { seats: seats_diff }]
+                   end
 
       Billing::ChargeProcessor.call(
         account: subscription.account,
         amount: amount,
         currency: subscription.currency,
-        description: "Upgraded subscription by #{seats_added} seats (prorated)",
-        subscription: subscription
+        description: desc,
+        subscription: subscription,
+        data: data
       )
     end
 
-    def credit_for_downgrade(amount, seats_removed)
+    def credit_for_downgrade(amount, seats_diff, plan_changed)
       return if amount <= 0
+
+      desc, data = if plan_changed && seats_diff > 0
+                     ["billing.events.downgraded_plan_added_seats", { seats: seats_diff }]
+                   elsif plan_changed && seats_diff < 0
+                     ["billing.events.downgraded_plan_removed_seats", { seats: seats_diff.abs }]
+                   elsif plan_changed
+                     ["billing.events.downgraded_plan", {}]
+                   else
+                     ["billing.events.removed_seats", { seats: seats_diff.abs }]
+                   end
 
       # Credit the wallet
       wallet = subscription.account.wallet
-      wallet.add!(amount, description: "Prorated credit for removing #{seats_removed} seats")
+      wallet.credit!(amount, description: desc)
 
       # Create a refund transaction for the original charge so affiliates can clawback
       transaction = Transaction.create!(
@@ -93,8 +121,8 @@ module Billing
         amount: amount,
         currency: subscription.currency,
         provider: :wallet,
-        description: "Prorated refund for #{seats_removed} seats",
-        data: { "refunded_seats" => seats_removed }
+        description: desc,
+        data: data.merge({ "refunded_seats" => seats_diff.abs })
       )
 
       # Clawback the affiliate commission natively against the most recent charge
