@@ -29,6 +29,7 @@
 #
 module Channel
   class TwitterProfile < ShardRecord
+    include Channelable
     include Routable
     belongs_to :account
 

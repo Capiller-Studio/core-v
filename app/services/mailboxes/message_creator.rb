@@ -42,7 +42,13 @@ module Mailboxes
         inbox:,
         external_id: mail.message_id,
         data: {
-          email: {}
+          email: {
+            message_id: mail.message_id,
+            in_reply_to: parsed_mail.in_reply_to,
+            references: parsed_mail.references,
+            from: parsed_mail.original_sender,
+            subject: parsed_mail.subject
+          }.compact
         }
       )
     end

@@ -29,6 +29,7 @@
 #
 module Channel
   class Line < ShardRecord
+    include Channelable
     include Routable
     belongs_to :account
 

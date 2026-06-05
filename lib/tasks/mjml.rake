@@ -29,7 +29,15 @@ namespace :mjml do
         mjml_content = File.read(source_path)
 
         begin
-          html = Mrml.to_html(mjml_content)
+          html = Emails::TemplateCompilerService.compile(mjml_content, strict: true)
+
+          # Convert placeholder markers back to ERB tags:
+          #   [[ERB= expr ]]   → <%= expr %>   (escaped output)
+          #   [[ERB== expr ]]  → <%== expr %>  (raw/unescaped output)
+          #   [[ERB- code ]]   → <% code %>    (code execution, no output)
+          html.gsub!(/\[\[ERB==\s*(.*?)\s*\]\]/, '<%== \1 %>')
+          html.gsub!(/\[\[ERB=\s*(.*?)\s*\]\]/, '<%= \1 %>')
+          html.gsub!(/\[\[ERB-\s*(.*?)\s*\]\]/, '<% \1 %>')
 
           # Skip if output already exists and is identical
           if output_path.exist? && File.read(output_path) == html
@@ -41,7 +49,7 @@ namespace :mjml do
           File.write(output_path, html)
           compiled += 1
           puts "  ✓ #{relative} → #{relative.sub_ext('.html.erb')}"
-        rescue StandardError => e
+        rescue Emails::TemplateCompilerService::CompilationError, StandardError => e
           errors += 1
           puts "  ✗ #{relative}: #{e.message}"
         end

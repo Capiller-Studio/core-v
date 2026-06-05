@@ -24,6 +24,7 @@
 #
 module Channel
   class ContactForm < ShardRecord
+    include Channelable
     include Routable
     include FlagShihTzu
 

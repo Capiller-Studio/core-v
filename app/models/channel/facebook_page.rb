@@ -33,6 +33,7 @@
 #
 module Channel
   class FacebookPage < ShardRecord
+    include Channelable
     include Routable
     SUBSCRIBE_FIELDS = %w[
       messages

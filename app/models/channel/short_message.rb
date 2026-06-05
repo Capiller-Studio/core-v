@@ -35,6 +35,7 @@
 #
 module Channel
   class ShortMessage < ShardRecord
+    include Channelable
     include Routable
     belongs_to :account
 

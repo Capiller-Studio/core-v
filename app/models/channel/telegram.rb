@@ -27,6 +27,7 @@
 #
 module Channel
   class Telegram < ShardRecord
+    include Channelable
     include Routable
     belongs_to :account
 
