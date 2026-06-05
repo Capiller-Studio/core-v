@@ -43,11 +43,17 @@ module Channels
 
     def channel_email_service
       # Called from Messages::DeliveryWorker (background context)
-      ConversationReplyMailer.reply(conversation, message).deliver_now
+      mail_message = ConversationReplyMailer.reply(conversation, message).deliver_now
 
-      # Update status on success
+      # Store the actual outbound Message-ID for threading future replies.
+      # This lets the next reply's In-Reply-To/References chain back to our sent message.
       # rubocop:disable Rails/SkipsModelValidations
-      message.update_column(:status, :delivered)
+      outbound_message_id = mail_message.try(:message_id)
+      if outbound_message_id.present?
+        message.update_columns(external_id: outbound_message_id, status: :delivered)
+      else
+        message.update_column(:status, :delivered)
+      end
       # rubocop:enable Rails/SkipsModelValidations
     rescue StandardError => e
       Rails.logger.error "ServicePicker Email Delivery Error: #{e.message}"

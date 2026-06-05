@@ -9,11 +9,16 @@ class CreateChannelEmails < ActiveRecord::Migration[7.1]
       t.jsonb   :configurations, default: {}, null: false
       t.integer :service
       t.integer :status, default: 0, null: false
+      t.string  :forward_email_token
+      t.datetime :forwarding_verified_at
+
+      t.integer :flags, default: 0, null: false
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true
 
       t.timestamps  default: -> { "CURRENT_TIMESTAMP" }
 
+      t.index :flags
       t.index :status
       t.index [:account_id, :name]
       t.index [:account_id, :created_at]

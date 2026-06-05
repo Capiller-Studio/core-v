@@ -33,6 +33,7 @@
 #
 module Channel
   class WebWidget < ShardRecord
+    include Channelable
     include Routable
     include FlagShihTzu
 

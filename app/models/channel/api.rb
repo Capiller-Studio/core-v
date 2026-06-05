@@ -31,6 +31,7 @@
 #
 module Channel
   class Api < ShardRecord
+    include Channelable
     include Routable
     belongs_to :account
 

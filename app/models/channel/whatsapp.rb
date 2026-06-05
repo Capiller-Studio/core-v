@@ -36,6 +36,7 @@
 #
 module Channel
   class Whatsapp < ShardRecord
+    include Channelable
     include Routable
     include Reauthorizable
 
