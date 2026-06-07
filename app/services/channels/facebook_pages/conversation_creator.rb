@@ -54,7 +54,6 @@ module Channels
         self.conversation = account.conversations.create!(
           inbox:,
           source: :facebook_message,
-          identifier: SecureRandom.uuid,
           data: {}
         )
       end

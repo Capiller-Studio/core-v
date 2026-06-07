@@ -95,7 +95,6 @@ module Channels
         self.conversation = account.conversations.create!(
           inbox: inbox,
           source: :help_center, # Source enum 8
-          identifier: SecureRandom.uuid,
           title: @conversation_data[:title] || "New Contact Form Submission",
           priority: @conversation_data[:priority] || "medium",
           data: @conversation_data["data"] || {},

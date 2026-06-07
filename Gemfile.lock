@@ -38,6 +38,7 @@ PATH
       sidekiq
       signalwire
       stringex
+      stripe
       twilio-ruby
       typhoeus
 
@@ -246,14 +247,7 @@ GEM
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.8.0)
     ffaker (2.25.0)
-    ffi (1.17.4-aarch64-linux-gnu)
-    ffi (1.17.4-aarch64-linux-musl)
-    ffi (1.17.4-arm-linux-gnu)
-    ffi (1.17.4-arm-linux-musl)
     ffi (1.17.4-arm64-darwin)
-    ffi (1.17.4-x86_64-darwin)
-    ffi (1.17.4-x86_64-linux-gnu)
-    ffi (1.17.4-x86_64-linux-musl)
     ffi-compiler (1.4.2)
       ffi (>= 1.15.5)
       rake
@@ -263,22 +257,7 @@ GEM
     google-protobuf (4.34.1)
       bigdecimal
       rake (~> 13.3)
-    google-protobuf (4.34.1-aarch64-linux-gnu)
-      bigdecimal
-      rake (~> 13.3)
-    google-protobuf (4.34.1-aarch64-linux-musl)
-      bigdecimal
-      rake (~> 13.3)
     google-protobuf (4.34.1-arm64-darwin)
-      bigdecimal
-      rake (~> 13.3)
-    google-protobuf (4.34.1-x86_64-darwin)
-      bigdecimal
-      rake (~> 13.3)
-    google-protobuf (4.34.1-x86_64-linux-gnu)
-      bigdecimal
-      rake (~> 13.3)
-    google-protobuf (4.34.1-x86_64-linux-musl)
       bigdecimal
       rake (~> 13.3)
     googleapis-common-protos-types (1.22.0)
@@ -288,22 +267,7 @@ GEM
     grpc (1.80.0)
       google-protobuf (>= 3.25, < 5.0)
       googleapis-common-protos-types (~> 1.0)
-    grpc (1.80.0-aarch64-linux-gnu)
-      google-protobuf (>= 3.25, < 5.0)
-      googleapis-common-protos-types (~> 1.0)
-    grpc (1.80.0-aarch64-linux-musl)
-      google-protobuf (>= 3.25, < 5.0)
-      googleapis-common-protos-types (~> 1.0)
     grpc (1.80.0-arm64-darwin)
-      google-protobuf (>= 3.25, < 5.0)
-      googleapis-common-protos-types (~> 1.0)
-    grpc (1.80.0-x86_64-darwin)
-      google-protobuf (>= 3.25, < 5.0)
-      googleapis-common-protos-types (~> 1.0)
-    grpc (1.80.0-x86_64-linux-gnu)
-      google-protobuf (>= 3.25, < 5.0)
-      googleapis-common-protos-types (~> 1.0)
-    grpc (1.80.0-x86_64-linux-musl)
       google-protobuf (>= 3.25, < 5.0)
       googleapis-common-protos-types (~> 1.0)
     has-guarded-handlers (1.6.3)
@@ -389,13 +353,7 @@ GEM
     money (7.0.2)
       bigdecimal
       i18n (~> 1.9)
-    mrml (1.10.0-aarch64-linux)
-    mrml (1.10.0-aarch64-linux-musl)
-    mrml (1.10.0-arm-linux)
     mrml (1.10.0-arm64-darwin)
-    mrml (1.10.0-x86_64-darwin)
-    mrml (1.10.0-x86_64-linux)
-    mrml (1.10.0-x86_64-linux-musl)
     msgpack (1.8.0)
     multi_json (1.21.1)
     multi_xml (0.9.1)
@@ -413,21 +371,7 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.5)
-    nokogiri (1.19.3-aarch64-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.19.3-aarch64-linux-musl)
-      racc (~> 1.4)
-    nokogiri (1.19.3-arm-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.19.3-arm-linux-musl)
-      racc (~> 1.4)
     nokogiri (1.19.3-arm64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.19.3-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.19.3-x86_64-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.19.3-x86_64-linux-musl)
       racc (~> 1.4)
     oauth2 (2.0.18)
       faraday (>= 0.17.3, < 4.0)
@@ -464,12 +408,7 @@ GEM
       racc
     pdf-core (0.10.0)
     pg (1.6.3)
-    pg (1.6.3-aarch64-linux)
-    pg (1.6.3-aarch64-linux-musl)
     pg (1.6.3-arm64-darwin)
-    pg (1.6.3-x86_64-darwin)
-    pg (1.6.3-x86_64-linux)
-    pg (1.6.3-x86_64-linux-musl)
     pp (0.6.3)
       prettyprint
     prawn (2.5.0)
@@ -644,6 +583,9 @@ GEM
       version_gem (>= 1.1.8, < 3)
     stringex (2.8.6)
     stringio (3.2.0)
+    stripe (19.2.0)
+      bigdecimal
+      logger
     strscan (3.1.8)
     thor (1.5.0)
     timecop (0.9.11)
@@ -675,14 +617,7 @@ GEM
     zeitwerk (2.7.5)
 
 PLATFORMS
-  aarch64-linux-gnu
-  aarch64-linux-musl
-  arm-linux-gnu
-  arm-linux-musl
   arm64-darwin
-  x86_64-darwin
-  x86_64-linux-gnu
-  x86_64-linux-musl
 
 DEPENDENCIES
   annotate

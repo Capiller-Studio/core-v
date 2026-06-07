@@ -19,5 +19,6 @@ module Core
     config.middleware.insert_before(0, Rack::Deflater)
 
     config.active_storage.routes_prefix = "/secure_storage"
+    config.active_storage.variant_processor = :vips
   end
 end

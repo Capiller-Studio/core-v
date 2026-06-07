@@ -39,12 +39,16 @@ module Channels
 
     def web_widget_channel
       @channel = Channel::WebWidget.new(
-        name: channel_params[:name],
-        website_url: channel_params[:website_url],
-        ui_configurations: channel_params[:ui_configurations] || {},
-        configurations: channel_params[:configurations] || {},
-        account: current_account
+        channel_params.except(:primary_inbox_attributes, :anonymous_allowed, :help_center_enabled, :pre_chat_form_enabled, :secure_identity_enforced, :custom_branding)
       )
+      @channel.account = current_account
+      
+      @channel.anonymous_allowed = channel_params[:anonymous_allowed] == "true" || channel_params[:anonymous_allowed] == "1" || channel_params[:anonymous_allowed] == true
+      @channel.help_center_enabled = channel_params[:help_center_enabled] == "true" || channel_params[:help_center_enabled] == "1" || channel_params[:help_center_enabled] == true
+      @channel.pre_chat_form_enabled = channel_params[:pre_chat_form_enabled] == "true" || channel_params[:pre_chat_form_enabled] == "1" || channel_params[:pre_chat_form_enabled] == true
+      @channel.secure_identity_enforced = channel_params[:secure_identity_enforced] == "true" || channel_params[:secure_identity_enforced] == "1" || channel_params[:secure_identity_enforced] == true
+      @channel.custom_branding = channel_params[:custom_branding] == "true" || channel_params[:custom_branding] == "1" || channel_params[:custom_branding] == true
+
       @channel.save!
 
       inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
