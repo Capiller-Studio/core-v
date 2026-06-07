@@ -16,13 +16,18 @@ module Seeds
           "messages_monthly" => 500,
           "data_retention_months" => 3
         },
-        configurations: {
+        features: {
           "sla" => false,
           "api_access" => false,
           "csat" => false,
           "email_templates" => false,
+          "custom_csat" => false,
+          "custom_email_templates" => false,
+          "automations" => false,
           "audit_logs" => false,
           "teams" => false,
+          "roles" => true,
+          "custom_roles" => false,
           "assignment_policies" => false,
           "identity_sources" => false,
           "channels" => {
@@ -52,13 +57,18 @@ module Seeds
           "customers" => -1,
           "data_retention_months" => 12
         },
-        configurations: {
+        features: {
           "sla" => true,
           "api_access" => true,
-          "csat" => false,
-          "email_templates" => false,
+          "csat" => true,
+          "email_templates" => true,
+          "custom_csat" => false,
+          "custom_email_templates" => false,
+          "automations" => true,
           "audit_logs" => false,
           "teams" => true,
+          "roles" => true,
+          "custom_roles" => false,
           "assignment_policies" => false,
           "identity_sources" => false,
           "channels" => {
@@ -88,13 +98,18 @@ module Seeds
           "customers" => -1,
           "data_retention_months" => 24
         },
-        configurations: {
+        features: {
           "sla" => true,
           "api_access" => true,
           "csat" => true,
           "email_templates" => true,
+          "custom_csat" => true,
+          "custom_email_templates" => true,
+          "automations" => true,
           "audit_logs" => true,
           "teams" => true,
+          "roles" => true,
+          "custom_roles" => true,
           "assignment_policies" => true,
           "identity_sources" => true,
           "channels" => {
@@ -124,13 +139,18 @@ module Seeds
           "customers" => -1,
           "data_retention_months" => 36
         },
-        configurations: {
+        features: {
           "sla" => true,
           "api_access" => true,
           "csat" => true,
           "email_templates" => true,
+          "custom_csat" => true,
+          "custom_email_templates" => true,
+          "automations" => true,
           "audit_logs" => true,
           "teams" => true,
+          "roles" => true,
+          "custom_roles" => true,
           "custom_branding" => true,
           "assignment_policies" => true,
           "identity_sources" => true,

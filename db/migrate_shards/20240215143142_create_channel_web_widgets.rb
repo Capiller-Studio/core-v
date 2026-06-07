@@ -13,8 +13,6 @@ class CreateChannelWebWidgets < ActiveRecord::Migration[7.1]
       t.string  :default_locale, default: "en", null: false
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true
-      t.references :portal, type: :uuid, index: true, foreign_key: { to_table: :portals, on_delete: :nullify }
-      t.references :pre_chat_form, type: :uuid, index: true, foreign_key: { to_table: :channel_contact_forms, on_delete: :nullify }
       t.references :fallback_channel, polymorphic: true, type: :uuid, index: { name: 'index_web_widgets_on_fallback_channel' }
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }

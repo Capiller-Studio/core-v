@@ -27,6 +27,7 @@ module Billing
     def validate!
       raise("Account already has an active subscription") if account.subscribed?
       raise("Plan is not available") unless plan.active?
+      raise("Plan currency mismatch") if plan.currency != account.currency
     end
 
     def create_subscription

@@ -19,5 +19,7 @@ class CreateHelpCenterPortals < ActiveRecord::Migration[7.1]
       t.index [:account_id, :created_at]
       t.index [:account_id, :default_locale]
     end
+
+    add_reference :channel_web_widgets, :portal, type: :uuid, index: true, foreign_key: { to_table: :help_center_portals, on_delete: :nullify }
   end
 end

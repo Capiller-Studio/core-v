@@ -82,18 +82,8 @@ module Seeds
     end
 
     def enable_all_features!(account)
-      account.update!(
-        api_access_enabled: true,
-        sla_enabled: true,
-        audit_logs_enabled: true,
-        teams_enabled: true,
-        automations_enabled: true,
-        csat_enabled: true,
-        custom_branding_enabled: true,
-        contact_form_enabled: true,
-        help_center_enabled: true,
-        custom_email_templates_enabled: true
-      )
+      # Features are now handled by Plan/Features jsonb
+      # account.update!(features: { ... })
     end
 
     # --- Admin ---

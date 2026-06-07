@@ -52,9 +52,9 @@ class Plan < ApplicationRecord
     limit_for(resource) == -1
   end
 
-  # Feature helpers — checks configurations jsonb
+  # Feature helpers — checks features jsonb
   def feature_enabled?(feature)
-    configurations[feature.to_s] == true
+    features[feature.to_s] == true
   end
 
   # Price for a given billing cycle

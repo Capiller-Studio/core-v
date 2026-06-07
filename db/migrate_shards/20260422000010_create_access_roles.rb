@@ -5,7 +5,7 @@ class CreateAccessRoles < ActiveRecord::Migration[8.1]
       t.string :name, null: false
       t.string :identifier, null: false
       t.jsonb :permissions, default: {}, null: false
-      t.boolean :is_system, default: false
+      t.boolean :system_provided, default: false
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end
