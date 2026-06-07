@@ -31,5 +31,7 @@ class CreateChannelContactForms < ActiveRecord::Migration[8.1]
       t.index [:account_id, :created_at]
       t.index :secret, unique: true  # Used to identify the form in embed snippets and API calls
     end
+
+    add_reference :channel_web_widgets, :pre_chat_form, type: :uuid, index: true, foreign_key: { to_table: :channel_contact_forms, on_delete: :nullify }
   end
 end

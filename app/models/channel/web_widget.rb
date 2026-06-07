@@ -46,11 +46,11 @@ module Channel
     belongs_to :fallback_channel, polymorphic: true, optional: true
 
     has_one_attached :logo
-    validates :logo, content_type: ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'],
+    validates :logo, content_type: ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'],
                      size: { less_than: 2.megabytes }
 
     has_one_attached :launcher_icon
-    validates :launcher_icon, content_type: ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'],
+    validates :launcher_icon, content_type: ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'],
                               size: { less_than: 2.megabytes }
 
     has_many :inboxes, as: :channel, dependent: :destroy

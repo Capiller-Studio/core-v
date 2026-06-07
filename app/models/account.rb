@@ -48,35 +48,12 @@ class Account < ApplicationRecord
   include Addressable
   include Billable
   include LimitEnforceable
-  include FlagShihTzu
   include ShardResolvable
 
   def users_count
     current_usage(:users)
   end
-
-  has_flags 1 => :api_access_enabled,
-            2 => :sla_enabled,
-            3 => :audit_logs_enabled,
-            4 => :teams_enabled,
-            5 => :automations_enabled,
-            6 => :csat_enabled,
-            7 => :custom_branding_enabled,
-            8 => :contact_form_enabled,
-            9 => :help_center_enabled,
-            10 => :custom_email_templates_enabled,
-            11 => :assignment_policies_enabled,
-            12 => :custom_csat_enabled,
-            13 => :identity_sources_enabled,
-            column: "features"
-
   def feature_enabled?(feature)
-    # 1. Check if manually enabled via bitmask (overrides)
-    # We use the "_enabled" suffix for flags to avoid naming conflicts with associations (like teams/automations)
-    feature_method = feature.to_s.end_with?("_enabled") ? "#{feature}?" : "#{feature}_enabled?"
-    return true if respond_to?(feature_method) && send(feature_method)
-
-    # 2. Fallback to the current plan's configuration
     base_feature = feature.to_s.delete_suffix("_enabled")
     current_plan&.feature_enabled?(base_feature) == true
   end

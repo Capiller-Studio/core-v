@@ -6,7 +6,7 @@ class CreatePlans < ActiveRecord::Migration[7.1]
       t.decimal :base_price, precision: 10, scale: 2, null: false, default: 0
       t.decimal :annual_price, precision: 10, scale: 2, null: false, default: 0
       t.string  :currency, limit: 4, null: false, default: "USD"
-      t.jsonb   :configurations, null: false, default: {}
+      t.jsonb   :features, null: false, default: {}
       t.jsonb   :limits, null: false, default: {}
       t.integer :trial_days, null: false, default: 0
       t.integer :position, null: false, default: 0

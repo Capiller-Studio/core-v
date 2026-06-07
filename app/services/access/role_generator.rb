@@ -26,27 +26,17 @@ module Access
     def create_owner_role
       account.roles.find_or_create_by!(identifier: "owner") do |r|
         r.name = "Owner"
-        r.is_system = true
-        r.permissions = {
-          "conversations" => { "read" => true, "write" => true, "delete" => true },
-          "inboxes" => { "read" => true, "write" => true, "delete" => true },
-          "teams" => { "read" => true, "write" => true, "delete" => true },
-          "automations" => { "read" => true, "manage" => true },
-          "macros" => { "read" => true, "manage" => true, "execute" => true },
-          "reports" => { "view" => true, "export" => true },
-          "settings" => { "manage" => true },
-          "billing" => { "manage" => true },
-          "roles" => { "read" => true, "manage" => true },
-          "agents" => { "read" => true, "manage" => true, "invite" => true, "remove" => true },
-          "email_templates" => { "read" => true, "manage" => true }
-        }
+        r.system_provided = true
+        r.permissions = Access::Role::PERMISSION_SCHEMA.transform_values do |actions|
+          actions.index_with { |a| true }
+        end
       end
     end
 
     def create_admin_role
       account.roles.find_or_create_by!(identifier: "administrator") do |r|
         r.name = "Administrator"
-        r.is_system = true
+        r.system_provided = true
         r.permissions = {
           "conversations" => { "read" => true, "write" => true, "delete" => true },
           "inboxes" => { "read" => true, "write" => true, "delete" => true },
@@ -56,7 +46,14 @@ module Access
           "reports" => { "view" => true },
           "settings" => { "manage" => true },
           "billing" => { "manage" => true },
-          "email_templates" => { "read" => true, "manage" => true }
+          "email_templates" => { "read" => true, "manage" => true },
+          "assignment_policies" => { "read" => true, "manage" => true },
+          "skills" => { "read" => true, "manage" => true },
+          "identity_sources" => { "read" => true, "manage" => true },
+          "domains" => { "read" => true, "manage" => true },
+          "customers" => { "read" => true, "write" => true, "delete" => true },
+          "labels" => { "read" => true, "manage" => true },
+          "custom_fields" => { "read" => true, "manage" => true }
         }
       end
     end
@@ -64,13 +61,14 @@ module Access
     def create_agent_role
       account.roles.find_or_create_by!(identifier: "agent") do |r|
         r.name = "Agent"
-        r.is_system = true
+        r.system_provided = true
         r.permissions = {
           "conversations" => { "read" => true, "write" => true },
           "inboxes" => { "read" => true },
           "automations" => { "read" => true },
           "macros" => { "read" => true, "manage" => true, "execute" => true },
-          "reports" => { "view" => true }
+          "reports" => { "view" => true },
+          "customers" => { "read" => true, "write" => true }
         }
       end
     end
