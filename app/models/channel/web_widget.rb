@@ -36,21 +36,52 @@ module Channel
     include Channelable
     include Routable
     include FlagShihTzu
+    include Translateable
+
+    TRANSLATABLE_FIELDS = %i[launcher_text reply_time_text pre_chat_title pre_chat_subtitle welcome_title welcome_tagline].freeze
 
     belongs_to :account
     belongs_to :portal, class_name: "HelpCenter::Portal", optional: true
+    belongs_to :pre_chat_form, class_name: "Channel::ContactForm", optional: true
+    belongs_to :fallback_channel, polymorphic: true, optional: true
+
+    has_one_attached :logo
+    validates :logo, content_type: ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'],
+                     size: { less_than: 2.megabytes }
+
+    has_one_attached :launcher_icon
+    validates :launcher_icon, content_type: ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'],
+                              size: { less_than: 2.megabytes }
 
     has_many :inboxes, as: :channel, dependent: :destroy
     has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
 
+    def scaled_logo
+      return nil unless logo.attached?
+      logo.content_type&.include?('svg') ? logo : logo.variant(resize_to_limit: [500, 500])
+    end
+
+    def scaled_launcher_icon
+      return nil unless launcher_icon.attached?
+      launcher_icon.content_type&.include?('svg') ? launcher_icon : launcher_icon.variant(resize_to_limit: [200, 200])
+    end
+
+    translates(*TRANSLATABLE_FIELDS)
+
     has_flags 1 => :anonymous_allowed,
               2 => :help_center_enabled,
               3 => :pre_chat_form_enabled,
+              4 => :secure_identity_enforced,
+              5 => :custom_branding,
               column: "flags"
 
     enum :status, { active: 0 }
 
-    store_accessor :ui_configurations, :theme_color, :welcome_title, :welcome_tagline, :position
+    store_accessor :ui_configurations, :theme_color, :position, :footer_text
+
+    def fallback_locale
+      default_locale.presence || super
+    end
 
     before_validation :ensure_secret, on: :create
     validates :secret, presence: true, uniqueness: true

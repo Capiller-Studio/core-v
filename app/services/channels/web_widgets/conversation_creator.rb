@@ -4,14 +4,16 @@ module Channels
   module WebWidgets
     class ConversationCreator < ApplicationService
       attr_accessor :inbox, :web_widget_channel, :customer, :account,
-                    :conversation, :contact_params, :content, :attachments
+                    :conversation, :contact_params, :content, :attachments,
+                    :conversation_data
 
-      def initialize(web_widget_channel:, contact_params:, content:, attachments: [], account: nil)
+      def initialize(web_widget_channel:, contact_params:, content:, attachments: [], account: nil, conversation_data: nil)
         self.web_widget_channel = web_widget_channel
         self.contact_params     = contact_params
         self.content            = content
         self.attachments        = attachments || []
         self.account            = account || web_widget_channel.account
+        self.conversation_data  = conversation_data || {}
       end
 
       def call
@@ -55,8 +57,10 @@ module Channels
         self.conversation = account.conversations.create!(
           inbox: inbox,
           source: :web_widget,
-          identifier: SecureRandom.uuid,
-          data: {}
+          title: conversation_data[:title].presence || conversation_data["title"],
+          priority: conversation_data[:priority].presence || conversation_data["priority"] || "medium",
+          data: conversation_data[:data] || conversation_data["data"] || {},
+          outbound_channel: web_widget_channel.fallback_channel
         )
       end
 

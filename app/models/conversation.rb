@@ -46,6 +46,7 @@ class Conversation < ShardRecord
   include Assignable
   include SlaTrackable
   include Trackable
+  include CodeGenerator.new(prefix: "CNV", column: :identifier)
 
   belongs_to :account
   belongs_to :inbox

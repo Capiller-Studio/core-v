@@ -41,7 +41,9 @@ class Inbox < ShardRecord
   belongs_to :conversation_reply_template, class_name: 'EmailTemplate', optional: true
   # belongs_to :address
 
-  has_flags 1 => :csat_survey_enabled, column: 'flags'
+  has_flags 1 => :csat_survey_enabled, 
+            2 => :auto_assign, 
+            column: 'flags'
 
   enum :status, { active: 0 }
 
@@ -61,9 +63,7 @@ class Inbox < ShardRecord
 
   scope :current_inboxes, ->(current_user) { joins(:inbox_users).where(inbox_users: { user: current_user }) }
 
-  def auto_assign?
-    configurations.fetch("auto_assign", true)
-  end
+
 
   before_create :set_primary_inbox_if_first
 

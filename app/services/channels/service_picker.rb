@@ -97,7 +97,9 @@ module Channels
     end
 
     def channel_web_widget_service
-      # Handled via ActionCable real-time broadcast in Message callback
+      # Live delivery handled via ActionCable real-time broadcast in Message callback.
+      # Here we enqueue a worker to send an offline email reply if they have left the chat.
+      Messages::OfflineReplyWorker.perform_in(5.minutes, message.account_id, message.id)
     end
 
     def channel_api_service

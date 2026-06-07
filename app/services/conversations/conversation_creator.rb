@@ -38,7 +38,6 @@ module Conversations
       self.conversation = account.conversations.create!(
         inbox: inbox,
         source: conversation_source,
-        identifier: SecureRandom.uuid,
         data: {}
       )
     end

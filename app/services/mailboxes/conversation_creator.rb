@@ -9,21 +9,22 @@ module Mailboxes
     attr_accessor :mail, :email_channel, :account, :parsed_mail, :inbox, :sender,
                   :conversation
 
-    def initialize(mail:, email_channel:)
+    def initialize(mail:, email_channel: nil, conversation: nil)
       self.mail          = mail
       self.email_channel = email_channel
-      self.account       = email_channel.account
+      self.conversation  = conversation
+      self.account       = conversation&.account || email_channel&.account
     end
 
     def call
       Current.set(account: account) do
         ShardRecord.with_shard do
           self.parsed_mail = ::Parser::MailParser.call(mail:)
-          find_inbox
 
           ActiveRecord::Base.transaction do
-            find_or_create_sender
             find_or_create_conversation
+            find_inbox
+            find_or_create_sender
             create_message
           end
         end
@@ -35,7 +36,7 @@ module Mailboxes
     def find_inbox
       # TODO: Logic for finding the correct inbox. Maybe: One inbox will act as default and other inboxes will
       # receive conversations/messages based on Filters
-      self.inbox = email_channel.primary_inbox
+      self.inbox = conversation&.inbox || email_channel&.primary_inbox
     end
 
     def find_or_create_conversation
@@ -44,6 +45,8 @@ module Mailboxes
     end
 
     def find_conversation
+      return conversation if conversation.present?
+
       find_conversation_by_uuid || find_conversation_by_in_reply_to || find_conversation_by_references
     end
 
@@ -67,7 +70,7 @@ module Mailboxes
     def find_conversation_by_references
       return if parsed_mail.references.blank?
 
-      parsed_mail.references.find_each do |ref|
+      parsed_mail.references.each do |ref|
         message = account.messages.find_by(external_id: ref)
         if message
           self.conversation = message.conversation
@@ -83,7 +86,6 @@ module Mailboxes
       self.conversation = account.conversations.create!(
         inbox:,
         source: :email,
-        identifier: SecureRandom.uuid,
         data: {
           email: {
             subject: parsed_mail.subject,

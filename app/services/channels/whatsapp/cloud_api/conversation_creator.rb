@@ -133,11 +133,9 @@ module Channels
         end
 
         def create_conversation
-          # TODO: Fix placeholder identifier
           self.conversation = account.conversations.create!(
             inbox: inbox,
             source: :whatsapp,
-            identifier: SecureRandom.uuid,
             data: {}
           )
         end

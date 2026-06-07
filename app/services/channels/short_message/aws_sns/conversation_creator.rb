@@ -77,7 +77,6 @@ module Channels
           self.conversation = account.conversations.create!(
             inbox: inbox,
             source: :sms,
-            identifier: SecureRandom.uuid,
             data: {}
           )
         end

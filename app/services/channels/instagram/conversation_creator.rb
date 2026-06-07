@@ -54,8 +54,7 @@ module Channels
         # TODO: Fix placeholder identifier
         self.conversation = account.conversations.create!(
           inbox:,
-          source: :instagram_message,
-          identifier: SecureRandom.uuid,
+          source: :instagram_direct_message,
           data: {}
         )
       end
