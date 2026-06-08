@@ -56,7 +56,7 @@ class CsatDispatcherWorker
             inbox: inbox,
             sender: conversation.account, # System message
             content: content,
-            content_type: :input_csat,
+            content_type: :csat,
             data: {
               csat_response_id: csat_response.id
             }

@@ -26,7 +26,7 @@ module Channels
 
           if message.attachments.present?
             send_attachment_message
-          elsif message.input_csat?
+          elsif message.csat?
             send_csat_interactive_message
           elsif message.content_type == "interactive"
             # TODO: Add additional content types eg. buttons, textboxes, select input etc. Then replace this placeholder
