@@ -41,8 +41,8 @@ module Accounts
         password: params[:password],
         first_name: params[:first_name],
         last_name: params[:last_name],
-        address: Address.create!,
-        confirmed_at: Time.current
+        locale: params[:user_locale] || "en",
+        address: Address.create!(country_id: Country.find_by(iso: params[:country])&.id)
       )
     end
 
@@ -57,7 +57,10 @@ module Accounts
     def create_account_with_owner!(user)
       account = Account.create!(
         name: params[:account_name],
-        email: user.email
+        email: user.email,
+        locale: params[:locale] || "en",
+        currency: params[:currency] || "USD",
+        shard_key: params[:shard_key] || "de"
       )
 
       account_user = AccountUser.create!(
