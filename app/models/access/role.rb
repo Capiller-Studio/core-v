@@ -20,9 +20,9 @@ module Access
     # }
 
     PERMISSION_SCHEMA = {
-      "conversations" => ["read", "write", "delete"],
-      "inboxes" => ["read", "write", "delete"],
-      "teams" => ["read", "write", "delete"],
+      "conversations" => ["read", "write", "delete", "manage"],
+      "inboxes" => ["read", "write", "delete", "manage"],
+      "teams" => ["read", "write", "delete", "manage"],
       "automations" => ["read", "manage"],
       "macros" => ["read", "manage", "execute"],
       "reports" => ["view", "export"],
@@ -35,7 +35,7 @@ module Access
       "skills" => ["read", "manage"],
       "identity_sources" => ["read", "manage"],
       "domains" => ["read", "manage"],
-      "customers" => ["read", "write", "delete"],
+      "customers" => ["read", "write", "delete", "manage"],
       "labels" => ["read", "manage"],
       "custom_fields" => ["read", "manage"]
     }.freeze

@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: csat_surveys
+#
+#  id                :uuid             not null, primary key
+#  account_id        :uuid             not null
+#  email_template_id :uuid
+#  name              :string           not null
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#
+# Indexes
+#
+#  index_csat_surveys_on_account_id         (account_id)
+#  index_csat_surveys_on_email_template_id  (email_template_id)
+#
+
 # frozen_string_literal: true
 
 class Csat::Survey < ShardRecord

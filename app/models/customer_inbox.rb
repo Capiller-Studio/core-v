@@ -1,16 +1,15 @@
 # frozen_string_literal: true
-
 # == Schema Information
 #
 # Table name: customer_inboxes
 #
 #  id               :uuid             not null, primary key
+#  external_id      :string           not null
 #  connection_token :string           not null
+#  customer_id      :uuid             not null
+#  inbox_id         :uuid             not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
-#  customer_id      :uuid             not null
-#  external_id      :string           not null
-#  inbox_id         :uuid             not null
 #
 # Indexes
 #
@@ -20,11 +19,7 @@
 #  index_customer_inboxes_on_external_id               (external_id)
 #  index_customer_inboxes_on_inbox_id                  (inbox_id)
 #
-# Foreign Keys
-#
-#  fk_rails_...  (customer_id => customers.id) ON DELETE => cascade
-#  fk_rails_...  (inbox_id => inboxes.id) ON DELETE => cascade
-#
+
 class CustomerInbox < ShardRecord
   belongs_to :customer
   belongs_to :inbox

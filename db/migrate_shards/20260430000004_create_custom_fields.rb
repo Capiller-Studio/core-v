@@ -20,6 +20,7 @@ class CreateCustomFields < ActiveRecord::Migration[8.1]
 
       t.integer :position  # Default global display order within this entity_type
       t.boolean :required, null: false, default: false
+      t.boolean :system_provided, null: false, default: false
 
       t.integer :flags, null: false, default: 0
       # flags (FlagShihTzu bit fields):

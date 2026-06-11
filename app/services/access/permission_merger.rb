@@ -15,17 +15,23 @@ module Access
       # Additive Logic: If ANY role grants permission, allow it.
       @permissions_list.any? do |permissions|
         policy = permissions.dig(@resource_type, @action)
-        next false if policy.nil? || policy == false
+        manage_policy = permissions.dig(@resource_type, "manage")
 
-        # If true, it's a global allow for this user in this account
-        next true if policy == true
+        # A role grants access if it explicitly grants the action OR grants "manage" capability
+        evaluate_policy(policy) || (@action != "manage" && evaluate_policy(manage_policy))
+      end
+    end
 
-        # If a Hash, it contains specific conditions that MUST all match
-        if policy.is_a?(Hash)
-          evaluate_conditions(policy)
-        else
-          false
-        end
+    private
+
+    def evaluate_policy(policy)
+      return false if policy.nil? || policy == false
+      return true if policy == true
+
+      if policy.is_a?(Hash)
+        evaluate_conditions(policy)
+      else
+        false
       end
     end
 

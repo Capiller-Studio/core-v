@@ -71,7 +71,7 @@ module Channels
         when :customer
           @customer_data["data"] ||= {}
           @customer_data["data"][field.key] = value
-        when :conversation, :contact_form
+        when :conversation
           @conversation_data["data"] ||= {}
           @conversation_data["data"][field.key] = value
         end
