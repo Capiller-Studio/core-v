@@ -63,10 +63,8 @@ class CustomField < ShardRecord
   # entity_type determines which model's data jsonb column stores the value:
   #   customer (0)     → Customer.data jsonb     e.g. customer.data["department"] = "sales"
   #   conversation (1) → Conversation.data jsonb e.g. conversation.data["priority_tier"] = "gold"
-  #   contact_form (2) → Conversation.data jsonb (written on contact form submission)
-  enum :entity_type, { customer: 0, conversation: 1, contact_form: 2 }, prefix: true
+  enum :entity_type, { customer: 0, conversation: 1 }, prefix: true
 
-  # flags (FlagShihTzu bit fields):
   #   searchable — include this field's values in full-text search indexing
   #   filterable — show this field in filter/segment builder UI
   #   hidden     — defined for data storage but not rendered in standard UI
@@ -76,6 +74,8 @@ class CustomField < ShardRecord
             3 => :hidden,
             4 => :is_readonly,
             column: "flags"
+
+  store_accessor :configurations, :default_value
 
   MAPPING_TARGETS = %w[
     customer.name
@@ -90,6 +90,43 @@ class CustomField < ShardRecord
   validates :mapped_to, inclusion: { in: MAPPING_TARGETS, allow_blank: true }
   validates :key, presence: true, uniqueness: { scope: :account_id, message: :taken_in_account },
                   format: { with: /\A[a-z0-9_]+\z/, message: :invalid_format }
+
+  validate :validate_default_value
+
+  before_validation :assign_entity_type_from_mapped_to
+
+  private
+
+  def validate_default_value
+    return if default_value.blank?
+
+    case field_type
+    when "number"
+      unless default_value.to_s.match?(/\A-?\d+(\.\d+)?\z/)
+        errors.add(:default_value, "must be a valid number")
+      end
+    when "email"
+      unless default_value.to_s.match?(URI::MailTo::EMAIL_REGEXP)
+        errors.add(:default_value, "must be a valid email format")
+      end
+    when "url"
+      unless default_value.to_s.match?(/\Ahttps?:\/\//)
+        errors.add(:default_value, "must be a valid URL")
+      end
+    end
+  end
+
+  private
+
+  def assign_entity_type_from_mapped_to
+    return if mapped_to.blank?
+
+    if mapped_to.start_with?("customer.")
+      self.entity_type = "customer"
+    elsif mapped_to.start_with?("conversation.") || mapped_to.start_with?("message.")
+      self.entity_type = "conversation"
+    end
+  end
 
   # validations jsonb structure:
   # {

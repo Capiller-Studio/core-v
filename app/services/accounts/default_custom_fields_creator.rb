@@ -19,7 +19,7 @@ module Accounts
       create_field("name", "Full Name", :customer, :text, true, "customer.name")
       create_field("email", "Email Address", :customer, :email, true, "customer.email")
       create_field("subject", "Subject", :conversation, :text, true, "conversation.title")
-      create_field("message", "Message", :contact_form, :textarea, true, "message.content")
+      create_field("message", "Message", :conversation, :textarea, true, "message.content")
       create_field("priority", "Priority", :conversation, :select, false, "conversation.priority", [
         { "value" => "low", "label" => "Low" },
         { "value" => "medium", "label" => "Medium" },
@@ -34,7 +34,8 @@ module Accounts
         entity_type: entity,
         field_type: type,
         required: required,
-        mapped_to: mapped_to
+        mapped_to: mapped_to,
+        system_provided: true
       )
 
       translation = field.translations.find_or_initialize_by(locale: "en")

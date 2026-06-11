@@ -58,7 +58,7 @@ module Seeds
 
     def create_contact_form(portal)
       # Check if portal already has a form to avoid duplicate inboxes/forms on re-seed
-      form = Channel::ContactForm.find_by(account: account, portal: portal)
+      form = portal.contact_form_channel
       
       unless form
         creator = Channels::ChannelCreator.new(
@@ -76,7 +76,8 @@ module Seeds
         # We need to manually link the created form to the portal since ChannelCreator doesn't accept portal
         inbox = creator.send(:contact_form_channel)
         form = inbox.channel
-        form.update!(portal: portal, status: :active)
+        form.update!(status: :active)
+        portal.update!(contact_form_channel: form)
       end
 
       # Create custom fields for the form
@@ -84,8 +85,8 @@ module Seeds
         { key: "full_name", field_type: :text, entity_type: :customer, mapped_to: "customer.name", configurations: { "width" => "half" }, translations: { en: "Full Name" }, required: true, position: 1 },
         { key: "email_address", field_type: :email, entity_type: :customer, mapped_to: "customer.email", configurations: { "width" => "half" }, translations: { en: "Email Address" }, required: true, position: 2 },
         { key: "subject", field_type: :text, entity_type: :conversation, mapped_to: "conversation.title", configurations: { "width" => "full" }, translations: { en: "Subject" }, required: true, position: 3 },
-        { key: "category", field_type: :select, entity_type: :contact_form, mapped_to: "", configurations: { "width" => "full" }, translations: { en: "Category", options: [{"label"=>"Billing", "value"=>"billing"}, {"label"=>"Technical Issue", "value"=>"tech_issue"}] }, required: true, position: 4 },
-        { key: "description", field_type: :textarea, entity_type: :contact_form, mapped_to: "message.content", configurations: { "width" => "full" }, translations: { en: "Description" }, required: true, position: 5 }
+        { key: "category", field_type: :select, entity_type: :conversation, mapped_to: "", configurations: { "width" => "full" }, translations: { en: "Category", options: [{"label"=>"Billing", "value"=>"billing"}, {"label"=>"Technical Issue", "value"=>"tech_issue"}] }, required: true, position: 4 },
+        { key: "description", field_type: :textarea, entity_type: :conversation, mapped_to: "message.content", configurations: { "width" => "full" }, translations: { en: "Description" }, required: true, position: 5 }
       ]
 
       fields.each do |field_data|

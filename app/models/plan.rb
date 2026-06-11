@@ -54,7 +54,12 @@ class Plan < ApplicationRecord
 
   # Feature helpers — checks features jsonb
   def feature_enabled?(feature)
-    features[feature.to_s] == true
+    keys = feature.to_s.split('.')
+    if keys.size > 1
+      features.dig(*keys) == true
+    else
+      features[feature.to_s] == true
+    end
   end
 
   # Price for a given billing cycle

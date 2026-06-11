@@ -1,21 +1,20 @@
 # frozen_string_literal: true
-
 # == Schema Information
 #
 # Table name: global_routings
 #
-#  id             :uuid             not null, primary key
-#  identity_type  :string           not null
-#  identity_value :string           not null
-#  shard_key      :string           not null
-#  account_id     :uuid             not null
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
+#  id          :uuid             not null, primary key
+#  route_type  :string           not null
+#  route_value :string           not null
+#  shard_key   :string           not null
+#  account_id  :uuid             not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
 #
 # Indexes
 #
-#  index_global_routings_on_account_id                 (account_id)
-#  index_global_routings_on_identity_type_and_value    (identity_type,identity_value) UNIQUE
+#  index_global_routings_on_account_id      (account_id)
+#  index_global_routings_on_type_and_value  (route_type,route_value) UNIQUE
 #
 
 class GlobalRouting < ApplicationRecord

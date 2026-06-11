@@ -30,7 +30,7 @@ class CreateCustomFieldResources < ActiveRecord::Migration[8.1]
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
-      t.index [:resource_type, :resource_id]
+      t.index [:resource_type, :resource_id, :position], name: "idx_cfr_on_resource_and_position"
       t.index [:custom_field_id, :resource_type, :resource_id], unique: true, name: "idx_custom_field_resources_unique"
     end
   end

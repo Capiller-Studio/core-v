@@ -80,16 +80,24 @@ module Channels
       @channel = Channel::ContactForm.new(
         name: channel_params[:name],
         account: current_account,
-        configurations: {
-          submit_redirect_url: channel_params[:submit_redirect_url],
-          notification_emails: channel_params[:notification_emails]&.split(",")&.map(&:strip),
-          success_message_i18n_key: channel_params[:success_message_i18n_key] || "contact_form.success"
-        }
+        submit_redirect_url: channel_params[:submit_redirect_url],
+        outbound_channel_id: channel_params[:outbound_channel_id],
+        outbound_channel_type: channel_params[:outbound_channel_type]
       )
 
-      @channel.require_login = channel_params[:require_login] == "true"
-      @channel.allow_attachments = channel_params[:allow_attachments] == "true"
-      @channel.send_confirmation_email = channel_params[:send_confirmation_email] == "true"
+      @channel.require_login = channel_params[:require_login] == "true" || channel_params[:require_login] == "1" || channel_params[:require_login] == true
+      @channel.allow_attachments = channel_params[:allow_attachments] == "true" || channel_params[:allow_attachments] == "1" || channel_params[:allow_attachments] == true
+      @channel.send_confirmation_email = channel_params[:send_confirmation_email] == "true" || channel_params[:send_confirmation_email] == "1" || channel_params[:send_confirmation_email] == true
+      @channel.spam_protection_enabled = channel_params[:spam_protection_enabled] == "true" || channel_params[:spam_protection_enabled] == "1" || channel_params[:spam_protection_enabled] == true
+
+      if channel_params[:translations_attributes].present?
+        @channel.translations_attributes = channel_params[:translations_attributes]
+      end
+
+      if channel_params[:ui_configurations].present?
+        @channel.ui_configurations = channel_params[:ui_configurations]
+      end
+
       @channel.save!
 
       inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }

@@ -1,29 +1,28 @@
 # frozen_string_literal: true
-
 # == Schema Information
 #
 # Table name: addresses
 #
 #  id                       :uuid             not null, primary key
+#  name                     :string
+#  title                    :string
 #  address1                 :string
 #  address2                 :string
-#  alternative_phone_code   :string
-#  alternative_phone_number :string
 #  city                     :string(60)
-#  description              :text
-#  designation              :string
-#  name                     :string
-#  organization_name        :string
+#  zipcode                  :string(15)
 #  phone_code               :string
 #  phone_number             :string
+#  alternative_phone_code   :string
+#  alternative_phone_number :string
 #  state_name               :string
-#  title                    :string
-#  zipcode                  :string(15)
+#  organization_name        :string
+#  national_id              :string
+#  description              :text
+#  designation              :string
+#  state_id                 :uuid
+#  country_id               :uuid
 #  created_at               :datetime         not null
 #  updated_at               :datetime         not null
-#  country_id               :uuid
-#  national_id              :string
-#  state_id                 :uuid
 #
 # Indexes
 #
@@ -33,11 +32,7 @@
 #  index_addresses_on_organization_name  (organization_name)
 #  index_addresses_on_state_id           (state_id)
 #
-# Foreign Keys
-#
-#  fk_rails_...  (country_id => countries.id) ON DELETE => nullify
-#  fk_rails_...  (state_id => states.id) ON DELETE => nullify
-#
+
 class Address < ApplicationRecord
   belongs_to :country, optional: true
   belongs_to :state, optional: true

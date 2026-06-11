@@ -1,15 +1,20 @@
 # frozen_string_literal: true
-
 # == Schema Information
 #
 # Table name: email_template_layouts
 #
 #  id         :uuid             not null, primary key
 #  name       :string
+#  account_id :uuid             not null
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  account_id :uuid             not null
 #
+# Indexes
+#
+#  index_email_template_layouts_on_account_id           (account_id)
+#  index_email_template_layouts_on_account_id_and_name  (account_id,name)
+#
+
 class EmailTemplateLayout < ShardRecord
   include Translateable
   include Publishable
