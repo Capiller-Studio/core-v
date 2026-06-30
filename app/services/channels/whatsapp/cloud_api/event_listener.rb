@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 1.0.0
+# VERSION: 2.0.0
 # Website: https://techbolic.com/
 
 module Channels
   module Whatsapp
     module CloudApi
-      class EventListner < ApplicationService
+      class EventListener < ApplicationService
         attr_accessor :inbox, :message, :event,
                       :customer, :sender_id, :account,
                       :conversation, :parsed_params, :whatsapp_channel,
@@ -21,17 +21,20 @@ module Channels
         end
 
         def call
-          if parsed_params.try(:[], :statuses).present?
-            process_statuses
-          elsif parsed_params.try(:[], :messages).present?
-            ConversationCreator.call(
-              whatsapp_channel: whatsapp_channel,
-              parsed_params: parsed_params,
-              account: account
-            )
+          account.with_shard do
+            if parsed_params.try(:[], :statuses).present?
+              process_statuses
+            elsif parsed_params.try(:[], :messages).present?
+              ConversationCreator.call(
+                whatsapp_channel: whatsapp_channel,
+                parsed_params: parsed_params,
+                account: account
+              )
+            end
           end
-        rescue StandardError => _e
-          # TODO: Error handling
+        rescue StandardError => e
+          Rails.logger.error("WhatsApp EventListener error: #{e.message}")
+          Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
         end
 
         private
@@ -56,7 +59,7 @@ module Channels
 
           Messages::StatusUpdateWorker.perform_async(account.id, status, params)
         rescue StandardError => e
-          Rails.logger.error("Channels::Whatsapp::CloudApi::EventListner status process error => #{e.message}")
+          Rails.logger.error("WhatsApp EventListener status process error => #{e.message}")
         end
       end
     end

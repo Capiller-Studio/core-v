@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_02_010530) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -297,7 +297,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_010530) do
   end
 
   create_table "channel_contact_form_translations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "channel_contact_form_id", null: false
+    t.uuid "contact_form_id", null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.string "locale", null: false
     t.string "submit_button_text"
@@ -305,8 +305,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_010530) do
     t.string "success_message"
     t.string "title"
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["channel_contact_form_id", "locale"], name: "index_ccft_on_contact_form_id_and_locale", unique: true
-    t.index ["channel_contact_form_id"], name: "index_ccft_on_channel_contact_form_id"
+    t.index ["contact_form_id", "locale"], name: "index_ccft_on_contact_form_id_and_locale", unique: true
+    t.index ["contact_form_id"], name: "index_ccft_on_contact_form_id"
   end
 
   create_table "channel_contact_forms", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -319,6 +319,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_010530) do
     t.string "outbound_channel_type"
     t.string "secret", null: false
     t.integer "status", default: 0, null: false
+    t.string "submit_redirect_url"
     t.jsonb "ui_configurations", default: {}, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["account_id", "created_at"], name: "index_channel_contact_forms_on_account_id_and_created_at"
@@ -355,22 +356,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_010530) do
   create_table "channel_facebook_pages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "access_token", null: false
     t.uuid "account_id", null: false
+    t.string "avatar_url"
     t.jsonb "configurations", default: {}, null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.jsonb "data", default: {}, null: false
-    t.string "instagram_identifier"
     t.string "name"
     t.string "page_identifier", null: false
     t.integer "status", default: 0, null: false
-    t.jsonb "tokens", default: {}, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "user_access_token"
     t.index ["account_id", "created_at"], name: "index_channel_facebook_pages_on_account_id_and_created_at"
     t.index ["account_id", "name"], name: "index_channel_facebook_pages_on_account_id_and_name"
     t.index ["account_id", "page_identifier"], name: "index_channel_facebook_pages_on_account_id_and_page_identifier", unique: true
     t.index ["account_id"], name: "index_channel_facebook_pages_on_account_id"
-    t.index ["instagram_identifier"], name: "index_channel_facebook_pages_on_instagram_identifier"
     t.index ["page_identifier"], name: "index_channel_facebook_pages_on_page_identifier"
     t.index ["status"], name: "index_channel_facebook_pages_on_status"
+  end
+
+  create_table "channel_instagram", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "access_token", null: false
+    t.uuid "account_id", null: false
+    t.string "avatar_url"
+    t.jsonb "configurations", default: {}, null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.jsonb "data", default: {}, null: false
+    t.datetime "expires_at", null: false
+    t.string "instagram_id", null: false
+    t.string "name"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "username"
+    t.index ["account_id", "created_at"], name: "index_channel_instagram_on_account_id_and_created_at"
+    t.index ["account_id", "instagram_id"], name: "index_channel_instagram_on_account_id_and_instagram_id", unique: true
+    t.index ["account_id"], name: "index_channel_instagram_on_account_id"
+    t.index ["instagram_id"], name: "index_channel_instagram_on_instagram_id", unique: true
+    t.index ["status"], name: "index_channel_instagram_on_status"
   end
 
   create_table "channel_lines", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -1430,7 +1450,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_02_010530) do
   add_foreign_key "campaign_translations", "campaigns", on_delete: :cascade
   add_foreign_key "campaigns", "email_templates", on_delete: :nullify
   add_foreign_key "canned_response_translations", "canned_responses", on_delete: :cascade
-  add_foreign_key "channel_contact_form_translations", "channel_contact_forms", on_delete: :cascade
+  add_foreign_key "channel_contact_form_translations", "channel_contact_forms", column: "contact_form_id", on_delete: :cascade
   add_foreign_key "channel_web_widget_translations", "channel_web_widgets", column: "web_widget_id"
   add_foreign_key "channel_web_widgets", "channel_contact_forms", column: "pre_chat_form_id", on_delete: :nullify
   add_foreign_key "channel_web_widgets", "help_center_portals", column: "portal_id", on_delete: :nullify

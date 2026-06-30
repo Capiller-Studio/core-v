@@ -10,6 +10,7 @@ class CreateInboxes < ActiveRecord::Migration[7.1]
       t.string :timezone, null: false, default: "UTC"
       t.string :default_locale, null: false, default: "en"
       t.boolean :primary_inbox, null: false, default: false
+      t.integer :reopen_window_seconds, null: false, default: 0
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true
       # t.references :address, null: true,  foreign_key: false, type: :uuid, index: false

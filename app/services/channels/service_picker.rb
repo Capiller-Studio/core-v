@@ -66,7 +66,7 @@ module Channels
     def channel_whatsapp_service
       Channels::Whatsapp::CloudApi::MessageSender.call(
         whatsapp_channel: channel, 
-        customer: customer_inbox.customer,
+        customer_inbox: customer_inbox,
         message: message
       )
     end

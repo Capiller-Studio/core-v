@@ -142,12 +142,17 @@ module Channels
       @channel = Channel::Whatsapp.new(
         name: channel_params[:name],
         api_key: channel_params[:api_key],
+        phone_code: channel_params[:phone_code],
+        phone_number: channel_params[:phone_number],
         full_phone_number: channel_params[:full_phone_number],
         phone_number_id: channel_params[:phone_number_id],
         business_account_id: channel_params[:business_account_id],
         account: current_account,
         service: :cloud_api
       )
+      
+      @channel.provider_embedded_signup = channel_params[:provider_embedded_signup] == "true" || channel_params[:provider_embedded_signup] == "1" || channel_params[:provider_embedded_signup] == true
+      
       @channel.save!
 
       inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }

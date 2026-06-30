@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 1.0.0
+# VERSION: 2.0.0
 # Website: https://techbolic.com/
 
 module Channels
@@ -25,28 +25,21 @@ module Channels
           "file" => :file
         }.freeze
 
-        API_ENDPOINT = Rails.application.credentials.dig(Rails.env.to_sym, :channels, :whatsapp, :api_endpoint)
-        API_HEADERS = {
-          "Content-Type" => "application/json"
-        }.freeze
-
         attr_accessor :parsed_message, :account, :inbox, :sender,
                       :conversation, :message, :whatsapp_channel,
                       :message_type
 
         def initialize(parsed_message:, account:, inbox:, sender:, conversation:, whatsapp_channel:, message_type:)
-          self.parsed_message        = parsed_message
-          self.inbox                 = inbox
-          self.sender                = sender
-          self.account               = account
-          self.conversation          = conversation
-          self.whatsapp_channel      = whatsapp_channel
-          self.message_type          = message_type
+          self.parsed_message   = parsed_message
+          self.inbox            = inbox
+          self.sender           = sender
+          self.account          = account
+          self.conversation     = conversation
+          self.whatsapp_channel = whatsapp_channel
+          self.message_type     = message_type
         end
 
         def call
-          # TODO: Important -> Use correct shard based on current-account
-
           ActiveRecord::Base.transaction do
             create_messages unless find_message
           end
@@ -56,8 +49,10 @@ module Channels
         private
 
         def find_message
-          # TODO: WIP
-          # self.message = conversation.messages.find_by(external_id: parsed_message)
+          external_id = parsed_message.dig(:messages, 0, :id)
+          return unless external_id
+
+          self.message = conversation.messages.find_by(external_id: external_id.to_s)
         end
 
         def parse_attachment_type(source_attachment_type)
@@ -65,11 +60,9 @@ module Channels
         end
 
         def create_messages
-          # TODO: Process all messages
-
           message_params = parsed_message[:messages].first
 
-          # TODO: Error handling and logging
+          # Skip messages with errors
           return if message_params.key?("errors")
 
           message_type == "contacts" ? process_contact_messages(message_params) : process_message(message_params)
@@ -124,9 +117,7 @@ module Channels
         end
 
         def attach_contact(contact_params)
-          # TODO: Error handling if phones.blank?
-
-          contact_params[:phones].each do |phone|
+          contact_params[:phones]&.each do |phone|
             message.attachments.new(
               account: account,
               attachment_type: parse_attachment_type(message_type),
@@ -136,7 +127,6 @@ module Channels
         end
 
         def create_message(message_params)
-          # TODO: Convert external id to Array
           self.message = conversation.messages.build(
             content: message_content(message_params),
             account: account,
@@ -149,8 +139,8 @@ module Channels
 
         def download_attachment_file(attachment_payload)
           response = HTTParty.get(
-            "#{API_ENDPOINT}/v13.0/#{attachment_payload[:id]}",
-            headers: inbox.channel.api_headers
+            whatsapp_channel.graph_api_url(attachment_payload[:id]),
+            headers: whatsapp_channel.api_headers
           )
 
           whatsapp_channel.authorization_error! && return if response.unauthorized?
@@ -159,24 +149,19 @@ module Channels
 
           Down.download(
             response.parsed_response["url"],
-            headers: api_headers
+            headers: whatsapp_channel.api_headers
           )
+        rescue StandardError => e
+          Rails.logger.error("WhatsApp attachment download failed: #{e.message}")
+          nil
         end
 
         def message_content(message_params)
-          # TODO: Handle buttons & interactive messages
-
           message_params.dig(:text, :body) ||
             message_params.dig(:button, :text) ||
             message_params.dig(:interactive, :button_reply, :title) ||
             message_params.dig(:interactive, :list_reply, :title) ||
             message_params.dig(:name, :formatted_name)
-        end
-
-        def api_headers
-          API_HEADERS.merge({
-                              "Authorization" => "Bearer #{whatsapp_channel.api_key}"
-                            })
         end
       end
     end

@@ -7,6 +7,8 @@
 module Channels
   module Instagram
     class ConversationCreator < ApplicationService
+      include Channels::Concerns::ConversationFinder
+
       attr_accessor :inbox, :message, :parsed_message,
                     :channel, :customer, :sender_id, :account,
                     :conversation
@@ -47,7 +49,7 @@ module Channels
       end
 
       def find_conversation
-        self.conversation = customer.conversations.where(inbox:).find_by(account:)
+        self.conversation = find_or_reopen_conversation(customer, inbox, account)
       end
 
       def create_conversation
