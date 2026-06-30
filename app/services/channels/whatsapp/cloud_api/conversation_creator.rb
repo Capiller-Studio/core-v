@@ -1,51 +1,65 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 1.0.0
+# VERSION: 2.0.0
 # Website: https://techbolic.com/
 
 module Channels
   module Whatsapp
     module CloudApi
       class ConversationCreator < ApplicationService
-        # TODO: Add support for reactions, after adding reactions model
-        INVALID_MESSAGE_TYPES = %w[reaction request_welcome ephemeral unsupported]
+        include Channels::Concerns::ConversationFinder
+
+        INVALID_MESSAGE_TYPES = %w[reaction request_welcome ephemeral unsupported].freeze
 
         attr_accessor :inbox, :message, :parsed_params,
                       :whatsapp_channel, :customer, :sender_id, :account,
                       :conversation, :message_type
 
         def initialize(whatsapp_channel:, parsed_params:, account: nil)
-          self.parsed_params        = parsed_params
-          self.whatsapp_channel     = whatsapp_channel
-          self.account              = account || whatsapp_channel.account
-          self.message_type         = find_message_type
+          self.parsed_params    = parsed_params
+          self.whatsapp_channel = whatsapp_channel
+          self.account          = account || whatsapp_channel.account
+          self.message_type     = find_message_type
         end
 
         def call
-          find_inbox
-
           return if invalid_message_type?(message_type)
-          return if find_existing_message(parsed_params[:messages].first[:id]) || message_creation_locked?
 
-          lock_message_creation
+          account.with_shard do
+            find_inbox
 
-          ActiveRecord::Base.transaction do
-            find_or_create_customer
-            find_or_create_conversation
-            create_message
+            return if find_existing_message(parsed_params[:messages].first[:id]) || message_creation_locked?
+
+            lock_message_creation
+
+            lock_key = format(
+              ::RedisUtilities::Keys::WHATSAPP_MESSAGE_CREATION_LOCK,
+              receiver_id: whatsapp_channel.phone_number_id,
+              sender_id: parsed_params[:messages].first[:from]
+            )
+
+            ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+              # Double check after acquiring lock to ensure we don't process if another thread just finished
+              return if find_existing_message(parsed_params[:messages].first[:id])
+
+              ActiveRecord::Base.transaction do
+                find_or_create_customer
+                find_or_create_conversation
+                create_message
+              end
+            end
+
+            unlock_message_creation
           end
-
-          unlock_message_creation
-        rescue StandardError => _e
-          # TODO: Error handling
+        rescue StandardError => e
+          Rails.logger.error("WhatsApp ConversationCreator error: #{e.message}")
+          Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
         end
 
         private
 
         def find_inbox
-          # TODO: Logic for finding the correct inbox. Maybe: One inbox will act as default and other inboxes will
-          # receive conversations/messages based on Filters
           self.inbox = whatsapp_channel.primary_inbox
         end
 
@@ -54,7 +68,6 @@ module Channels
 
           account.messages.find_by(external_id: external_id)
         end
-
 
         def invalid_message_type?(message_type)
           INVALID_MESSAGE_TYPES.include?(message_type)
@@ -124,12 +137,11 @@ module Channels
 
         def find_or_create_conversation
           find_conversation || create_conversation
-          find_or_create_conversation_memeber
+          find_or_create_conversation_member
         end
 
         def find_conversation
-          # TODO: We shouldn't add messages to resolved conversations. So we would need to add flags per channel or inboxes to handle all cases
-          self.conversation = customer.conversations.where(inbox: inbox).find_by(account: account)
+          self.conversation = find_or_reopen_conversation(customer, inbox, account)
         end
 
         def create_conversation
@@ -140,11 +152,13 @@ module Channels
           )
         end
 
-        def find_or_create_conversation_memeber
-          conversation.conversation_members.find_or_create_by!(conversation: conversation, member: customer,
-account: account)
+        def find_or_create_conversation_member
+          conversation.conversation_members.find_or_create_by!(
+            conversation: conversation,
+            member: customer,
+            account: account
+          )
         end
-
 
         def create_message
           MessageCreator.call(

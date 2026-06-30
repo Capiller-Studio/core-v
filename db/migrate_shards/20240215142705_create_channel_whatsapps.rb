@@ -12,6 +12,7 @@ class CreateChannelWhatsapps < ActiveRecord::Migration[7.1]
       t.string  :api_key
       t.string  :phone_number_id
       t.string  :business_account_id
+      t.integer :flags, default: 0, null: false
       t.integer :status, default: 0, null: false
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true

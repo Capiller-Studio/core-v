@@ -4,6 +4,8 @@ module Channels
   module ShortMessage
     module AwsSns
       class ConversationCreator < ApplicationService
+        include Channels::Concerns::ConversationFinder
+
         # NOTE: AWS routes inbound SMS via SNS Topics (HTTP/S subscriptions) natively.
         # This payload arrives completely differently than Twilio (usually embedded inside a generic SNS Notification JSON).
         # We must actively parse the "Message" string out of the payload, then extract
@@ -70,7 +72,7 @@ module Channels
         end
 
         def find_conversation
-          self.conversation = customer.conversations.where(inbox: inbox).find_by(account: account)
+          self.conversation = find_or_reopen_conversation(customer, inbox, account)
         end
 
         def create_conversation

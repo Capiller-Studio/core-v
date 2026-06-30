@@ -3,6 +3,8 @@
 module Channels
   module WebWidgets
     class ConversationCreator < ApplicationService
+      include Channels::Concerns::ConversationFinder
+
       attr_accessor :inbox, :web_widget_channel, :customer, :account,
                     :conversation, :contact_params, :content, :attachments,
                     :conversation_data
@@ -50,7 +52,7 @@ module Channels
       end
 
       def find_conversation
-        self.conversation = customer.conversations.where(inbox: inbox).find_by(account: account)
+        self.conversation = find_or_reopen_conversation(customer, inbox, account)
       end
 
       def create_conversation
