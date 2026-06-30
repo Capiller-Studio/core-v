@@ -25,7 +25,7 @@ module Webhooks
       )
 
       RedisUtilities::MutexHelpers.with_lock(lock_key) do
-        GlobalRouting.where(identity_type: "facebook_page", identity_value: search_id).find_each do |routing|
+        GlobalRouting.where(route_type: "facebook_page", route_value: search_id).find_each do |routing|
           Current.set(account: routing.account) do
             Channel::FacebookPage.where(page_identifier: search_id, account_id: routing.account_id).find_each do |channel|
               Channels::FacebookPages::ConversationCreator.call(
@@ -44,7 +44,7 @@ module Webhooks
 
       status = event_name == :read ? :read : :delivered
 
-      GlobalRouting.where(identity_type: "facebook_page", identity_value: parsed_message.recipient_id).find_each do |routing|
+      GlobalRouting.where(route_type: "facebook_page", route_value: parsed_message.recipient_id).find_each do |routing|
         Current.set(account: routing.account) do
           Channel::FacebookPage.where(page_identifier: parsed_message.recipient_id, account_id: routing.account_id).find_each do |channel|
             params = {

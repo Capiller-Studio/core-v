@@ -158,7 +158,7 @@ module Channels
       end
 
       def fetch_story(external_id)
-        client = Koala::Facebook::API.new(instagram_channel.page_access_token)
+        client = Koala::Facebook::API.new(instagram_channel.access_token)
         client.get_object(external_id, fields: %w[story from])
       rescue Koala::Facebook::AuthenticationError, Koala::Facebook::ClientError, StandardError
         nil

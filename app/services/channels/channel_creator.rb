@@ -22,7 +22,7 @@ module Channels
           true
         end
       end
-    rescue ActiveRecord::RecordInvalid => e
+    rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotSaved => e
       Rails.logger.error("ChannelCreator Validation Failed: #{e.message}")
       false
     rescue StandardError => e
@@ -108,13 +108,32 @@ module Channels
     def facebook_page_channel
       @channel = Channel::FacebookPage.new(
         name: channel_params[:name],
-        access_token: JSON.parse(channel_params[:page_data])["access_token"],
-        page_identifier: JSON.parse(channel_params[:page_data])["id"],
+        access_token: channel_params[:access_token],
+        user_access_token: channel_params[:user_access_token],
+        page_identifier: channel_params[:page_identifier],
+        avatar_url: channel_params[:avatar_url],
         account: current_account
       )
       @channel.save!
 
-      inbox_attrs = { name: JSON.parse(channel_params[:page_data])["name"], account: current_account, primary_inbox: true }
+      inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
+      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
+      @channel.inboxes.create!(inbox_attrs)
+    end
+
+    def instagram_channel
+      @channel = Channel::Instagram.new(
+        instagram_id: channel_params[:instagram_id],
+        username: channel_params[:username],
+        name: channel_params[:name],
+        avatar_url: channel_params[:avatar_url],
+        access_token: channel_params[:access_token],
+        expires_at: channel_params[:expires_at],
+        account: current_account
+      )
+      @channel.save!
+
+      inbox_attrs = { name: channel_params[:name] || channel_params[:username], account: current_account, primary_inbox: true }
       inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
       @channel.inboxes.create!(inbox_attrs)
     end

@@ -7,14 +7,13 @@
 #  id                 :uuid             not null, primary key
 #  administration_url :string
 #  configurations     :jsonb            not null
+#  custom_attributes  :jsonb            not null
+#  raw_response       :jsonb            not null
 #  first_name         :string
-#  headers            :jsonb            not null
 #  identifier         :string           not null
 #  last_name          :string
 #  middle_name        :string
 #  name               :string
-#  params             :jsonb            not null
-#  response_mapping   :jsonb            not null
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  account_id         :uuid             not null

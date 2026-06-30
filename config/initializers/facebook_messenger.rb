@@ -3,12 +3,11 @@
 class DeskbolicFacebookProvider < Facebook::Messenger::Configuration::Providers::Base
   # Verify that the given verify token is valid.
   #
-  # verify_token - A String describing the application's verify token.
+  # verify_token - A String sent by Facebook to verify the webhook endpoint.
   #
   # Returns a Boolean representing whether the verify token is valid.
-  def valid_verify_token?(_verify_token)
-    # bot.exists?(verify_token: verify_token)
-    true
+  def valid_verify_token?(verify_token)
+    verify_token == facebook_credentials(:verify_token)
   end
 
   # Find the right application secret.
@@ -16,14 +15,8 @@ class DeskbolicFacebookProvider < Facebook::Messenger::Configuration::Providers:
   # page_id - An Integer describing a Facebook Page ID.
   #
   # Returns a String describing the application secret.
-  def app_secret_for(page_id)
-    # TODO: If users will use our facebook app then this will come from the model
-    # else add it to credentials for Deskbolic app
-    # Channel::FacebookPage.find_by(page_identifier: page_id).app_secret
-    # test-app
-    "6d329c722851dc658b4c5a0feed57c36"
-    # deskbolic
-    # "123f45ee129e4069d1af082fbededa3b"
+  def app_secret_for(_page_id)
+    facebook_credentials(:app_secret)
   end
 
   # Find the right access token.
@@ -37,15 +30,24 @@ class DeskbolicFacebookProvider < Facebook::Messenger::Configuration::Providers:
   #
   # Returns a String describing an access token.
   def access_token_for(recipient)
-    Channel::FacebookPage.find_by(
-      page_identifier: recipient.is_a?(String) ? recipient : recipient["id"]
-    ).access_token
+    page_id = recipient.is_a?(String) ? recipient : recipient["id"]
+
+    # Use GlobalRouting to look up which account/shard owns this page
+    routing = GlobalRouting.find_by(route_type: "facebook_page", route_value: page_id)
+    return nil unless routing
+
+    routing.account.with_shard do
+      Channel::FacebookPage.find_by(
+        page_identifier: page_id,
+        account_id: routing.account_id
+      )&.access_token
+    end
   end
 
   private
 
-  def bot
-    Deskbolic::Bot
+  def facebook_credentials(key)
+    Rails.application.credentials.dig(:channels, :facebook, key)
   end
 end
 
