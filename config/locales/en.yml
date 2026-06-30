@@ -78,6 +78,10 @@ en:
         subject: "Payment failed — action required"
       trial_expiring:
         subject: "Your free trial ends in %{days} days"
+      limit_approaching:
+        subject: "You are approaching your plan limit"
+      limit_reached:
+        subject: "You have reached your plan limit"
       team_assigned:
         subject: "Conversation #%{identifier} assigned to %{team_name}"
     system:

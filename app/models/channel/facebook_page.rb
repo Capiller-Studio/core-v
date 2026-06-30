@@ -4,18 +4,18 @@
 #
 # Table name: channel_facebook_pages
 #
-#  id                   :uuid             not null, primary key
-#  access_token         :string           not null
-#  configurations       :jsonb            not null
-#  data                 :jsonb            not null
-#  instagram_identifier :string
-#  name                 :string
-#  page_identifier      :string           not null
-#  status               :integer          default("active"), not null
-#  tokens               :jsonb            not null
-#  created_at           :datetime         not null
-#  updated_at           :datetime         not null
-#  account_id           :uuid             not null
+#  id                :uuid             not null, primary key
+#  access_token      :string           not null
+#  avatar_url        :string
+#  configurations    :jsonb            not null
+#  data              :jsonb            not null
+#  name              :string
+#  page_identifier   :string           not null
+#  status            :integer          default("active"), not null
+#  user_access_token :string
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  account_id        :uuid             not null
 #
 # Indexes
 #
@@ -23,55 +23,73 @@
 #  index_channel_facebook_pages_on_account_id_and_created_at       (account_id,created_at)
 #  index_channel_facebook_pages_on_account_id_and_name             (account_id,name)
 #  index_channel_facebook_pages_on_account_id_and_page_identifier  (account_id,page_identifier) UNIQUE
-#  index_channel_facebook_pages_on_instagram_identifier            (instagram_identifier)
 #  index_channel_facebook_pages_on_page_identifier                 (page_identifier)
 #  index_channel_facebook_pages_on_status                          (status)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (account_id => accounts.id) ON DELETE => cascade
 #
 module Channel
   class FacebookPage < ShardRecord
     include Channelable
     include Routable
+    include Reauthorizable
+
     SUBSCRIBE_FIELDS = %w[
       messages
       message_echoes
       message_deliveries
-      message_reactions
       message_reads
-      messaging_seen
-      standby
       messaging_postbacks
-      messaging_account_linking
-      messaging_handovers
     ].freeze
 
     belongs_to :account
 
-    # TODO: WIP (Rough sketch to get going)
     has_many :inboxes, as: :channel, dependent: :destroy
     has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
 
-    enum :status, { active: 0 }
+    accepts_nested_attributes_for :primary_inbox, update_only: true
 
-    after_create_commit :subscribe
-    before_destroy :unsubscribe
+    encrypts :access_token
+    encrypts :user_access_token
 
-    def subscribe
+    enum :status, { active: 0, disconnected: 1 }
+
+    validates :page_identifier, presence: true, uniqueness: { scope: :account_id, message: "is already connected to this account" }
+    validates :access_token, presence: true
+
+    after_create :subscribe_to_webhooks
+    before_destroy :unsubscribe_from_webhooks
+
+    # Attempt to refresh the page access token using the stored long-lived user token.
+    # The user token has a 60-day lifetime, and page tokens derived from it are permanent.
+    def refresh_page_token!
+      return unless user_access_token.present?
+
+      client = Koala::Facebook::API.new(user_access_token)
+      pages = client.get_connections("me", "accounts")
+      page = pages.find { |p| p["id"] == page_identifier }
+
+      if page
+        update!(access_token: page["access_token"])
+        reauthorized!
+      end
+    end
+
+    private
+
+    def subscribe_to_webhooks
       Facebook::Messenger::Subscriptions.subscribe(
         access_token:,
         subscribed_fields: SUBSCRIBE_FIELDS
       )
-    rescue StandardError => _e
-      # TODO: Error handling
+    rescue StandardError => e
+      Rails.logger.error("Facebook webhook subscription failed for page #{page_identifier}: #{e.message}")
+      errors.add(:base, "Webhook subscription failed: #{e.message}")
+      throw :abort
     end
 
-    def unsubscribe
+    def unsubscribe_from_webhooks
       Facebook::Messenger::Subscriptions.unsubscribe(access_token:)
-    rescue StandardError => _e
-      # TODO: Error handling
+    rescue StandardError => e
+      Rails.logger.error("Facebook webhook unsubscribe failed for page #{page_identifier}: #{e.message}")
     end
   end
 end

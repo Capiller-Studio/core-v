@@ -66,12 +66,23 @@ module Channels
         "file"
       end
 
-      def log_error(_response)
+      def log_error(response)
         message.update!(status: :failed)
+        error = response["error"]
+        Rails.logger.error("Instagram send error for #{instagram_channel.instagram_id}: #{error}")
+
+        if error.is_a?(Hash) && error["code"].to_i == 190
+          instagram_channel.authorization_error!
+        end
       end
 
-      def log_exception(_error)
+      def log_exception(error)
         message.update!(status: :failed)
+        Rails.logger.error("Instagram send exception for #{instagram_channel.instagram_id}: #{error.message}")
+
+        if error.to_s.include?("The session has been invalidated") || error.to_s.include?("Error validating access token")
+          instagram_channel.authorization_error!
+        end
       end
     end
   end

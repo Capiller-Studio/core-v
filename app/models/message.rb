@@ -52,7 +52,7 @@ class Message < ShardRecord
   enum :status, { sent: 0, delivered: 1, read: 2, failed: 3 }
   enum :content_type, { text: 0, activity: 1, csat: 2 }
   enum :visibility, { personal: 0, global: 1 }
-  enum :source, { email: 0, facebook: 1, whatsapp: 2, instagram: 3, api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8 }, suffix: true
+  enum :source, { email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3, api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8 }, suffix: true
 
   has_many :attachments, as: :resource, dependent: :destroy
   has_one :csat_survey_response, class_name: 'Csat::SurveyResponse', dependent: :nullify

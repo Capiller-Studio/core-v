@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 1.0.0
+# VERSION: 1.1.0
 # Website: https://techbolic.com/
 
 module Webhooks
@@ -15,24 +15,27 @@ module Webhooks
       instagram_id = entries.dig(0, :id)
       return if instagram_id.blank?
 
-      channel = find_channel(instagram_id)
-      return unless channel_active?(channel)
+      # Use GlobalRouting to find the account/shard for this Instagram channel
+      routing = GlobalRouting.find_by(route_type: "instagram", route_value: instagram_id.to_s)
+      return if routing.blank?
 
-      Channels::Instagram::EventListner.call(
-        instagram_channel: channel,
-        payload: payload
-      )
+      Current.set(account: routing.account) do
+        channel = Channel::Instagram.find_by(instagram_id: instagram_id.to_s, account_id: routing.account_id)
+        return unless channel_active?(channel)
+
+        Channels::Instagram::EventListner.call(
+          instagram_channel: channel,
+          payload: payload
+        )
+      end
     end
 
     private
 
-    def find_channel(instagram_id)
-      Channel::FacebookPage.find_by(instagram_id: instagram_id)
-    end
-
     def channel_active?(channel)
       return false if channel.blank?
       return false if channel.reauthorization_required?
+      return false if channel.token_expired?
       return false unless channel.active?
       return false unless channel.account&.active?
 

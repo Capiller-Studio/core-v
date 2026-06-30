@@ -44,8 +44,7 @@ module Channels
         {
           recipient: { id: customer_inbox.external_id },
           message: { text: message.content },
-          messaging_type: "MESSAGE_TAG", # 24 hour window bypass
-          tag: "ACCOUNT_UPDATE"
+          messaging_type: "RESPONSE"
         }
       end
 
@@ -60,8 +59,7 @@ module Channels
               }
             }
           },
-          messaging_type: "MESSAGE_TAG",
-          tag: "ACCOUNT_UPDATE"
+          messaging_type: "RESPONSE"
         }
       end
 
@@ -77,11 +75,13 @@ module Channels
       end
 
       def log_exception(error)
-        # TODO: Error handling
         message.update!(status: :failed)
 
-        nil unless error.to_s.include?["The session has been invalidated", "Error validating access token"]
-        # TODO: Ask user to re-enter credentials
+        if error.to_s.include?("The session has been invalidated") || error.to_s.include?("Error validating access token")
+          facebook_page_channel.authorization_error!
+        end
+
+        Rails.logger.error("Facebook MessageSender error for page #{facebook_page_channel.page_identifier}: #{error.message}")
       end
     end
   end

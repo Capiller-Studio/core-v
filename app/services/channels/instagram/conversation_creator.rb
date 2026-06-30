@@ -78,6 +78,23 @@ module Channels
             gender: customer_data["gender"]
           }
         )
+        
+        create_identity(customer_data) if customer.present?
+      end
+
+      def create_identity(customer_data)
+        return if account.identities.exists?(customer: customer, identity_type: :instagram)
+
+        account.identities.create!(
+          customer: customer,
+          identity_type: :instagram,
+          identifier: sender_id,
+          first_name: customer_data["first_name"],
+          last_name: customer_data["last_name"],
+          name: customer_data["name"] || [ customer_data["first_name"], customer_data["last_name"] ].compact.join(" "),
+          raw_response: customer_data,
+          custom_attributes: {}
+        )
       end
 
       def find_or_create_conversation_member
@@ -96,14 +113,18 @@ module Channels
       end
 
       def fetch_customer_details
-        client = Koala::Facebook::API.new(channel.page_access_token)
+        client = Koala::Facebook::API.new(channel.access_token)
         client.get_object(sender_id)
-      rescue Koala::Facebook::AuthenticationError => _e
-        # TODO: Error Handling
-      rescue Koala::Facebook::ClientError => _e
-        # TODO: Error Handling
-      rescue StandardError => _e
-        # TODO: Error Handling
+      rescue Koala::Facebook::AuthenticationError => e
+        channel.authorization_error!
+        Rails.logger.error("Instagram auth error fetching customer #{sender_id}: #{e.message}")
+        nil
+      rescue Koala::Facebook::ClientError => e
+        Rails.logger.error("Instagram client error fetching customer #{sender_id}: #{e.message}")
+        nil
+      rescue StandardError => e
+        Rails.logger.error("Instagram error fetching customer #{sender_id}: #{e.message}")
+        nil
       end
     end
   end
