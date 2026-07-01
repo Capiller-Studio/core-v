@@ -22,8 +22,8 @@ module Reauthorizable
   def authorization_error_alert!
     ::RedisUtilities::Helpers.set(reauthorization_required_key, true)
 
-    ## Send notification to user and show dialog in the frontend.
-    self.class.name
+    # Send notification to user
+    SystemMailer.channel_reauthorization_required(self).deliver_later
 
     invalidate_cache
   end

@@ -49,6 +49,16 @@ module UnreadCounts
         end
       end
       
+      # If completely unassigned, notify all users who have access to this inbox
+      if resource.conversation.assignee_id.nil? && resource.conversation.team_id.nil?
+        inbox_users = resource.inbox.users.pluck(:id)
+        inbox_users = resource.account.users.pluck(:id) if inbox_users.empty?
+        
+        User.where(id: inbox_users - target_members.keys - [resource.sender_id]).find_each do |user|
+          target_members[user.id] = user
+        end
+      end
+      
       target_members.each do |id, member|
         # Increment conversation unread count
         RedisUtilities::Helpers.hash_increment(conv_key(id), resource.conversation_id, 1)

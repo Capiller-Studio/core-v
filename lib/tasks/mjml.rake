@@ -23,10 +23,19 @@ namespace :mjml do
       puts "\nScanning #{label}: #{source_dir}"
 
       Dir.glob(source_dir.join("**/*.mjml")).each do |source_path|
+        # Skip partials
+        next if File.basename(source_path).start_with?("_")
+
         relative = Pathname.new(source_path).relative_path_from(source_dir)
         output_path = output_dir.join(relative.sub_ext(".html.erb"))
 
         mjml_content = File.read(source_path)
+
+        # Naive <mj-include> resolver since mrml from string doesn't support paths
+        mjml_content.gsub!(/<mj-include\s+path="([^"]+)"\s*\/>/) do
+          include_path = source_dir.join(File.dirname(relative), $1)
+          File.read(include_path)
+        end
 
         begin
           html = Emails::TemplateCompilerService.compile(mjml_content, strict: true)

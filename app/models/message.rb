@@ -99,6 +99,16 @@ class Message < ShardRecord
   # TODO: Refactor to separate concern
   def broadcast_message_creation
     EventBroadcastWorker.perform_async(event_payload.to_json, "message.created", connection_tokens, account_id)
+    
+    # Notify agents about the new message
+    conversation.notifiable_agents(exclude_sender: sender).each do |user|
+      Notification.create(
+        account: account,
+        user: user,
+        resource: self,
+        event: :message_created
+      )
+    end
   end
 
   def broadcast_message_update
@@ -106,7 +116,7 @@ class Message < ShardRecord
   end
 
   def connection_tokens
-    conversation.customer_inboxes.pluck(:connection_token) + conversation.users.pluck(:connection_token)
+    (conversation.customer_inboxes.pluck(:connection_token) + account.users.pluck(:connection_token)).uniq
   end
 
   def process_sla

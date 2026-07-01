@@ -21,6 +21,14 @@ module Assignable
       conversation_members.find_or_create_by!(member: user, account: account) do |cm|
         cm.role = :participant
       end
+
+      # Notify the assigned user
+      Notification.create(
+        account: account,
+        user: user,
+        resource: self,
+        event: :conversation_assigned
+      )
     end
   end
 
@@ -34,6 +42,16 @@ module Assignable
     return if team_id == team&.id
 
     update!(team: team)
+
+    # Notify team members that a new conversation is assigned to their team
+    notifiable_agents.each do |user|
+      Notification.create(
+        account: account,
+        user: user,
+        resource: self,
+        event: :team_assigned
+      )
+    end
   end
 
   def unassign_team!

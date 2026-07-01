@@ -80,6 +80,7 @@ class Conversation < ShardRecord
   after_update_commit :dispatch_csat, if: :saved_change_to_status?
   after_update_commit :broadcast_conversation_update
   before_save :update_last_activity_at, if: :will_save_change_to_status?
+  after_destroy :cleanup_unread_counts
 
 
   scope :current_conversations, ->(current_user) {
@@ -128,11 +129,41 @@ class Conversation < ShardRecord
     CsatDispatcherWorker.perform_async(id)
   end
 
+  def notifiable_agents(exclude_sender: nil)
+    # 1. Directly assigned participants (excluding customers)
+    members = conversation_members.includes(:member).where(member_type: 'User').map(&:member)
+
+    # 2. Team members if assigned to a team
+    if team_id.present?
+      team_user_ids = TeamUser.where(team_id: team_id).pluck(:user_id)
+      team_users = User.where(id: team_user_ids).to_a
+      members.concat(team_users)
+    end
+
+    # 3. If completely unassigned, notify all users who have access to this inbox
+    if assignee_id.nil? && team_id.nil?
+      inbox_users = inbox.users.to_a
+      inbox_users = account.users.to_a if inbox_users.empty?
+      members.concat(inbox_users)
+    end
+
+    members.uniq.reject { |u| u == exclude_sender }
+  end
+
   private
 
   # TODO: Refactor to separate concern
   def broadcast_conversation_creation
     EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.created", connection_tokens, account_id)
+    
+    notifiable_agents.each do |user|
+      Notification.create(
+        account: account,
+        user: user,
+        resource: self,
+        event: :conversation_created
+      )
+    end
   end
 
   def broadcast_conversation_update
@@ -144,6 +175,24 @@ class Conversation < ShardRecord
   end
 
   def connection_tokens
-    customer_inboxes.pluck(:connection_token) + users.pluck(:connection_token)
+    (customer_inboxes.pluck(:connection_token) + account.users.pluck(:connection_token)).uniq
+  end
+
+  def cleanup_unread_counts
+    account.users.find_each do |user|
+      conv_key = RedisUtilities::Keys::UNREAD_CONVERSATION_COUNT % { account_id: account_id, member_id: user.id }
+      set_key = RedisUtilities::Keys::UNREAD_CONVERSATION_SET % { account_id: account_id, member_id: user.id }
+      inbox_key = RedisUtilities::Keys::UNREAD_INBOX_COUNT % { account_id: account_id, member_id: user.id }
+      
+      unread_count_for_conv = RedisUtilities::Helpers.hash_get(conv_key, id).to_i
+      
+      if unread_count_for_conv > 0
+        RedisUtilities::Helpers.hash_increment(inbox_key, inbox_id, -unread_count_for_conv)
+      end
+      
+      RedisUtilities::Helpers.hash_delete(conv_key, id)
+      RedisUtilities::Helpers.set_remove(set_key, id)
+      UnreadCounts::Broadcast.call(member: user, account_id: account_id)
+    end
   end
 end
