@@ -60,6 +60,7 @@ class Inbox < ShardRecord
   has_many :assignment_policies, through: :assignment_policy_inboxes
 
   after_destroy :cleanup_integration_settings
+  after_destroy :cleanup_unread_counts
 
   scope :current_inboxes, ->(current_user) { joins(:inbox_users).where(inbox_users: { user: current_user }) }
 
@@ -76,6 +77,14 @@ class Inbox < ShardRecord
     Integration.where("settings @> ?", { subscribed_inboxes: [ id ] }.to_json).find_each do |integration|
       remaining_inboxes = integration.subscribed_inboxes - [ id ]
       integration.update!(settings: integration.settings.merge("subscribed_inboxes" => remaining_inboxes))
+    end
+  end
+
+  def cleanup_unread_counts
+    account.users.find_each do |user|
+      key = RedisUtilities::Keys::UNREAD_INBOX_COUNT % { account_id: account_id, member_id: user.id }
+      RedisUtilities::Helpers.hash_delete(key, id)
+      UnreadCounts::Broadcast.call(member: user, account_id: account_id)
     end
   end
 end

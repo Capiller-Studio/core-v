@@ -30,6 +30,20 @@ class NotificationDeliveryWorker
   def deliver_email(notification, setting)
     return if setting && !setting.email_enabled_for?(notification.event)
 
+    # Smart Cancel: For delayed message_created notifications, skip if the user has already read it
+    if notification.event == "message_created"
+      # The resource for message_created is the Message object
+      message = notification.resource
+      if message
+        unread_count = ::RedisUtilities::Helpers.hash_get(
+          ::RedisUtilities::Keys::UNREAD_CONVERSATION_COUNT % { account_id: notification.account_id, member_id: notification.user_id },
+          message.conversation_id
+        ).to_i
+        
+        return if unread_count <= 0
+      end
+    end
+
     AgentNotificationMailer.notify(notification).deliver_later
   rescue StandardError => e
     Rails.logger.error("Email notification delivery failed: #{e.message}")

@@ -18,6 +18,10 @@ module Notifiable
   private
 
   def deliver_notification
-    NotificationDeliveryWorker.perform_async(id, account_id)
+    if event == "message_created"
+      NotificationDeliveryWorker.perform_in(2.minutes, id, account_id)
+    else
+      NotificationDeliveryWorker.perform_async(id, account_id)
+    end
   end
 end
