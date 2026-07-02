@@ -9,7 +9,6 @@ module Billable
     has_many :subscriptions, dependent: :destroy
     has_many :payment_methods, dependent: :destroy
     has_many :transactions, dependent: :destroy
-    has_many :invoices, dependent: :destroy
 
     after_create :create_wallet!
   end

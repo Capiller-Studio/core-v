@@ -49,6 +49,8 @@ class Notification < ShardRecord
   scope :unread, -> { where(read_at: nil) }
   scope :recent, -> { order(created_at: :desc) }
 
+  after_create_commit :broadcast_notification
+
   def event_payload
     {
       id:,
@@ -58,5 +60,16 @@ class Notification < ShardRecord
       resource_id:,
       created_at:
     }
+  end
+
+  private
+
+  def broadcast_notification
+    EventBroadcastWorker.perform_async(
+      event_payload.to_json,
+      "notification.created",
+      [user.connection_token],
+      account_id
+    )
   end
 end

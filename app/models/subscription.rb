@@ -5,7 +5,6 @@ class Subscription < ApplicationRecord
   belongs_to :plan
 
   has_many :transactions, dependent: :nullify
-  has_many :invoices, dependent: :nullify
 
   enum :status, { active: 0, trialing: 1, past_due: 2, cancelled: 3, expired: 4 }
   enum :billing_cycle, { monthly: 0, annual: 1 }

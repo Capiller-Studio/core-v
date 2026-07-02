@@ -48,7 +48,7 @@ module Billing
           current_period_start: now,
           current_period_end: nil
         )
-      elsif plan.trial_days.positive?
+      elsif plan.trial_days.positive? && account_eligible_for_trial?
         attrs.merge!(
           status: :trialing,
           trial_end_at: now + plan.trial_days.days,
@@ -104,6 +104,11 @@ module Billing
       # rubocop:disable Rails/SkipsModelValidations
       account.update_column(:limits, new_limits)
       # rubocop:enable Rails/SkipsModelValidations
+    end
+
+    def account_eligible_for_trial?
+      # They are eligible only if they have never had a subscription with a trial
+      account.subscriptions.where.not(trial_end_at: nil).empty?
     end
   end
 end

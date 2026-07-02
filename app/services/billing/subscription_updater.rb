@@ -24,7 +24,7 @@ module Billing
     private
 
     def validate!
-      raise("Subscription must be active or trialing to update") unless subscription.active? || subscription.trialing?
+      raise("Cannot update a cancelled subscription") if subscription.cancelled?
       raise("New quantity must be at least #{new_plan.min_users}") if new_quantity < new_plan.min_users
       raise("New quantity cannot exceed #{new_plan.max_users}") if new_plan.max_users != -1 && new_quantity > new_plan.max_users
       raise("New quantity cannot be less than currently active users (#{subscription.account.users_count})") if new_quantity < subscription.account.users_count
@@ -46,6 +46,25 @@ module Billing
 
       if subscription.trialing?
         subscription.update!(quantity: new_quantity, plan: new_plan)
+        sync_plan_limits
+        return
+      end
+
+      # If the billing cycle is over (e.g. trial expired, past due), treat this as a full renewal
+      if subscription.remaining_days_in_cycle <= 0
+        new_total_price = (subscription.annual? ? new_plan.annual_price : new_plan.base_price) * new_quantity
+        charge_for_upgrade(new_total_price, seats_diff, plan_changed)
+        
+        now = Time.current
+        new_end = subscription.annual? ? now + 1.year : now + 1.month
+        
+        subscription.update!(
+          quantity: new_quantity,
+          plan: new_plan,
+          status: :active,
+          current_period_start: now,
+          current_period_end: new_end
+        )
         sync_plan_limits
         return
       end
