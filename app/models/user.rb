@@ -78,6 +78,10 @@ class User < ApplicationRecord
   has_many :teams, through: :team_users, disable_joins: true
   has_many :user_skills, dependent: :destroy
   has_many :skills, through: :user_skills, disable_joins: true
+  
+  has_many :notifications, dependent: :destroy
+  has_many :notification_settings, dependent: :destroy
+  has_many :notification_subscriptions, dependent: :destroy
 
   before_save :configure_display_name
 

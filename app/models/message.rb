@@ -100,14 +100,16 @@ class Message < ShardRecord
   def broadcast_message_creation
     EventBroadcastWorker.perform_async(event_payload.to_json, "message.created", connection_tokens, account_id)
     
-    # Notify agents about the new message
-    conversation.notifiable_agents(exclude_sender: sender).each do |user|
-      Notification.create(
-        account: account,
-        user: user,
-        resource: self,
-        event: :message_created
-      )
+    # Notify agents about the new incoming message
+    if incoming?
+      conversation.notifiable_agents(exclude_sender: sender).each do |user|
+        Notification.create(
+          account: account,
+          user: user,
+          resource: self,
+          event: :message_created
+        )
+      end
     end
   end
 

@@ -59,6 +59,8 @@ class NotificationSetting < ShardRecord
             column: "push_flags",
             flag_query_mode: :bit_operator
 
+  after_initialize :set_defaults, if: :new_record?
+
   def email_enabled_for?(event)
     flag = :"email_#{event}"
     respond_to?(flag) ? send(flag) : false
@@ -67,5 +69,21 @@ class NotificationSetting < ShardRecord
   def push_enabled_for?(event)
     flag = :"push_#{event}"
     respond_to?(flag) ? send(flag) : false
+  end
+
+  private
+
+  def set_defaults
+    if email_flags == 0
+      Notification.events.keys.each do |event|
+        send("email_#{event}=", true) if respond_to?("email_#{event}=")
+      end
+    end
+
+    if push_flags == 0
+      Notification.events.keys.each do |event|
+        send("push_#{event}=", true) if respond_to?("push_#{event}=")
+      end
+    end
   end
 end

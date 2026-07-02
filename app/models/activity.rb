@@ -43,9 +43,8 @@ class Activity < ShardRecord
   end
 
   def broadcast_activity
-    # Skip redundant websocket broadcasts for core conversation timeline records
-    # since Deskbolic native streams handle conversation activity updates directly
-    return if %w[Conversation Message].include?(trackable_type)
+    # Deskbolic native streams handle Message updates directly, but not Activities.
+    return if %w[Message].include?(trackable_type)
 
     # Prepare payload for ActionCable/AnyCable
     payload = {
@@ -72,11 +71,11 @@ class Activity < ShardRecord
 
   def connection_tokens
     # If trackable is a conversation, we broadcast to its members
-    if trackable.respond_to?(:connection_tokens)
-      trackable.connection_tokens
+    if trackable.respond_to?(:connection_tokens, true)
+      trackable.send(:connection_tokens)
     else
       # Fallback to all account admins/owners
-      AccountUser.where(account_id: account_id).pluck(:connection_token)
+      account.users.pluck(:connection_token)
     end
   end
 end

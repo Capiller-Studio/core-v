@@ -78,6 +78,7 @@ class Conversation < ShardRecord
   after_create_commit :broadcast_conversation_creation
   after_update_commit :process_sla, if: :saved_change_to_status?
   after_update_commit :dispatch_csat, if: :saved_change_to_status?
+  after_update_commit :record_status_change, if: :saved_change_to_status?
   after_update_commit :broadcast_conversation_update
   before_save :update_last_activity_at, if: :will_save_change_to_status?
   after_destroy :cleanup_unread_counts
@@ -113,6 +114,16 @@ class Conversation < ShardRecord
     # rubocop:disable Rails/SkipsModelValidations
     touch(:last_activity_at)
     # rubocop:enable Rails/SkipsModelValidations
+  end
+
+  def should_track_changes?
+    return false unless persisted?
+    
+    # Ignore internal timestamps and attributes that have their own dedicated activities
+    ignored_attributes = %w[updated_at created_at last_activity_at status_changed_at id status assignee_id team_id]
+    meaningful_changes = saved_changes.keys - ignored_attributes
+    
+    meaningful_changes.any?
   end
 
   def mark_as_read_for(user)
@@ -172,6 +183,15 @@ class Conversation < ShardRecord
 
   def update_last_activity_at
     self.last_activity_at = Time.current
+  end
+
+  def record_status_change
+    Activities::Recorder.call(
+      trackable: self,
+      event_type: "conversation_#{status}",
+      changes: { status: saved_change_to_status },
+      actor: Current.user
+    )
   end
 
   def connection_tokens

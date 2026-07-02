@@ -14,7 +14,10 @@ module Assignable
   end
 
   def assign!(user)
-    ActiveRecord::Base.transaction do
+    with_lock do
+      return if assignee_id == user&.id
+
+      old_assignee_id = assignee_id
       update!(assignee: user)
 
       # Ensure assignee is added as a participant so they can track unread/seen states
@@ -22,42 +25,92 @@ module Assignable
         cm.role = :participant
       end
 
-      # Notify the assigned user
-      Notification.create(
-        account: account,
-        user: user,
-        resource: self,
-        event: :conversation_assigned
-      )
+      if saved_change_to_assignee_id?
+        # Notify the assigned user
+        Notification.create(
+          account: account,
+          user: user,
+          resource: self,
+          event: :conversation_assigned
+        )
+
+        # Record the activity
+        Activities::Recorder.call(
+          trackable: self,
+          event_type: :conversation_assigned,
+          changes: { assignee_id: [old_assignee_id, user.id] },
+          actor: Current.user || user
+        )
+      end
     end
   end
 
   def unassign!
-    update!(assignee: nil)
+    with_lock do
+      return if assignee_id.nil?
+
+      old_assignee_id = assignee_id
+      update!(assignee: nil)
+      
+      if saved_change_to_assignee_id?
+        Activities::Recorder.call(
+          trackable: self,
+          event_type: :conversation_unassigned,
+          changes: { assignee_id: [old_assignee_id, nil] },
+          actor: Current.user
+        )
+      end
+    end
   end
 
   # --- Team Assignment ---
 
   def assign_team!(team)
-    return if team_id == team&.id
+    with_lock do
+      return if team_id == team&.id
 
-    update!(team: team)
+      old_team_id = team_id
+      update!(team: team)
 
-    # Notify team members that a new conversation is assigned to their team
-    notifiable_agents.each do |user|
-      Notification.create(
-        account: account,
-        user: user,
-        resource: self,
-        event: :team_assigned
-      )
+      if saved_change_to_team_id?
+        # Notify team members that a new conversation is assigned to their team
+        notifiable_agents.each do |user|
+          Notification.create(
+            account: account,
+            user: user,
+            resource: self,
+            event: :team_assigned
+          )
+        end
+
+        # Record the activity
+        Activities::Recorder.call(
+          trackable: self,
+          event_type: :team_assigned,
+          changes: { team_id: [old_team_id, team.id] },
+          actor: Current.user
+        )
+      end
     end
   end
 
   def unassign_team!
-    return if team_id.nil?
+    with_lock do
+      return if team_id.nil?
 
-    update!(team: nil)
+      old_team_id = team_id
+      update!(team: nil)
+
+      if saved_change_to_team_id?
+        # Record the activity
+        Activities::Recorder.call(
+          trackable: self,
+          event_type: :team_unassigned,
+          changes: { team_id: [old_team_id, nil] },
+          actor: Current.user
+        )
+      end
+    end
   end
 
   def team_assigned?
