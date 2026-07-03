@@ -13,13 +13,19 @@ module Integrations
         # Guard against duplicate dispatches
         return if delivery.successful?
 
-        integration = delivery.integration
-        return unless integration&.active? && integration.webhook?
+        resource = delivery.resource
+        return unless resource
+
+        if resource.is_a?(Integration)
+          return unless resource.active? && resource.webhook?
+        elsif resource.is_a?(Channel::Api)
+          return unless resource.active?
+        end
 
         begin
           body = delivery.request_payload.to_json
           timestamp = Time.now.to_i
-          secret = integration.webhook_secret
+          secret = resource.is_a?(Channel::Api) ? resource.hmac_token : resource.webhook_secret
 
           headers = {
             "Content-Type" => "application/json",

@@ -159,5 +159,20 @@ module Channels
       inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
       @channel.inboxes.create!(inbox_attrs)
     end
+
+    def api_channel
+      @channel = Channel::Api.new(
+        name: channel_params[:name],
+        description: channel_params[:description],
+        webhook_url: channel_params[:webhook_url],
+        account: current_account
+      )
+      
+      @channel.save!
+
+      inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
+      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
+      @channel.inboxes.create!(inbox_attrs)
+    end
   end
 end

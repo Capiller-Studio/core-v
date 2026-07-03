@@ -64,7 +64,7 @@ module HelpCenter
     #                    target URL stored in configurations["external_url"]
     # NOTE: Guide/wizard sequencing is NOT an article type — it is a Category-level flag (guide_mode).
     #       Articles inside a guide_mode category automatically get Next/Previous step navigation.
-    enum :article_type, { standard: 0, external_link: 1 }
+    enum :article_type, { standard: 0, external_link: 1, api_endpoint: 2 }
 
     # visibility controls who can access this article:
     #   everyone  — visible to all visitors
