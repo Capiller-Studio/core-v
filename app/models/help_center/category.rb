@@ -72,6 +72,7 @@ module HelpCenter
     has_flags 1 => :guide_mode,
               2 => :show_in_navbar,
               3 => :featured,
+              4 => :api_reference,
               column: "flags"
 
     # icon_key stores a key from the predefined Lucide icon set (e.g. "book-open", "message-circle")

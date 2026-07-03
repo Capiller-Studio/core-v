@@ -62,6 +62,7 @@ class Account < ApplicationRecord
   enum :referral_commission_type, { fixed: 0 }
 
   # Primary DB Associations
+  has_many :access_tokens, as: :owner, dependent: :destroy
   has_many :account_users, dependent: :destroy
   has_many :users, through: :account_users
   has_many :account_invitations, dependent: :destroy

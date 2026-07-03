@@ -69,7 +69,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'prawn-table'
   spec.add_dependency 'inline_svg'
   spec.add_dependency 'groupdate'
-  spec.add_dependency 'mobility', '~> 1.3.0.rc1'
   spec.add_dependency 'pagy', '~> 6.2'
   spec.add_dependency 'facebook-messenger'
   spec.add_dependency 'koala'

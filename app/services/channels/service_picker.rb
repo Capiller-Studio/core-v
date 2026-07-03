@@ -103,7 +103,23 @@ module Channels
     end
 
     def channel_api_service
-      # Handled via Webhooks
+      return unless channel.webhook_url.present?
+
+      payload = {
+        event: "message.created",
+        message: message.as_json(include: [:attachments, :sender]),
+        conversation: conversation.as_json
+      }
+
+      delivery = WebhookDelivery.create!(
+        resource: channel,
+        event_name: "message.created",
+        endpoint_url: channel.webhook_url,
+        request_payload: payload,
+        status: :pending
+      )
+
+      Integrations::Webhooks::BroadcasterWorker.perform_async(delivery.id, 1)
     end
 
     def channel_contact_form_service

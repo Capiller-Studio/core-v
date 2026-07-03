@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class WebhookDelivery < ShardRecord
-  belongs_to :integration
+  belongs_to :resource, polymorphic: true
   has_many :attempts, class_name: "WebhookDeliveryAttempt", dependent: :destroy, inverse_of: :delivery
 
   enum :status, { pending: 0, successful: 1, failed: 2 }
