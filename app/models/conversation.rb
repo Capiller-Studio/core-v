@@ -52,7 +52,6 @@ class Conversation < ShardRecord
   belongs_to :inbox
   belongs_to :team, optional: true
   belongs_to :assignee, class_name: 'User', optional: true
-  belongs_to :campaign, optional: true
   belongs_to :outbound_channel, polymorphic: true, optional: true
 
   enum :status, { active: 0, closed: 1, snoozed: 2, resolved: 3 }
