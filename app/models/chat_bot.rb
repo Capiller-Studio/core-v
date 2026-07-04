@@ -28,6 +28,8 @@
 #  index_chat_bots_on_account_id_and_name        (account_id,name)
 #  index_chat_bots_on_account_id_and_status      (account_id,status)
 #
+# NOTE: This model is currently unimplemented and unused.
+# Its database migration has been moved to db/archived_migrations/
 class ChatBot < ShardRecord
   belongs_to :account
 

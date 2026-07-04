@@ -31,6 +31,8 @@
 #
 #  fk_rails_...  (email_template_id => email_templates.id) ON DELETE => nullify
 #
+# NOTE: This model is currently unimplemented and unused.
+# Its database migration has been moved to db/archived_migrations/
 class Campaign < ShardRecord
   belongs_to :user
   belongs_to :account

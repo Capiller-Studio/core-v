@@ -26,6 +26,8 @@
 #  fk_rails_...  (account_id => accounts.id) ON DELETE => cascade
 #
 module Channel
+  # NOTE: This model is currently unimplemented and unused.
+  # Its database migration has been moved to db/archived_migrations/
   class Telegram < ShardRecord
     include Channelable
     include Routable

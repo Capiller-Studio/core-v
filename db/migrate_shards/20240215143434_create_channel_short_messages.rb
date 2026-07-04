@@ -11,7 +11,7 @@ class CreateChannelShortMessages < ActiveRecord::Migration[7.1]
       t.string  :service_identifier
       t.integer :short_message_type,  default: Channel::ShortMessage.short_message_types[:sms], null: false
       t.integer :service,             default: Channel::ShortMessage.services[:twilio],         null: false
-      t.integer :status,              default: Channel::Line.statuses[:active],                 null: false
+      t.integer :status,              default: Channel::ShortMessage.statuses[:active],                 null: false
 
       t.references :account, null: false, foreign_key: false, type: :uuid, index: true
 

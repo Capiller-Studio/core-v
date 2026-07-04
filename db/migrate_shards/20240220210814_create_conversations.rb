@@ -16,7 +16,6 @@ class CreateConversations < ActiveRecord::Migration[7.1]
 
       t.references :account,        null: false, foreign_key: false,                    type: :uuid, index: true
       t.references :inbox,          null: false, foreign_key: { on_delete: :cascade },  type: :uuid, index: true
-      t.references :campaign,       null: true,  foreign_key: { on_delete: :nullify },  type: :uuid, index: true
       t.references :team,           null: true,  foreign_key: false,                    type: :uuid, index: true
       t.references :assignee,       null: true,  foreign_key: false, type: :uuid, index: true
       t.references :outbound_channel, null: true, polymorphic: true, type: :uuid, index: true

@@ -24,6 +24,8 @@
 #  fk_rails_...  (chat_bot_id => chat_bots.id) ON DELETE => cascade
 #  fk_rails_...  (inbox_id => inboxes.id) ON DELETE => cascade
 #
+# NOTE: This model is currently unimplemented and unused.
+# Its database migration has been moved to db/archived_migrations/
 class ChatBotInbox < ShardRecord
   belongs_to :chat_bot
   belongs_to :inbox
