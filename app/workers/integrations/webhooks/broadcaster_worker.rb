@@ -18,14 +18,14 @@ module Integrations
 
         if resource.is_a?(Integration)
           return unless resource.active? && resource.webhook?
-        elsif resource.is_a?(Channel::Api)
+        elsif resource.is_a?(Channel::Custom)
           return unless resource.active?
         end
 
         begin
           body = delivery.request_payload.to_json
           timestamp = Time.now.to_i
-          secret = resource.is_a?(Channel::Api) ? resource.hmac_token : resource.webhook_secret
+          secret = resource.is_a?(Channel::Custom) ? resource.hmac_token : resource.webhook_secret
 
           headers = {
             "Content-Type" => "application/json",

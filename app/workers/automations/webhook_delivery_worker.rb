@@ -27,7 +27,7 @@ module Automations
       # The receiver can verify by recomputing: HMAC-SHA256(secret, "<timestamp>-<body>")
       if secret.present?
         signature = OpenSSL::HMAC.hexdigest("SHA256", secret, "#{timestamp}-#{body}")
-        headers["Signature"] = "t=#{timestamp},v1=#{signature}"
+        headers["Deskbolic-Signature"] = "t=#{timestamp},v1=#{signature}"
       end
 
       response = case method.upcase

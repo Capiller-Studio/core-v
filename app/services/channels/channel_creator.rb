@@ -160,8 +160,8 @@ module Channels
       @channel.inboxes.create!(inbox_attrs)
     end
 
-    def api_channel
-      @channel = Channel::Api.new(
+    def custom_channel
+      @channel = Channel::Custom.new(
         name: channel_params[:name],
         description: channel_params[:description],
         webhook_url: channel_params[:webhook_url],

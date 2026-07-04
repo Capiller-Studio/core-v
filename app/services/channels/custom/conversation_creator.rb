@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
 module Channels
-  module Api
+  module Custom
     class ConversationCreator < ApplicationService
       include Channels::Concerns::ConversationFinder
 
-      attr_accessor :inbox, :api_channel, :customer, :account,
+      attr_accessor :inbox, :custom_channel, :customer, :account,
                     :conversation, :customer_params, :content, :attachments,
                     :conversation_data, :external_id
 
-      def initialize(api_channel:, customer_params:, content: nil, attachments: [], account: nil, conversation_data: nil, external_id: nil)
-        self.api_channel       = api_channel
+      def initialize(custom_channel:, customer_params:, content: nil, attachments: [], account: nil, conversation_data: nil, external_id: nil)
+        self.custom_channel    = custom_channel
         self.customer_params   = customer_params || {}
         self.content           = content
         self.attachments       = attachments || []
-        self.account           = account || api_channel.account
+        self.account           = account || custom_channel.account
         self.conversation_data = conversation_data || {}
         self.external_id       = external_id
       end
@@ -34,7 +34,7 @@ module Channels
       private
 
       def find_inbox
-        self.inbox = api_channel.primary_inbox
+        self.inbox = custom_channel.primary_inbox
       end
 
       def find_or_create_customer
@@ -65,7 +65,7 @@ module Channels
       def create_conversation
         self.conversation = account.conversations.create!(
           inbox: inbox,
-          source: :api,
+          source: :custom,
           title: conversation_data[:title].presence || conversation_data["title"],
           priority: conversation_data[:priority].presence || conversation_data["priority"] || "medium",
           data: conversation_data[:data] || conversation_data["data"] || {},
