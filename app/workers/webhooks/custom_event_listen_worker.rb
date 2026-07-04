@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Webhooks
-  class ApiEventListenWorker
+  class CustomEventListenWorker
     include Sidekiq::Worker
     sidekiq_options queue: "default", retry: 3
 
@@ -12,7 +12,7 @@ module Webhooks
       return unless account
 
       account.with_shard do
-        channel = Channel::Api.find_by(id: channel_id)
+        channel = Channel::Custom.find_by(id: channel_id)
         return unless channel_active?(channel)
 
         Current.set(account: account) do
@@ -20,7 +20,7 @@ module Webhooks
         end
       end
     rescue StandardError => e
-      Rails.logger.error("ApiEventListenWorker error: #{e.message}")
+      Rails.logger.error("CustomEventListenWorker error: #{e.message}")
       raise e # Re-raise for Sidekiq retry
     end
 
@@ -33,7 +33,7 @@ module Webhooks
       when "message.created"
         create_message(channel, payload)
       else
-        Rails.logger.warn("ApiEventListenWorker: unsupported event type '#{event}'")
+        Rails.logger.warn("CustomEventListenWorker: unsupported event type '#{event}'")
       end
     end
 
@@ -44,8 +44,8 @@ module Webhooks
       # customer params to identify or create the customer
       customer_params = payload[:customer] || {}
 
-      creator = Channels::Api::ConversationCreator.new(
-        api_channel: channel,
+      creator = Channels::Custom::ConversationCreator.new(
+        custom_channel: channel,
         customer_params: customer_params,
         content: message_data[:content],
         attachments: [], # If attachments are URLs, they could be parsed here and attached

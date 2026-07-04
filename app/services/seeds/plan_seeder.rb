@@ -34,7 +34,7 @@ module Seeds
           "channels" => {
             "web_widget" => true,
             "email" => false,
-            "api" => false,
+            "custom" => false,
             "contact_form" => false,
             "twitter" => false,
             "facebook" => false,
@@ -76,7 +76,7 @@ module Seeds
           "channels" => {
             "web_widget" => true,
             "email" => true,
-            "api" => true,
+            "custom" => false,
             "contact_form" => true,
             "twitter" => true,
             "facebook" => true,
@@ -118,7 +118,7 @@ module Seeds
           "channels" => {
             "web_widget" => true,
             "email" => true,
-            "api" => true,
+            "custom" => false,
             "contact_form" => true,
             "twitter" => true,
             "facebook" => true,
@@ -161,7 +161,7 @@ module Seeds
           "channels" => {
             "web_widget" => true,
             "email" => true,
-            "api" => true,
+            "custom" => true,
             "contact_form" => true,
             "twitter" => true,
             "facebook" => true,
