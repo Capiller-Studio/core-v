@@ -36,27 +36,14 @@ module Accounts
     private
 
     def create_user!
-      user_attrs = {
+      User.create!(
         email: params[:email],
         password: params[:password],
         first_name: params[:first_name],
         last_name: params[:last_name],
-        locale: params[:user_locale] || "en"
-      }
-
-      if params[:country].present?
-        user_attrs[:address] = Address.create!(country_id: Country.find_by(iso: params[:country])&.id)
-      else
-        user_attrs[:address] = Address.create!
-      end
-
-      user = User.new(user_attrs)
-      if params[:invitation_token].present?
-        user.skip_confirmation!
-      end
-
-      user.save!
-      user
+        locale: params[:user_locale] || "en",
+        address: Address.create!(country_id: Country.find_by(iso: params[:country])&.id)
+      )
     end
 
     def create_affiliate_profile!(user)
@@ -101,30 +88,13 @@ module Accounts
     end
 
     def accept_invitation!(user, token)
-      invitation = AccountInvitation.find_by!(token: token)
-      if invitation.expired?
-        raise ActiveRecord::RecordInvalid, invitation.tap { |i| i.errors.add(:base, :expired) }
-      end
-
-      account = invitation.account
-      account_user = AccountUser.create!(
-        account: account,
-        user: user,
-        owner: false
-      )
-
-      account.with_shard do
-        invitation.role_ids.each do |role_id|
-          Access::AccountUserRole.create!(
-            account: account,
-            account_user_id: account_user.id,
-            role_id: role_id
-          )
-        end
-      end
-
-      invitation.update!(status: :accepted)
-      account
+      # TODO: Implement invitation redemption
+      # Expected flow:
+      #   1. Find invitation by token
+      #   2. Validate it hasn't expired
+      #   3. Create AccountUser with the invited role
+      #   4. Mark invitation as accepted
+      nil
     end
 
     def format_errors(record)
