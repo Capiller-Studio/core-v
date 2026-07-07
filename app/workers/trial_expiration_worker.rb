@@ -4,8 +4,6 @@ class TrialExpirationWorker
   include Sidekiq::Worker
   sidekiq_options retry: 1, queue: "default"
 
-  # TODO: Configure in scheduled.rb (daily)
-
   def perform
     # Notify accounts 3 days before trial expires
     Subscription.expiring_soon(3).find_each do |subscription|

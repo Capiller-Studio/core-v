@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class SubscriptionRenewalWorker < BaseMutexWorker
-  # TODO: Configure in scheduled.rb (daily)
-
   def perform
     renew_active_subscriptions
     process_scheduled_cancellations

@@ -4,7 +4,6 @@ class UsageResetWorker
   include Sidekiq::Worker
   sidekiq_options retry: 1, queue: "default"
 
-  # TODO: Configure in scheduled.rb (daily)
   # Resets monthly usage counters for accounts whose billing period just started
 
   def perform

@@ -9,7 +9,7 @@ class CreateCsatSurveys < ActiveRecord::Migration[7.1]
     end
 
     create_table :csat_survey_translations do |t|
-      t.references :csat_survey, type: :uuid, null: false, foreign_key: { on_delete: :cascade }, index: true
+      t.references :survey, type: :uuid, null: false, foreign_key: { to_table: :csat_surveys, on_delete: :cascade }, index: true
       t.string :locale, null: false, index: true
       
       t.string :prompt
@@ -20,7 +20,7 @@ class CreateCsatSurveys < ActiveRecord::Migration[7.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end
 
-    add_index :csat_survey_translations, [:csat_survey_id, :locale], unique: true, name: 'index_csat_translations_on_survey_and_locale'
+    add_index :csat_survey_translations, [:survey_id, :locale], unique: true, name: 'index_csat_translations_on_survey_and_locale'
 
     # Add csat_survey_id to inboxes
     add_reference :inboxes, :csat_survey, type: :uuid, null: true, foreign_key: { to_table: :csat_surveys, on_delete: :nullify }, index: true
