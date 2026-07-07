@@ -3,6 +3,7 @@ class CreateBusinessHourGroups < ActiveRecord::Migration[7.1]
     create_table :business_hour_groups, id: :uuid do |t|
       t.string :name, null: false
       t.text   :description
+      t.string :timezone, null: false, default: "UTC"
 
       t.jsonb :configurations, null: false, default: {}
 

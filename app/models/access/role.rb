@@ -37,7 +37,8 @@ module Access
       "domains" => ["read", "manage"],
       "customers" => ["read", "write", "delete", "manage"],
       "labels" => ["read", "manage"],
-      "custom_fields" => ["read", "manage"]
+      "custom_fields" => ["read", "manage"],
+      "business_hours" => ["read", "manage"]
     }.freeze
   end
 end

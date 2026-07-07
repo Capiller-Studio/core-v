@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_03_183500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -218,39 +218,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.index ["business_hour_group_id"], name: "index_business_hours_on_business_hour_group_id"
   end
 
-  create_table "campaign_translations", force: :cascade do |t|
-    t.uuid "campaign_id", null: false
-    t.text "content"
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.string "locale", null: false
-    t.text "plain_content"
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["campaign_id", "locale"], name: "index_campaign_translations_on_campaign_id_and_locale", unique: true
-    t.index ["campaign_id"], name: "index_campaign_translations_on_campaign_id"
-    t.index ["locale"], name: "index_campaign_translations_on_locale"
-  end
-
-  create_table "campaigns", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "account_id", null: false
-    t.integer "campaign_type", default: 0, null: false
-    t.jsonb "conditions", default: {}, null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.text "description"
-    t.uuid "email_template_id"
-    t.datetime "end_at"
-    t.string "name"
-    t.datetime "start_at"
-    t.integer "status", default: 0, null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.uuid "user_id"
-    t.index ["account_id", "campaign_type"], name: "index_campaigns_on_account_id_and_campaign_type"
-    t.index ["account_id", "created_at"], name: "index_campaigns_on_account_id_and_created_at"
-    t.index ["account_id", "name"], name: "index_campaigns_on_account_id_and_name"
-    t.index ["account_id", "start_at"], name: "index_campaigns_on_account_id_and_start_at"
-    t.index ["account_id", "status"], name: "index_campaigns_on_account_id_and_status"
-    t.index ["account_id"], name: "index_campaigns_on_account_id"
-  end
-
   create_table "canned_response_translations", force: :cascade do |t|
     t.uuid "canned_response_id", null: false
     t.string "content"
@@ -275,25 +242,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.index ["account_id", "name"], name: "index_canned_responses_on_account_id_and_name"
     t.index ["account_id", "status"], name: "index_canned_responses_on_account_id_and_status"
     t.index ["account_id"], name: "index_canned_responses_on_account_id"
-  end
-
-  create_table "channel_apis", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "account_id", null: false
-    t.jsonb "configurations", default: {}, null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.jsonb "data", default: {}, null: false
-    t.string "name"
-    t.integer "status", default: 0, null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.jsonb "webhook_configurations", default: {}, null: false
-    t.string "webhook_password"
-    t.string "webhook_secret", null: false
-    t.string "webhook_url"
-    t.string "webhook_username"
-    t.index ["account_id", "created_at"], name: "index_channel_apis_on_account_id_and_created_at"
-    t.index ["account_id", "name"], name: "index_channel_apis_on_account_id_and_name"
-    t.index ["account_id"], name: "index_channel_apis_on_account_id"
-    t.index ["status"], name: "index_channel_apis_on_status"
   end
 
   create_table "channel_contact_form_translations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -327,6 +275,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.index ["account_id"], name: "index_channel_contact_forms_on_account_id"
     t.index ["outbound_channel_type", "outbound_channel_id"], name: "index_channel_contact_forms_on_outbound_channel"
     t.index ["secret"], name: "index_channel_contact_forms_on_secret", unique: true
+  end
+
+  create_table "channel_customs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "account_id", null: false
+    t.jsonb "configurations", default: {}, null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.jsonb "data", default: {}, null: false
+    t.string "description"
+    t.jsonb "headers", default: {}, null: false
+    t.string "hmac_token", null: false
+    t.string "identifier", null: false
+    t.string "name"
+    t.jsonb "response_mapping", default: {}, null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "webhook_secret", null: false
+    t.string "webhook_url"
+    t.index ["account_id", "created_at"], name: "index_channel_customs_on_account_id_and_created_at"
+    t.index ["account_id", "identifier"], name: "index_channel_customs_on_account_id_and_identifier", unique: true
+    t.index ["account_id"], name: "index_channel_customs_on_account_id"
+    t.index ["status"], name: "index_channel_customs_on_status"
   end
 
   create_table "channel_emails", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -393,23 +362,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.index ["status"], name: "index_channel_instagram_on_status"
   end
 
-  create_table "channel_lines", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "account_id", null: false
-    t.jsonb "configurations", default: {}, null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.string "line_identifier", null: false
-    t.string "name"
-    t.string "secret", null: false
-    t.integer "status", default: 0, null: false
-    t.string "token", null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["account_id", "created_at"], name: "index_channel_lines_on_account_id_and_created_at"
-    t.index ["account_id", "name"], name: "index_channel_lines_on_account_id_and_name"
-    t.index ["account_id"], name: "index_channel_lines_on_account_id"
-    t.index ["line_identifier"], name: "index_channel_lines_on_line_identifier", unique: true
-    t.index ["status"], name: "index_channel_lines_on_status"
-  end
-
   create_table "channel_short_messages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.jsonb "configurations", default: {}, null: false
@@ -431,38 +383,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.index ["full_phone_number"], name: "index_channel_short_messages_on_full_phone_number", unique: true
     t.index ["service", "service_identifier"], name: "index_channel_short_messages_on_service_and_service_identifier", unique: true
     t.index ["status"], name: "index_channel_short_messages_on_status"
-  end
-
-  create_table "channel_telegrams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "account_id", null: false
-    t.jsonb "configurations", default: {}, null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.string "name"
-    t.integer "status", default: 0, null: false
-    t.string "token", null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["account_id", "created_at"], name: "index_channel_telegrams_on_account_id_and_created_at"
-    t.index ["account_id", "name"], name: "index_channel_telegrams_on_account_id_and_name"
-    t.index ["account_id"], name: "index_channel_telegrams_on_account_id"
-    t.index ["status"], name: "index_channel_telegrams_on_status"
-    t.index ["token"], name: "index_channel_telegrams_on_token", unique: true
-  end
-
-  create_table "channel_twitter_profiles", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "account_id", null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.boolean "handle_tweets", default: true, null: false
-    t.string "name"
-    t.string "profile_identifier", null: false
-    t.integer "status", default: 0, null: false
-    t.jsonb "tokens", default: {}, null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["account_id", "created_at"], name: "index_channel_twitter_profiles_on_account_id_and_created_at"
-    t.index ["account_id", "name"], name: "index_channel_twitter_profiles_on_account_id_and_name"
-    t.index ["account_id", "profile_identifier"], name: "idx_on_account_id_profile_identifier_4a1bc813e6", unique: true
-    t.index ["account_id"], name: "index_channel_twitter_profiles_on_account_id"
-    t.index ["profile_identifier"], name: "index_channel_twitter_profiles_on_profile_identifier"
-    t.index ["status"], name: "index_channel_twitter_profiles_on_status"
   end
 
   create_table "channel_web_widget_translations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -513,6 +433,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.jsonb "configurations", default: {}, null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.jsonb "data", default: {}, null: false
+    t.integer "flags", default: 0, null: false
     t.string "full_phone_number", null: false
     t.string "name"
     t.string "phone_code"
@@ -528,41 +449,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.index ["full_phone_number"], name: "index_channel_whatsapps_on_full_phone_number", unique: true
     t.index ["service"], name: "index_channel_whatsapps_on_service"
     t.index ["status"], name: "index_channel_whatsapps_on_status"
-  end
-
-  create_table "chat_bot_inboxes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "chat_bot_id", null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.uuid "inbox_id", null: false
-    t.integer "status", default: 0, null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["chat_bot_id", "inbox_id", "status"], name: "index_chat_bot_inboxes_on_chat_bot_id_and_inbox_id_and_status"
-    t.index ["chat_bot_id", "inbox_id"], name: "index_chat_bot_inboxes_on_chat_bot_id_and_inbox_id", unique: true
-    t.index ["chat_bot_id"], name: "index_chat_bot_inboxes_on_chat_bot_id"
-    t.index ["created_at"], name: "index_chat_bot_inboxes_on_created_at"
-    t.index ["inbox_id"], name: "index_chat_bot_inboxes_on_inbox_id"
-  end
-
-  create_table "chat_bots", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.uuid "account_id", null: false
-    t.string "api_url"
-    t.integer "bot_type", default: 0, null: false
-    t.jsonb "configurations", default: {}, null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.text "description"
-    t.string "display_name"
-    t.integer "flags", default: 0, null: false
-    t.string "identifier", null: false
-    t.string "name"
-    t.integer "status", default: 0, null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["account_id", "bot_type"], name: "index_chat_bots_on_account_id_and_bot_type"
-    t.index ["account_id", "created_at"], name: "index_chat_bots_on_account_id_and_created_at"
-    t.index ["account_id", "flags"], name: "index_chat_bots_on_account_id_and_flags"
-    t.index ["account_id", "identifier"], name: "index_chat_bots_on_account_id_and_identifier", unique: true
-    t.index ["account_id", "name"], name: "index_chat_bots_on_account_id_and_name"
-    t.index ["account_id", "status"], name: "index_chat_bots_on_account_id_and_status"
-    t.index ["account_id"], name: "index_chat_bots_on_account_id"
   end
 
   create_table "conversation_members", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -606,7 +492,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
   create_table "conversations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "account_id", null: false
     t.uuid "assignee_id"
-    t.uuid "campaign_id"
     t.jsonb "configurations", default: {}, null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.jsonb "data", default: {}, null: false
@@ -634,7 +519,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.index ["account_id", "title"], name: "index_conversations_on_account_id_and_title"
     t.index ["account_id"], name: "index_conversations_on_account_id"
     t.index ["assignee_id"], name: "index_conversations_on_assignee_id"
-    t.index ["campaign_id"], name: "index_conversations_on_campaign_id"
     t.index ["inbox_id"], name: "index_conversations_on_inbox_id"
     t.index ["outbound_channel_type", "outbound_channel_id"], name: "index_conversations_on_outbound_channel"
     t.index ["team_id"], name: "index_conversations_on_team_id"
@@ -1142,6 +1026,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.integer "flags", default: 0, null: false
     t.string "name", default: "", null: false
     t.boolean "primary_inbox", default: false, null: false
+    t.integer "reopen_window_seconds", default: 0, null: false
     t.integer "status", default: 0, null: false
     t.string "timezone", default: "UTC", null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
@@ -1418,13 +1303,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.string "endpoint_url", null: false
     t.string "event_name", null: false
-    t.uuid "integration_id", null: false
     t.jsonb "request_payload", default: {}
+    t.uuid "resource_id", null: false
+    t.string "resource_type", null: false
     t.integer "status", default: 0
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["created_at"], name: "index_webhook_deliveries_on_created_at"
     t.index ["event_name"], name: "index_webhook_deliveries_on_event_name"
-    t.index ["integration_id"], name: "index_webhook_deliveries_on_integration_id"
+    t.index ["resource_type", "resource_id"], name: "index_webhook_deliveries_on_resource"
     t.index ["status"], name: "index_webhook_deliveries_on_status"
   end
 
@@ -1447,19 +1333,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
   add_foreign_key "attachment_translations", "attachments", on_delete: :cascade
   add_foreign_key "business_hour_translations", "business_hours", on_delete: :cascade
   add_foreign_key "business_hours", "business_hour_groups", on_delete: :cascade
-  add_foreign_key "campaign_translations", "campaigns", on_delete: :cascade
-  add_foreign_key "campaigns", "email_templates", on_delete: :nullify
   add_foreign_key "canned_response_translations", "canned_responses", on_delete: :cascade
   add_foreign_key "channel_contact_form_translations", "channel_contact_forms", column: "contact_form_id", on_delete: :cascade
   add_foreign_key "channel_web_widget_translations", "channel_web_widgets", column: "web_widget_id"
   add_foreign_key "channel_web_widgets", "channel_contact_forms", column: "pre_chat_form_id", on_delete: :nullify
   add_foreign_key "channel_web_widgets", "help_center_portals", column: "portal_id", on_delete: :nullify
-  add_foreign_key "chat_bot_inboxes", "chat_bots", on_delete: :cascade
-  add_foreign_key "chat_bot_inboxes", "inboxes", on_delete: :cascade
   add_foreign_key "conversation_members", "conversations", on_delete: :cascade
   add_foreign_key "conversation_slas", "conversations", on_delete: :cascade
   add_foreign_key "conversation_slas", "sla_policies", on_delete: :cascade
-  add_foreign_key "conversations", "campaigns", on_delete: :nullify
   add_foreign_key "conversations", "inboxes", on_delete: :cascade
   add_foreign_key "csat_survey_responses", "conversations", on_delete: :cascade
   add_foreign_key "csat_survey_responses", "csat_surveys", on_delete: :nullify
@@ -1499,6 +1380,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_000001) do
   add_foreign_key "sla_policies", "business_hour_groups", on_delete: :nullify
   add_foreign_key "team_users", "teams", on_delete: :cascade
   add_foreign_key "user_skills", "skills", on_delete: :cascade
-  add_foreign_key "webhook_deliveries", "integrations", on_delete: :cascade
   add_foreign_key "webhook_delivery_attempts", "webhook_deliveries", on_delete: :cascade
 end
