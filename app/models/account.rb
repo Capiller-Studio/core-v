@@ -61,6 +61,8 @@ class Account < ApplicationRecord
   enum :status, { active: 0 }
   enum :referral_commission_type, { fixed: 0 }
 
+  validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone::MAPPING.keys.map { |k| ActiveSupport::TimeZone[k].name } }
+
   # Primary DB Associations
   has_many :access_tokens, as: :owner, dependent: :destroy
   has_many :account_users, dependent: :destroy

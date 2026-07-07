@@ -3,6 +3,7 @@ class CreateAccounts < ActiveRecord::Migration[7.1]
     create_table :accounts, id: :uuid do |t|
       t.string   :name, null: false
       t.string   :locale, null: false, default: "en"
+      t.string   :timezone, null: false, default: "UTC"
       t.string   :email
       t.string   :currency, limit: 4, null: false, default: "USD"
       t.jsonb    :limits,         default: {}, null: false

@@ -31,6 +31,7 @@ module Seeds
           "custom_roles" => false,
           "assignment_policies" => false,
           "identity_sources" => false,
+          "business_hours" => false,
           "channels" => {
             "web_widget" => true,
             "email" => false,
@@ -73,6 +74,7 @@ module Seeds
           "custom_roles" => false,
           "assignment_policies" => false,
           "identity_sources" => false,
+          "business_hours" => false,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -115,6 +117,7 @@ module Seeds
           "custom_roles" => true,
           "assignment_policies" => true,
           "identity_sources" => true,
+          "business_hours" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -158,6 +161,7 @@ module Seeds
           "custom_branding" => true,
           "assignment_policies" => true,
           "identity_sources" => true,
+          "business_hours" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,

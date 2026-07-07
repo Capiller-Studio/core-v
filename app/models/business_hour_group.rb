@@ -23,4 +23,9 @@ class BusinessHourGroup < ShardRecord
 
   has_many :business_hours, dependent: :destroy
   has_many :assignment_policies, dependent: :nullify
+
+  validates :name, presence: true
+  validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone::MAPPING.keys.map { |k| ActiveSupport::TimeZone[k].name } }
+
+  accepts_nested_attributes_for :business_hours, allow_destroy: true
 end
