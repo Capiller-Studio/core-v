@@ -4,7 +4,6 @@ class SlaCheckWorker
   include Sidekiq::Worker
 
   # Run periodically via cron (e.g., every 30 minutes) to check pending SLAs for breaches
-  # TODO: Configure in scheduled.rb
 
   def perform
     time_now = Time.current

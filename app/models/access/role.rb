@@ -38,7 +38,9 @@ module Access
       "customers" => ["read", "write", "delete", "manage"],
       "labels" => ["read", "manage"],
       "custom_fields" => ["read", "manage"],
-      "business_hours" => ["read", "manage"]
+      "business_hours" => ["read", "manage"],
+      "sla_policies" => ["read", "manage"],
+      "csat_surveys" => ["read", "manage"]
     }.freeze
   end
 end
