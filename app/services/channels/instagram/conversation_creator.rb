@@ -29,10 +29,18 @@ module Channels
           find_or_create_conversation
           create_message
         end
-      rescue Koala::Facebook::AuthenticationError => _e
-        # TODO: Error handling
-      rescue StandardError => _e
-        # TODO: Error handling
+      rescue Koala::Facebook::AuthenticationError => e
+        SystemLog.log_event("webhook.instagram.auth_error", level: :error, account: account, message: e.message)
+        raise e
+      rescue StandardError => e
+        SystemLog.log_event(
+          "webhook.instagram.error", 
+          level: :error, 
+          account: account, 
+          message: e.message, 
+          payload: { error_class: e.class.name, backtrace: e.backtrace&.first(5) }
+        )
+        raise e
       end
 
       private
