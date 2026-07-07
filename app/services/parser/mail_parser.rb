@@ -8,6 +8,15 @@ module Parser
   class MailParser < ApplicationService
     include ::Utilities::StringHelpers
 
+    ALLOWED_TAGS = %w[
+      a b blockquote br code div em h1 h2 h3 h4 h5 h6 hr i img li ol p pre
+      span strong table tbody td tfoot th thead tr u ul
+    ].freeze
+
+    ALLOWED_ATTRIBUTES = %w[
+      alt class colspan href rowspan src title width height style target
+    ].freeze
+
     attr_accessor :mail
 
     def initialize(mail:)
@@ -15,7 +24,6 @@ module Parser
     end
 
     def call
-      # TODO: Return a hash or maybe some object
       self
     end
 
@@ -106,7 +114,6 @@ module Parser
       return unless text?
 
       @text_content ||= begin
-        # TODO: IMPORTANT we need to do some processing here, likely trim the message based on length
         original_content = part_content(mail.text_part) || ""
         parsed_content = original_content
 
@@ -117,15 +124,13 @@ module Parser
     end
 
     def text_content_parsed
-      # TODO: IMPORTANT we need to do some processing here, likely trim the message based on length
-      @text_content_parsed ||= text_content
+      @text_content_parsed ||= text_content&.truncate(60_000, omission: '... [Message truncated]')
     end
 
     def html_content
       return unless html?
 
       @html_content ||= begin
-        # TODO: IMPORTANT we need to parse HTML and only allow some basic tags
         original_content = part_content(mail.html_part) || ""
         parsed_content = original_content
 
@@ -134,8 +139,17 @@ module Parser
     end
 
     def html_content_parsed
-      # TODO: IMPORTANT we need to parse HTML and only allow some basic tags
-      @html_content_parsed ||= html_content
+      @html_content_parsed ||= begin
+        return if html_content.blank?
+
+        sanitized_html = Rails::Html::SafeListSanitizer.new.sanitize(
+          html_content,
+          tags: ALLOWED_TAGS,
+          attributes: ALLOWED_ATTRIBUTES
+        )
+        
+        sanitized_html&.truncate(60_000, omission: '... [Message truncated]')
+      end
     end
 
     private
