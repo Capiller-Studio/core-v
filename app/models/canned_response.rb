@@ -23,6 +23,15 @@
 #
 class CannedResponse < ShardRecord
   include CodeGenerator.new(prefix: "CR")
+  
+  TEMPLATE_VARIABLES = {
+    "customer"     => %w[name email full_phone_number],
+    "agent"        => %w[name email],
+    "conversation" => %w[subject identifier],
+    "inbox"        => %w[name],
+    "account"      => %w[name]
+  }.freeze
+
   belongs_to :account
 
   enum :status, { active: 0 }

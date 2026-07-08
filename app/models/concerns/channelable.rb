@@ -8,6 +8,10 @@ module Channelable
     after_destroy_commit :decrement_channel_usage
   end
 
+  def supported_formatting
+    [] # Default to plain text, restrict formatting completely
+  end
+
   private
 
   def increment_channel_usage

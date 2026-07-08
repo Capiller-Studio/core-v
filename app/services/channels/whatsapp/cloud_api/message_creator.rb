@@ -157,11 +157,13 @@ module Channels
         end
 
         def message_content(message_params)
-          message_params.dig(:text, :body) ||
-            message_params.dig(:button, :text) ||
-            message_params.dig(:interactive, :button_reply, :title) ||
-            message_params.dig(:interactive, :list_reply, :title) ||
-            message_params.dig(:name, :formatted_name)
+          raw_text = message_params.dig(:text, :body) ||
+                     message_params.dig(:button, :text) ||
+                     message_params.dig(:interactive, :button_reply, :title) ||
+                     message_params.dig(:interactive, :list_reply, :title) ||
+                     message_params.dig(:name, :formatted_name)
+                     
+          Channels::MessageFormatter.parse_whatsapp_markdown_to_html(raw_text)
         end
       end
     end

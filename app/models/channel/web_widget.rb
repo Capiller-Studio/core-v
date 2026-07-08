@@ -85,6 +85,11 @@ module Channel
 
     before_validation :ensure_secret, on: :create
     validates :secret, presence: true, uniqueness: true
+    validates :website_url, presence: true, format: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true
+
+    def supported_formatting
+      [:bold, :italic, :strikethrough, :code, :ul, :ol, :link, :image, :file]
+    end
 
     def hmac_token
       secret

@@ -57,6 +57,10 @@ module Channel
     enum :status, { active: 0, disconnected: 1 }
     enum :service, { cloud_api: 0 }
 
+    def supported_formatting
+      [:bold, :italic, :strikethrough, :code, :image, :file]
+    end
+
     has_flags 1 => :provider_embedded_signup, column: "flags"
 
     validates :full_phone_number, presence: true, uniqueness: { message: "is already connected" }
@@ -109,7 +113,9 @@ module Channel
 
     def calculate_full_phone_number
       if phone_code.present? && phone_number.present?
-        self.full_phone_number = "+#{phone_code.to_s.delete('+').strip}#{phone_number.to_s.strip}"
+        sanitized_code = phone_code.to_s.delete('+').gsub(/\D/, '')
+        sanitized_number = phone_number.to_s.gsub(/\D/, '')
+        self.full_phone_number = "+#{sanitized_code}#{sanitized_number}"
       end
     end
 

@@ -43,7 +43,7 @@ module Channels
       def params
         {
           recipient: { id: customer_inbox.external_id },
-          message: { text: message.content },
+          message: { text: Channels::MessageFormatter.format_for_whatsapp_and_facebook(message.content) },
           messaging_type: "RESPONSE"
         }
       end
