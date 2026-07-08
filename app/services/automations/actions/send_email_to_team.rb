@@ -14,11 +14,10 @@ module Automations
         template = account.email_templates.find(template_id)
         team = account.teams.find(team_id)
 
-        # TODO: Use a mailer service that renders the template with conversation/team context
-        # When EmailDeliveryWorker is implemented, replace with:
-        # team.users.find_each do |user|
-        #   Automations::EmailDeliveryWorker.perform_async(template.id, user.id, resource.id, account.id)
-        # end
+        # Enqueue delivery worker to properly evaluate Liquid context and send via ActionMailer
+        team.users.find_each do |user|
+          Automations::TeamEmailDeliveryWorker.perform_async(template.id, user.id, resource.id, account.id)
+        end
         Rails.logger.info("[Automations::SendEmailToTeam] Template #{template.id} → Team #{team.name} (#{team.users.count} members)")
       end
     end
