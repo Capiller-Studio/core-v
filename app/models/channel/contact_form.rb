@@ -34,6 +34,13 @@ module Channel
     translates(*TRANSLATABLE_FIELDS)
 
     belongs_to :account
+    has_many :fields, class_name: "Channel::ContactFormField", foreign_key: :channel_contact_form_id, dependent: :destroy
+    accepts_nested_attributes_for :fields, allow_destroy: true
+
+    def supported_formatting
+      [:bold, :italic, :strikethrough, :code, :ul, :ol, :link, :image, :file]
+    end
+
     has_many :portals, class_name: "HelpCenter::Portal", foreign_key: :contact_form_channel_id, dependent: :nullify
     belongs_to :outbound_channel, polymorphic: true, optional: true
 

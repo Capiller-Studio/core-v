@@ -36,7 +36,7 @@ module Channels
               messaging_product: "whatsapp",
               context: message_context,
               to: customer_inbox.customer.full_phone_number,
-              text: { body: message.content },
+              text: { body: Channels::MessageFormatter.format_for_whatsapp_and_facebook(message.content) },
               type: "text"
             }.to_json
           )
@@ -49,7 +49,7 @@ module Channels
           attachment_type = %w[image audio video].include?(attachment.file_type) ? attachment.file_type : "document"
 
           attachment_content = { link: attachment.direct_download_url }
-          attachment_content["caption"] = message.content unless %w[audio sticker].include?(attachment_type)
+          attachment_content["caption"] = Channels::MessageFormatter.format_for_whatsapp_and_facebook(message.content) unless %w[audio sticker].include?(attachment_type)
           attachment_content["filename"] = attachment.file.filename.to_s if attachment_type == "document"
 
           response = HTTParty.post(
@@ -69,17 +69,11 @@ module Channels
 
         def process_response(response)
           if response.success?
-            external_id = response.dig("messages", 0, "id")
-            message.update!(external_id: external_id) if external_id.present?
+            message.update!(external_id: response.parsed_response.dig("messages", 0, "id"))
           else
-            error_info = response.dig("error", "message") || response.body
-            Rails.logger.error("WhatsApp MessageSender failed (#{response.code}): #{error_info}")
+            whatsapp_channel.authorization_error! if response.unauthorized?
             message.update!(status: :failed)
-
-            # Flag for reauthorization if token is invalid
-            if response.code == 401 || error_info.to_s.include?("OAuthException")
-              whatsapp_channel.authorization_error!
-            end
+            Rails.logger.error("WhatsApp Message Sender Error: #{response.parsed_response}")
           end
         end
 

@@ -58,6 +58,10 @@ module Channel
     validate :validate_imap_configurations, if: :imap_enabled?
     validate :validate_smtp_configurations, if: :smtp_enabled?
 
+    def supported_formatting
+      [:bold, :italic, :strikethrough, :code, :ul, :ol, :link, :image, :file]
+    end
+
     before_create :generate_forward_email
     after_save :register_forward_email_routing
     after_destroy :remove_forward_email_routing
