@@ -47,7 +47,7 @@ class Attachment < ShardRecord
     return unless file.attached?
 
     if ActiveStorage::Current.url_options.blank?
-      ActiveStorage::Current.url_options = Rails.application.routes.default_url_options
+      ActiveStorage::Current.url_options = Rails.application.routes.default_url_options.presence || ActionMailer::Base.default_url_options
     end
     file.blob.url
   end

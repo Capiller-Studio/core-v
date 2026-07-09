@@ -6,7 +6,7 @@
 
 module Channels
   module Instagram
-    class EventListner < ApplicationService
+    class EventListener < ApplicationService
       attr_accessor :instagram_channel, :payload, :entries
 
       SUPPORTED_EVENTS = %i[message delivery read].freeze
@@ -29,7 +29,7 @@ module Channels
           end
         end
       rescue StandardError => e
-        Rails.logger.error("Instagram EventListner error: #{e.message}")
+        Rails.logger.error("Instagram EventListener error: #{e.message}")
         raise(e)
       end
 
@@ -69,7 +69,7 @@ module Channels
           channel_id: instagram_channel.id
         }
 
-        Messages::StatusUpdateWorker.perform_async(instagram_channel.account_id, status, params)
+        Messages::StatusUpdateWorker.perform_async(instagram_channel.account_id, status, params.as_json)
       end
 
       def lock_key(entry, parsed_message)

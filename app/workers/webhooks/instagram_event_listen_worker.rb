@@ -23,7 +23,7 @@ module Webhooks
         channel = Channel::Instagram.find_by(instagram_id: instagram_id.to_s, account_id: routing.account_id)
         return unless channel_active?(channel)
 
-        Channels::Instagram::EventListner.call(
+        Channels::Instagram::EventListener.call(
           instagram_channel: channel,
           payload: payload
         )

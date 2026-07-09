@@ -62,6 +62,9 @@ class Conversation < ShardRecord
     help_center: 8  # Submitted via a Channel::ContactForm on a Help Center portal
   }, suffix: true
 
+  has_many :applied_labels, as: :labelable, dependent: :destroy
+  has_many :labels, through: :applied_labels
+
   has_many :conversation_members, dependent: :destroy
   has_many :members, through: :conversation_members, source: :member, source_type: [ "Customer", "User" ]
   has_many :customers, through: :conversation_members,
@@ -78,6 +81,7 @@ class Conversation < ShardRecord
   after_update_commit :process_sla, if: :saved_change_to_status?
   after_update_commit :dispatch_csat, if: :saved_change_to_status?
   after_update_commit :record_status_change, if: :saved_change_to_status?
+  after_update_commit :record_priority_change, if: :saved_change_to_priority?
   after_update_commit :broadcast_conversation_update
   before_save :update_last_activity_at, if: :will_save_change_to_status?
   after_destroy :cleanup_unread_counts
@@ -189,6 +193,15 @@ class Conversation < ShardRecord
       trackable: self,
       event_type: "conversation_#{status}",
       changes: { status: saved_change_to_status },
+      actor: Current.user
+    )
+  end
+
+  def record_priority_change
+    Activities::Recorder.call(
+      trackable: self,
+      event_type: "priority_updated",
+      changes: { priority: saved_change_to_priority },
       actor: Current.user
     )
   end
