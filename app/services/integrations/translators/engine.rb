@@ -62,19 +62,25 @@ module Integrations
       end
 
       def perform_libre_translation
-        url = ENV.fetch("OS_TRANSLATOR_URL", "http://localhost:5000/translate")
+        url = ENV.fetch("OS_TRANSLATOR_URL", "http://localhost:5001/translate")
 
         response = HTTParty.post(
           url,
           body: {
             q: message.content,
-            target: target_locale
+            source: "auto",
+            target: target_locale,
+            format: "html"
           }.to_json,
           headers: { "Content-Type" => "application/json" },
-          timeout: 5
+          timeout: 30
         )
 
-        return nil unless response.success?
+        unless response.success?
+          Rails.logger.error("LibreTranslate Error: #{response.code} - #{response.body}")
+          return nil
+        end
+        
         response.parsed_response["translatedText"]
       end
     end
