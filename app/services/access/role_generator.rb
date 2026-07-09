@@ -68,7 +68,8 @@ module Access
           "automations" => { "read" => true },
           "macros" => { "read" => true, "manage" => true, "execute" => true },
           "reports" => { "view" => true },
-          "customers" => { "read" => true, "write" => true }
+          "customers" => { "read" => true, "write" => true },
+          "labels" => { "read" => true, "manage" => true }
         }
       end
     end

@@ -26,6 +26,7 @@ class Label < ShardRecord
   include SlugGenerator.new(source: :title, column: :identifier, scope: :account_id)
 
   belongs_to :account
+  has_many :applied_labels, dependent: :destroy
 
   validates :title, presence: true
   validates :identifier, presence: true, uniqueness: { scope: :account_id }

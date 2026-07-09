@@ -46,7 +46,7 @@ module Channels
 
         def send_attachment_message
           attachment = message.attachments.first
-          attachment_type = %w[image audio video].include?(attachment.file_type) ? attachment.file_type : "document"
+          attachment_type = %w[image audio video].include?(attachment.attachment_type) ? attachment.attachment_type : "document"
 
           attachment_content = { link: attachment.direct_download_url }
           attachment_content["caption"] = Channels::MessageFormatter.format_for_whatsapp_and_facebook(message.content) unless %w[audio sticker].include?(attachment_type)

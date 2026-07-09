@@ -57,7 +57,7 @@ module Channels
             channel_id: whatsapp_channel.id
           }
 
-          Messages::StatusUpdateWorker.perform_async(account.id, status, params)
+          Messages::StatusUpdateWorker.perform_async(account.id, status, params.as_json)
         rescue StandardError => e
           Rails.logger.error("WhatsApp EventListener status process error => #{e.message}")
         end

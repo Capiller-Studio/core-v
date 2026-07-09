@@ -42,9 +42,19 @@ class Activity < ShardRecord
     I18n.t("activities.#{event_key}", **event_data.symbolize_keys, default: event_key.humanize)
   end
 
+  def event_data
+    return {} unless object_changes.present?
+    
+    object_changes.transform_values do |val|
+      val.is_a?(Array) ? val.last : val
+    end
+  end
+
   def broadcast_activity
     # Deskbolic native streams handle Message updates directly, but not Activities.
     return if %w[Message].include?(trackable_type)
+    # conversation.update is too noisy for realtime timeline and is explicitly excluded on page load
+    return if event_key == 'conversation.update'
 
     # Prepare payload for ActionCable/AnyCable
     payload = {
