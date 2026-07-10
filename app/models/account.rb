@@ -58,7 +58,7 @@ class Account < ApplicationRecord
     current_plan&.feature_enabled?(base_feature) == true
   end
 
-  enum :status, { active: 0 }
+  enum :status, { active: 0, suspended: 1 }
   enum :referral_commission_type, { fixed: 0 }
 
   validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone::MAPPING.keys.map { |k| ActiveSupport::TimeZone[k].name } }

@@ -2,12 +2,13 @@
 
 module Billing
   class SubscriptionUpdater < ApplicationService
-    attr_accessor :subscription, :new_quantity, :new_plan
+    attr_accessor :subscription, :new_quantity, :new_plan, :new_billing_cycle
 
-    def initialize(subscription:, new_quantity: nil, new_plan: nil)
+    def initialize(subscription:, new_quantity: nil, new_plan: nil, new_billing_cycle: nil)
       self.subscription = subscription
       self.new_quantity = new_quantity || subscription.quantity
       self.new_plan = new_plan || subscription.plan
+      self.new_billing_cycle = new_billing_cycle || subscription.billing_cycle
     end
 
     def call
@@ -39,28 +40,30 @@ module Billing
     end
 
     def update_subscription!
-      return if subscription.quantity == new_quantity && subscription.plan_id == new_plan.id
-
+      cycle_changed = new_billing_cycle.to_s != subscription.billing_cycle.to_s
       seats_diff = new_quantity - subscription.quantity
       plan_changed = subscription.plan_id != new_plan.id
 
+      return if !cycle_changed && seats_diff == 0 && !plan_changed
+
       if subscription.trialing?
-        subscription.update!(quantity: new_quantity, plan: new_plan)
+        subscription.update!(quantity: new_quantity, plan: new_plan, billing_cycle: new_billing_cycle)
         sync_plan_limits
         return
       end
 
       # If the billing cycle is over (e.g. trial expired, past due), treat this as a full renewal
       if subscription.remaining_days_in_cycle <= 0
-        new_total_price = (subscription.annual? ? new_plan.annual_price : new_plan.base_price) * new_quantity
-        charge_for_upgrade(new_total_price, seats_diff, plan_changed)
+        new_total_price = price_for_cycle(new_plan, new_billing_cycle) * new_quantity
+        charge_for_upgrade(new_total_price, seats_diff, plan_changed || cycle_changed)
         
         now = Time.current
-        new_end = subscription.annual? ? now + 1.year : now + 1.month
+        new_end = new_billing_cycle.to_s == "annual" ? now + 1.year : now + 1.month
         
         subscription.update!(
           quantity: new_quantity,
           plan: new_plan,
+          billing_cycle: new_billing_cycle,
           status: :active,
           current_period_start: now,
           current_period_end: new_end
@@ -69,26 +72,50 @@ module Billing
         return
       end
 
-      # Step 1: Calculate unused credit from the OLD plan
+      # Step 1: Calculate unused credit from the OLD plan/cycle
       old_daily_rate = subscription.total_price / subscription.total_days_in_cycle
       unused_credit = (old_daily_rate * subscription.remaining_days_in_cycle).round(2)
       
-      # Step 2: Calculate remaining charge for the NEW plan
-      new_total_price = (subscription.annual? ? new_plan.annual_price : new_plan.base_price) * new_quantity
-      new_daily_rate = new_total_price / subscription.total_days_in_cycle
-      remaining_charge = (new_daily_rate * subscription.remaining_days_in_cycle).round(2)
-      
-      # Step 3: Determine net difference
-      net_diff = (remaining_charge - unused_credit).round(2)
+      # Step 2: Calculate remaining charge for the NEW plan/cycle
+      new_total_price = price_for_cycle(new_plan, new_billing_cycle) * new_quantity
 
-      if net_diff.positive?
-        charge_for_upgrade(net_diff, seats_diff, plan_changed)
-      elsif net_diff.negative?
-        credit_for_downgrade(net_diff.abs, seats_diff, plan_changed)
+      if cycle_changed
+        # When changing billing cycle, start a new period entirely
+        # Credit the unused portion of the old cycle, then charge full new cycle
+        credit_for_downgrade(unused_credit, seats_diff, true) if unused_credit.positive?
+        charge_for_upgrade(new_total_price, seats_diff, true) if new_total_price.positive?
+
+        now = Time.current
+        new_end = new_billing_cycle.to_s == "annual" ? now + 1.year : now + 1.month
+
+        subscription.update!(
+          quantity: new_quantity,
+          plan: new_plan,
+          billing_cycle: new_billing_cycle,
+          current_period_start: now,
+          current_period_end: new_end
+        )
+      else
+        # Same billing cycle — prorate within the current period
+        new_daily_rate = new_total_price / subscription.total_days_in_cycle
+        remaining_charge = (new_daily_rate * subscription.remaining_days_in_cycle).round(2)
+        
+        net_diff = (remaining_charge - unused_credit).round(2)
+
+        if net_diff.positive?
+          charge_for_upgrade(net_diff, seats_diff, plan_changed)
+        elsif net_diff.negative?
+          credit_for_downgrade(net_diff.abs, seats_diff, plan_changed)
+        end
+
+        subscription.update!(quantity: new_quantity, plan: new_plan)
       end
 
-      subscription.update!(quantity: new_quantity, plan: new_plan)
       sync_plan_limits
+    end
+
+    def price_for_cycle(plan, cycle)
+      cycle.to_s == "annual" ? plan.annual_price : plan.base_price
     end
 
     def charge_for_upgrade(amount, seats_diff, plan_changed)

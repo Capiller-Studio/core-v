@@ -25,7 +25,9 @@ module Billing
     private
 
     def validate!
-      raise("Account already has an active subscription") if account.subscribed?
+      # Block if account already has an active or trialing subscription
+      existing = account.subscriptions.where(status: [:active, :trialing]).first
+      raise("Account already has an active subscription") if existing.present?
       raise("Plan is not available") unless plan.active?
       raise("Plan currency mismatch") if plan.currency != account.currency
     end
