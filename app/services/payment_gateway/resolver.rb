@@ -17,7 +17,7 @@ module PaymentGateway
     end
 
     def self.default_provider
-      Rails.application.credentials.dig(:payment, :default_provider) || "paddle"
+      Rails.application.credentials.dig(:payment, :default_provider) || "stripe"
     end
   end
 end
