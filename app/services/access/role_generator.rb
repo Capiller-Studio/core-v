@@ -53,7 +53,8 @@ module Access
           "domains" => { "read" => true, "manage" => true },
           "customers" => { "read" => true, "write" => true, "delete" => true },
           "labels" => { "read" => true, "manage" => true },
-          "custom_fields" => { "read" => true, "manage" => true }
+          "custom_fields" => { "read" => true, "manage" => true },
+          "integrations" => { "read" => true, "manage" => true }
         }
       end
     end

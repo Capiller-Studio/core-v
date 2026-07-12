@@ -7,9 +7,17 @@ class Integration < ShardRecord
   enum :provider, { slack: 0, google_translate: 1, webhook: 2 }
 
   validates :provider, presence: true
-  validates :provider, uniqueness: { scope: :account_id, message: :taken }
+  validates :provider, uniqueness: { scope: :account_id, message: :taken }, unless: :webhook?
 
   scope :active, -> { where(active: true) }
+
+  WEBHOOK_EVENTS = %w[
+    conversation.created
+    conversation.updated
+    message.created
+    customer.created
+    customer.updated
+  ].freeze
 
   # Webhook & Filtering Extraction Logic
   def subscribed_events
