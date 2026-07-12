@@ -40,7 +40,8 @@ module Access
       "custom_fields" => ["read", "manage"],
       "business_hours" => ["read", "manage"],
       "sla_policies" => ["read", "manage"],
-      "csat_surveys" => ["read", "manage"]
+      "csat_surveys" => ["read", "manage"],
+      "integrations" => ["read", "manage"]
     }.freeze
   end
 end
