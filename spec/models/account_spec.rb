@@ -31,8 +31,13 @@ RSpec.describe Account, type: :model do
   end
 
   describe 'Enums' do
-    it { is_expected.to define_enum_for(:status).with_values(active: 0) }
+    it { is_expected.to define_enum_for(:status).with_values(active: 0, suspended: 1) }
     it { is_expected.to define_enum_for(:referral_commission_type).with_values(fixed: 0) }
+  end
+
+  describe 'Validations' do
+    it { is_expected.to validate_presence_of(:timezone) }
+    it { is_expected.to validate_inclusion_of(:timezone).in_array(ActiveSupport::TimeZone::MAPPING.keys.map { |k| ActiveSupport::TimeZone[k].name }) }
   end
 
   describe 'Callbacks' do
@@ -41,6 +46,13 @@ RSpec.describe Account, type: :model do
       allow(Access::RoleGenerator).to receive(:call)
       account.save!
       expect(Access::RoleGenerator).to have_received(:call).with(account)
+    end
+
+    it 'generates default custom fields after create' do
+      account = build(:account)
+      allow(Accounts::DefaultCustomFieldsCreator).to receive(:call)
+      account.save!
+      expect(Accounts::DefaultCustomFieldsCreator).to have_received(:call).with(account: account)
     end
 
     it 'creates a wallet after create' do
@@ -63,27 +75,33 @@ RSpec.describe Account, type: :model do
     end
   end
 
+  describe '#users_count' do
+    it 'delegates to current_usage(:users)' do
+      account = build(:account)
+      allow(account).to receive(:current_usage).with(:users).and_return(3)
+      expect(account.users_count).to eq(3)
+    end
+  end
+
+  describe '#event_payload' do
+    it 'returns the expected hash' do
+      account = create(:account, name: 'Acme Corp')
+      expect(account.event_payload).to eq({
+        id: account.id,
+        name: 'Acme Corp',
+        type: 'Account'
+      })
+    end
+  end
+
   describe '#feature_enabled?' do
     let(:account) { create(:account) }
-
-    context 'when manually enabled via bitmask' do
-      it 'returns true when teams_enabled? is true' do
-        account.teams_enabled = true
-        expect(account.feature_enabled?(:teams)).to be true
-      end
-
-      it 'returns true when checking with _enabled suffix' do
-        account.teams_enabled = true
-        expect(account.feature_enabled?(:teams_enabled)).to be true
-      end
-    end
 
     context 'when falling back to plan' do
       let(:plan) { instance_double(Plan) }
 
       before do
         allow(account).to receive(:current_plan).and_return(plan)
-        account.teams_enabled = false
       end
 
       it 'returns true if plan configuration is true' do

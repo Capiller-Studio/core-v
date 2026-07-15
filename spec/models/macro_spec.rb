@@ -74,5 +74,86 @@ RSpec.describe Macro, type: :model do
         expect(results).not_to include(other_macro)
       end
     end
+
+    describe 'individual scopes' do
+      it '.account_wide_macros returns only account wide' do
+        expect(Macro.account_wide_macros).to include(global_macro)
+        expect(Macro.account_wide_macros).not_to include(system_macro, personal_macro, team_macro)
+      end
+
+      it '.personal_macros returns for user' do
+        expect(Macro.personal_macros(user)).to include(personal_macro)
+        expect(Macro.personal_macros(user)).not_to include(global_macro, team_macro)
+      end
+
+      it '.team_macros returns for team' do
+        expect(Macro.team_macros(team)).to include(team_macro)
+        expect(Macro.team_macros(team)).not_to include(global_macro, personal_macro)
+      end
+
+      it '.system_macros returns system macros' do
+        expect(Macro.system_macros).to include(system_macro)
+        expect(Macro.system_macros).not_to include(global_macro)
+      end
+    end
+  end
+
+  describe 'Instance Methods' do
+    let(:account) { create(:account) }
+    let(:user) { create(:user) }
+    let(:team) { create(:team, account: account) }
+
+    let(:personal_macro) { create(:macro, account: account, visibility: :personal, scopeable: user) }
+    let(:team_macro) { create(:macro, account: account, visibility: :team, scopeable: team) }
+
+    describe '#owner' do
+      it 'returns scopeable if personal' do
+        expect(personal_macro.owner).to eq(user)
+      end
+
+      it 'returns nil if not personal' do
+        expect(team_macro.owner).to be_nil
+      end
+    end
+
+    describe '#team' do
+      it 'returns scopeable if team' do
+        expect(team_macro.team).to eq(team)
+      end
+
+      it 'returns nil if not team' do
+        expect(personal_macro.team).to be_nil
+      end
+    end
+
+    describe '#owned_by?' do
+      it 'returns true if user matches' do
+        expect(personal_macro.owned_by?(user)).to be true
+      end
+
+      it 'returns false if user does not match' do
+        other_user = create(:user)
+        expect(personal_macro.owned_by?(other_user)).to be false
+      end
+
+      it 'returns false if not personal' do
+        expect(team_macro.owned_by?(user)).to be false
+      end
+    end
+
+    describe '#duplicate' do
+      it 'duplicates the macro with new name and inactive status' do
+        copy = personal_macro.duplicate
+        expect(copy.name).to eq("#{personal_macro.name} (copy)")
+        expect(copy.status).to eq('inactive')
+        expect(copy.is_system).to be false
+        expect(copy.account_id).to eq(account.id)
+      end
+
+      it 'uses provided name if passed' do
+        copy = personal_macro.duplicate(new_name: 'Custom Name')
+        expect(copy.name).to eq('Custom Name')
+      end
+    end
   end
 end
