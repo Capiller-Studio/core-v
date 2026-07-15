@@ -10,12 +10,11 @@ require 'factory_bot_rails'
 require 'ffaker'
 require 'timecop'
 
-# begin
-#   ActiveRecord::Migration.maintain_test_schema!
-# rescue ActiveRecord::PendingMigrationError => e
-#   abort e.to_s.strip
-# end
-
+ActiveRecord::Encryption.configure(
+  primary_key: "test_primary_key_for_rspec_testing",
+  deterministic_key: "test_deterministic_key_for_rspec",
+  key_derivation_salt: "test_key_derivation_salt_rspec"
+)
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|
     with.test_framework :rspec

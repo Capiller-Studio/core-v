@@ -10,6 +10,12 @@ RSpec.describe User, type: :model do
     it { is_expected.to have_many(:teams).through(:team_users) }
     it { is_expected.to have_one(:affiliate_profile).dependent(:destroy) }
     it { is_expected.to belong_to(:address) }
+    
+    it { is_expected.to have_many(:user_skills).dependent(:destroy) }
+    it { is_expected.to have_many(:skills).through(:user_skills) }
+    it { is_expected.to have_many(:notifications).dependent(:destroy) }
+    it { is_expected.to have_many(:notification_settings).dependent(:destroy) }
+    it { is_expected.to have_many(:notification_subscriptions).dependent(:destroy) }
   end
 
   describe 'Validations' do

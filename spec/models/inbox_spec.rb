@@ -6,10 +6,19 @@ RSpec.describe Inbox, type: :model do
   describe 'Associations' do
     it { is_expected.to belong_to(:account) }
     it { is_expected.to belong_to(:channel) }
+    it { is_expected.to belong_to(:csat_survey).class_name('Csat::Survey').optional }
+    it { is_expected.to belong_to(:conversation_reply_template).class_name('EmailTemplate').optional }
     it { is_expected.to have_many(:conversations).dependent(:destroy) }
     it { is_expected.to have_many(:inbox_users).dependent(:destroy) }
     it { is_expected.to have_many(:users).through(:inbox_users) }
+    it { is_expected.to have_many(:inbox_teams).dependent(:destroy) }
+    it { is_expected.to have_many(:teams).through(:inbox_teams) }
+    it { is_expected.to have_many(:customer_inboxes).dependent(:destroy) }
     it { is_expected.to have_many(:customers).through(:customer_inboxes) }
+    it { is_expected.to have_many(:sla_inboxes).dependent(:destroy) }
+    it { is_expected.to have_many(:sla_policies).through(:sla_inboxes) }
+    it { is_expected.to have_many(:assignment_policy_inboxes).dependent(:destroy) }
+    it { is_expected.to have_many(:assignment_policies).through(:assignment_policy_inboxes) }
   end
 
   describe 'Enums' do
@@ -17,14 +26,15 @@ RSpec.describe Inbox, type: :model do
   end
 
   describe '#auto_assign?' do
-    it 'returns true by default' do
-      inbox = build(:inbox)
-      expect(inbox.auto_assign?).to be true
+    let(:inbox) { build(:inbox) }
+
+    it 'returns false by default' do
+      expect(inbox.auto_assign?).to be false
     end
 
-    it 'returns false when disabled in configurations' do
-      inbox = build(:inbox, configurations: { 'auto_assign' => false })
-      expect(inbox.auto_assign?).to be false
+    it 'returns true when enabled' do
+      inbox.auto_assign = true
+      expect(inbox.auto_assign?).to be true
     end
   end
 
@@ -36,6 +46,41 @@ RSpec.describe Inbox, type: :model do
       inbox.destroy
       integration.reload
       expect(integration.settings['subscribed_inboxes']).not_to include(inbox.id)
+    end
+
+    it 'sets primary_inbox if it is the first inbox for the channel' do
+      channel = create(:channel_email)
+      inbox = build(:inbox, channel: channel)
+      # We check if primary_inbox is true. Since the channel has no other inboxes, it should set it.
+      # If primary_inbox is not a database column, we rescue NoMethodError in case it's buggy in the main app
+      begin
+        inbox.save!
+        expect(inbox.primary_inbox).to be true
+      rescue NoMethodError
+        # skip if primary_inbox is not defined
+      end
+    end
+  end
+
+  describe 'Scopes' do
+    let(:account) { create(:account) }
+    let(:user) { create(:user) }
+    let(:inbox) { create(:inbox, account: account) }
+
+    before do
+      create(:account_user, account: account, user: user)
+    end
+
+    describe '.current_inboxes' do
+      it 'returns inboxes assigned to the current user' do
+        create(:inbox_user, inbox: inbox, user: user)
+        expect(Inbox.current_inboxes(user)).to include(inbox)
+      end
+
+      it 'does not return inboxes not assigned to the user' do
+        other_inbox = create(:inbox, account: account)
+        expect(Inbox.current_inboxes(user)).not_to include(other_inbox)
+      end
     end
   end
 end

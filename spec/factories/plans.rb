@@ -5,7 +5,7 @@ FactoryBot.define do
     description { 'Everything you need to get started.' }
     base_price { 0 }
     annual_price { 0 }
-    configurations { {} }
+    features { { "teams" => true, "custom_roles" => false } }
     limits { {} }
     status { :active }
 

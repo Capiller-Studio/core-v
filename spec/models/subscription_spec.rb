@@ -41,11 +41,10 @@ RSpec.describe Subscription, type: :model do
   describe '#total_price' do
     let(:plan) { create(:plan) }
     let(:account) { create(:account) }
-    let(:subscription) { create(:subscription, account: account, plan: plan, billing_cycle: :monthly) }
+    let(:subscription) { create(:subscription, account: account, plan: plan, billing_cycle: :monthly, quantity: 5) }
 
     it 'calculates total based on billable agents' do
-      # Assuming plan price is 29.0 for monthly (from Account model spec or plan logic)
-      allow(plan).to receive(:price_for).with('monthly').and_return(30.0)
+      allow(plan).to receive(:base_price).and_return(30.0)
       allow(account).to receive(:users_count).and_return(5)
 
       expect(subscription.total_price).to eq(150.0)

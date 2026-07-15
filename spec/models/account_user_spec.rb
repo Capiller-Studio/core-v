@@ -10,7 +10,6 @@ RSpec.describe AccountUser, type: :model do
   end
 
   describe 'Enums' do
-    it { is_expected.to define_enum_for(:role).with_values(owner: 0, agent: 1, admin: 2) }
     it { is_expected.to define_enum_for(:availability).with_values(online: 0, offline: 1) }
     it { is_expected.to define_enum_for(:status).with_values(active: 0) }
   end
@@ -38,8 +37,10 @@ RSpec.describe AccountUser, type: :model do
       allow(account).to receive(:within_limit?).with(:users).and_return(true)
 
       allow(account).to receive(:increment_usage!)
+      allow(account).to receive(:track_agent_count!)
       create(:account_user, account: account, user: user)
       expect(account).to have_received(:increment_usage!).with(:users)
+      expect(account).to have_received(:track_agent_count!)
     end
 
     it 'decrements usage on agent removed' do
@@ -51,6 +52,31 @@ RSpec.describe AccountUser, type: :model do
       allow(account).to receive(:decrement_usage!)
       account_user.destroy
       expect(account).to have_received(:decrement_usage!).with(:users)
+    end
+  end
+
+  describe 'Owner Protections' do
+    let(:account) { create(:account) }
+
+    it 'prevents owner from being removed from owner status' do
+      owner = create(:account_user, account: account, user: create(:user), owner: true)
+      owner.owner = false
+      expect(owner.save).to be false
+      expect(owner.errors[:owner]).to include("cannot be removed from the account owner")
+    end
+
+    it 'prevents creating a second owner for the same account' do
+      create(:account_user, account: account, user: create(:user), owner: true)
+      second_owner = build(:account_user, account: account, user: create(:user), owner: true)
+      
+      expect(second_owner.save).to be false
+      expect(second_owner.errors[:owner]).to include("an owner already exists for this account")
+    end
+
+    it 'prevents the owner from being deleted' do
+      owner = create(:account_user, account: account, user: create(:user), owner: true)
+      expect(owner.destroy).to be false
+      expect(owner.errors[:base]).to include("Account owner cannot be removed")
     end
   end
 end
