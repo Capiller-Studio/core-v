@@ -22,9 +22,9 @@ module Mailboxes
           self.parsed_mail = ::Parser::MailParser.call(mail:)
 
           ActiveRecord::Base.transaction do
-            find_or_create_conversation
             find_inbox
             find_or_create_sender
+            find_or_create_conversation
             create_message
           end
         end

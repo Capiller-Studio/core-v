@@ -35,26 +35,31 @@ module Affiliates
         payouts_enabled: true
       )
 
-      # 3. Create dummy referred users and referrals
+      # 3. Create dummy referred accounts and referrals
       10.times do |i|
-        referred = User.find_or_create_by!(email: "referred_#{i}@example.com") do |u|
-          u.password = "password123"
-          u.first_name = "Referred"
-          u.last_name = i.to_s
-          u.confirmed_at = Time.current
-        end
+        account = Account.find_or_create_by!(name: "Referred Account #{i}")
 
-        referral = profile.referrals.find_or_create_by!(referred_user: referred) do |r|
-          r.status = i.even? ? :converted : :pending
+        referral = profile.referrals.find_or_create_by!(account: account) do |r|
+          r.status = i.even? ? :active : :expired
           r.created_at = rand(1..30).days.ago
         end
         
-        # Create some commissions for converted referrals
-        if referral.converted?
-          profile.commissions.find_or_create_by!(referral: referral) do |c|
-            c.amount = rand(50.0..250.0).round(2)
+        # Create some commissions for active referrals
+        if referral.active?
+          transaction_record = Transaction.create!(
+            account: account,
+            amount: rand(50.0..250.0).round(2),
+            currency: "USD",
+            provider: :stripe,
+            status: :completed,
+            transaction_type: :charge,
+            created_at: referral.created_at + 1.day
+          )
+
+          profile.commissions.find_or_create_by!(referral: referral, transaction_record: transaction_record) do |c|
+            c.amount = transaction_record.amount
             c.status = [:pending, :available, :paid].sample
-            c.created_at = referral.created_at + 1.day
+            c.created_at = transaction_record.created_at
           end
         end
       end

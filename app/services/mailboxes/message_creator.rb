@@ -24,7 +24,8 @@ module Mailboxes
       # TODO: Important -> Use correct shard based on current-account
 
       ActiveRecord::Base.transaction do
-        unless find_message
+        self.message = find_message
+        unless message
           create_message
           process_attachments
         end
@@ -66,6 +67,7 @@ module Mailboxes
       process_inline_attachments(inline_attachments) if inline_attachments.present?
       process_regular_attachments(regular_attachments) if regular_attachments.present?
 
+      message.content = (html_content_parsed.presence || text_content_parsed).to_s.truncate(60_000)
       message.save!
     end
 

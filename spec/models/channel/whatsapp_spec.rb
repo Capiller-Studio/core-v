@@ -17,7 +17,8 @@ RSpec.describe Channel::Whatsapp, type: :model do
     it { is_expected.to validate_presence_of(:full_phone_number) }
     
     it 'validates uniqueness of full_phone_number' do
-      duplicate = build(:channel_whatsapp, full_phone_number: "+1234567891")
+      existing = create(:channel_whatsapp)
+      duplicate = build(:channel_whatsapp, full_phone_number: existing.full_phone_number)
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:full_phone_number]).to include("is already connected")
     end

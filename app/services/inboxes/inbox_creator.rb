@@ -25,20 +25,20 @@ module Inboxes
     end
 
     def email_inbox
-      channel = Channel::Email.find(inbox_params[:channel_id])
-      channel.inboxes.create!(
+      Inbox.create!(
         name: inbox_params[:name],
         account: current_account,
-        primary_inbox: true
+        primary_inbox: true,
+        channel: Channel::Email.find(inbox_params[:channel_id])
       )
     end
 
     def facebook_page_inbox
-      channel = Channel::FacebookPage.find(inbox_params[:channel_id])
-      channel.inboxes.create!(
+      Inbox.create!(
         name: inbox_params[:name],
         account: current_account,
-        primary_inbox: true
+        primary_inbox: true,
+        channel: Channel::FacebookPage.find(inbox_params[:channel_id])
       )
     end
   end

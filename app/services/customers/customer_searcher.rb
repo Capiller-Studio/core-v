@@ -7,12 +7,14 @@
 module Customers
   class CustomerSearcher < ApplicationService
     attr_accessor :params, :customers, :per_page,
-                  :paginate, :skip_search, :mail, :account
+                  :paginate, :skip_search, :mail, :account,
+                  :emails, :filtered, :conditions, :elastic_search
 
     DEFAULT_PER_PAGE = 28
 
     def initialize(params: {}, account: nil, mail: nil, paginate: false, includes: [], _elastic_search: true)
-      self.emails     = emails
+      self.emails     = []
+      self.elastic_search = _elastic_search
       self.mail       = mail
       self.per_page             = params[:per_page] || DEFAULT_PER_PAGE
       self.paginate             = paginate
@@ -29,7 +31,7 @@ module Customers
 
     def call
       parse_params_from_mail
-      find_email_channels
+      # find_email_channels
 
       filter_by_account
       filter_by_id

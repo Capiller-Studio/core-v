@@ -4,7 +4,7 @@ module Affiliate
   class Commission < ApplicationRecord
     belongs_to :profile, class_name: "Affiliate::Profile", foreign_key: "affiliate_profile_id", inverse_of: :commissions
     belongs_to :referral, class_name: "Affiliate::Referral", foreign_key: "affiliate_referral_id", inverse_of: :commissions
-    belongs_to :transaction_record, class_name: "Transaction", inverse_of: :affiliate_commissions
+    belongs_to :transaction_record, class_name: "Transaction", optional: true
     belongs_to :original_commission, class_name: "Affiliate::Commission", optional: true, inverse_of: :adjustments
     has_many :adjustments, class_name: "Affiliate::Commission", foreign_key: "original_commission_id", dependent: :nullify, inverse_of: :original_commission
 

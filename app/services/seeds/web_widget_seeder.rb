@@ -113,10 +113,14 @@ module Seeds
 
     def create_portal(account, widget)
       domain = Domain.find_or_create_by!(
-        name: "help.deskbolic.test",
         value: "help.deskbolic.test",
         account: account
-      )
+      ) do |d|
+        d.name = "help.deskbolic.test"
+        d.domain_type = :custom
+        d.status = :active
+        d.dns_status = :dns_verified
+      end
 
       portal = HelpCenter::Portal.find_or_initialize_by(account: account, name: "Demo Portal")
       portal.assign_attributes(

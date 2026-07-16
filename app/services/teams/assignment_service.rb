@@ -26,7 +26,7 @@ module Teams
       return unless team
 
       unless team.account_id == conversation.account_id
-        raise ActiveRecord::RecordInvalid, "Team does not belong to the same account as the conversation"
+        raise StandardError, "Team does not belong to the same account as the conversation"
       end
 
       unless team.active?

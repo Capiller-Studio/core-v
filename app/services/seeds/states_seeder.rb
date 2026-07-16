@@ -4,7 +4,7 @@
 EXCLUDED_US_STATES = %w[UM AS MP VI PR GU].freeze
 EXCLUDED_CN_STATES = %w[HK MO TW].freeze
 
-module Seeder
+module Seeds
   class StatesSeeder
     def seed
       puts "Seeding states ⏳️"

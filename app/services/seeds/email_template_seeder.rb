@@ -48,6 +48,7 @@ module Seeds
     def seed_templates(layout)
       EmailTemplate::SYSTEM_TEMPLATES.each do |template_name|
         template = account.email_templates.find_or_initialize_by(name: template_name)
+        template.template_type = template_name
         template.email_template_layout = layout
         template.status = :inactive
         template.save!

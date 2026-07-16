@@ -102,7 +102,7 @@ module Channels
       Messages::OfflineReplyWorker.perform_in(5.minutes, message.account_id, message.id)
     end
 
-    def channel_api_service
+    def channel_custom_service
       return unless channel.webhook_url.present?
 
       payload = {

@@ -3,7 +3,7 @@
 
 EXCLUDED_COUNTRIES = %w[AQ AX GS UM HM IO EH BV TF].freeze
 
-module Seeder
+module Seeds
   class CountriesSeeder
     def seed
       puts "Seeding countries ⏳️"

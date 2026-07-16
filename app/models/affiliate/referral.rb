@@ -3,7 +3,7 @@
 module Affiliate
   class Referral < ApplicationRecord
     belongs_to :profile, class_name: "Affiliate::Profile", foreign_key: "affiliate_profile_id", inverse_of: :referrals
-    belongs_to :account, inverse_of: :affiliate_referrals
+    belongs_to :account
 
     has_many :commissions, class_name: "Affiliate::Commission", foreign_key: "affiliate_referral_id", dependent: :destroy, inverse_of: :referral
 

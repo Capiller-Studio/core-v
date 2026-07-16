@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Channels
-  module Api
+  module Custom
     class MessageCreator < ApplicationService
       attr_reader :account, :inbox, :conversation, :sender, :content, :attachments, :message
 
@@ -31,7 +31,7 @@ module Channels
           sender: sender,
           content: content,
           inbox: inbox,
-          source: :api,
+          source: :custom,
           data: {}
         )
       end

@@ -5,6 +5,8 @@ require "liquid"
 module Identities
   module Sources
     class Creator < ApplicationService
+      include ActiveModel::Validations
+
       attr_reader :account, :params, :source
 
       def initialize(account:, params:)

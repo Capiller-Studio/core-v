@@ -15,7 +15,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ruby-4.0.3
+          ruby-version: .ruby-version
           bundler-cache: true
 
       - name: Lint code for consistent style
@@ -32,7 +32,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
-        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="pg_isready -U postgres" --health-interval=10s --health-timeout=5s --health-retries=3
 
       redis:
         image: redis:latest
@@ -48,7 +48,7 @@ jobs:
           xpack.security.enabled: false
         ports:
           - 9200:9200
-        options: --health-cmd="curl http://localhost:9200/_cluster/health" --health-interval=10s --health-timeout=5s --health-retries=10
+        options: --health-cmd="curl -s -f http://localhost:9200/_cluster/health" --health-interval=10s --health-timeout=5s --health-retries=10
 
     steps:
       - name: Install packages
@@ -60,7 +60,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ruby-4.0.3
+          ruby-version: .ruby-version
           bundler-cache: true
 
       - name: Run tests

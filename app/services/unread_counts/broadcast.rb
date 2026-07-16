@@ -11,7 +11,7 @@ module UnreadCounts
 
     def call
       tokens = connection_tokens
-      return if tokens.empty?
+      return if tokens.compact.empty?
 
       # Fetch current counts from Redis using the Current service
       counts = UnreadCounts::Current.call(member: member, account_id: account_id)
