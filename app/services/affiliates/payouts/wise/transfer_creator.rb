@@ -27,7 +27,7 @@ module Affiliates
         rescue StandardError => e
           Rails.logger.error("Wise Transfer Creator Failed [Payout ID: #{payout.id}]: #{e.message}")
           # Raise the error so Sidekiq will retry it if appropriate
-          raise e
+          raise(e)
         end
 
         private

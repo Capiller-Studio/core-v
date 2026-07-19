@@ -31,7 +31,9 @@ RSpec.describe Accounts::Invitations::Accept do
     context 'when the invited role no longer exists' do
       it 'falls back to the default agent role' do
         deleted_role_id = SecureRandom.uuid
+        # rubocop:disable Rails/SkipsModelValidations
         invitation.update_column(:role_ids, [deleted_role_id])
+        # rubocop:enable Rails/SkipsModelValidations
         
         # Ensure default agent role exists
         agent_role = account.roles.find_by!(identifier: 'agent')
@@ -45,7 +47,9 @@ RSpec.describe Accounts::Invitations::Accept do
 
       it 'raises an error if no roles can be assigned' do
         deleted_role_id = SecureRandom.uuid
+        # rubocop:disable Rails/SkipsModelValidations
         invitation.update_column(:role_ids, [deleted_role_id])
+        # rubocop:enable Rails/SkipsModelValidations
         
         # Delete agent role to simulate missing fallback
         Access::Role.where(account_id: account.id, identifier: 'agent').destroy_all

@@ -26,12 +26,14 @@ module Accounts
       def validate_not_already_member
         user = User.find_by(email: email)
         if user && account.users.exists?(id: user.id)
-          raise StandardError, I18n.t("accounts.invitations.errors.already_member")
+          raise(StandardError, I18n.t("accounts.invitations.errors.already_member"))
         end
       end
 
       def revoke_existing_invitations
+        # rubocop:disable Rails/SkipsModelValidations
         account.account_invitations.pending.where(email: email).update_all(status: :revoked)
+        # rubocop:enable Rails/SkipsModelValidations
       end
 
       def create_invitation

@@ -32,7 +32,7 @@ module Channels
         end
       rescue Koala::Facebook::AuthenticationError => e
         SystemLog.log_event("webhook.facebook.auth_error", level: :error, account: account, message: e.message)
-        raise e
+        raise(e)
       rescue StandardError => e
         SystemLog.log_event(
           "webhook.facebook.error", 
@@ -41,7 +41,7 @@ module Channels
           message: e.message, 
           payload: { error_class: e.class.name, backtrace: e.backtrace&.first(5) }
         )
-        raise e
+        raise(e)
       end
 
       private

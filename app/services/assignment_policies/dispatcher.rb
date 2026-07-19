@@ -55,7 +55,7 @@ module AssignmentPolicies
       when "load_balanced" then Engines::LoadBalancedEngine
       when "skills_based"  then Engines::SkillsBasedEngine
       else
-        raise ArgumentError, "Unknown assignment strategy: #{strategy}"
+        raise(ArgumentError, "Unknown assignment strategy: #{strategy}")
       end
     end
   end

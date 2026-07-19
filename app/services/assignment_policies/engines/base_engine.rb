@@ -42,7 +42,7 @@ module AssignmentPolicies
 
       # Subclasses MUST override this method
       def select_agent(_eligible_agent_ids)
-        raise NotImplementedError, "#{self.class}#select_agent must be implemented"
+        raise(NotImplementedError, "#{self.class}#select_agent must be implemented")
       end
 
       private

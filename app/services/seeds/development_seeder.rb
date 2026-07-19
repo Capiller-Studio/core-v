@@ -55,7 +55,7 @@ module Seeds
           enable_all_features!(account)
           return [account, user]
         end
-        raise "Registration failed: #{result.errors.inspect}"
+        raise("Registration failed: #{result.errors.inspect}")
       end
 
       account = result.account

@@ -14,7 +14,7 @@ module Teams
       when :add    then add_member
       when :remove then remove_member
       when :update_role then update_role
-      else raise ArgumentError, "Unknown action: #{action}"
+      else raise(ArgumentError, "Unknown action: #{action}")
       end
     end
 

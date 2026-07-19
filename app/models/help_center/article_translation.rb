@@ -34,16 +34,15 @@ module HelpCenter
     belongs_to :article, class_name: "HelpCenter::Article"
 
     validates :locale, presence: true
-    validates :title,  presence: true
-
     before_validation :generate_slug, on: :create
 
     private
 
     def generate_slug
-      return if slug.present? || title.blank?
+      source_title = title.presence || draft_title.presence
+      return if slug.present? || source_title.blank?
       
-      base = title.parameterize
+      base = source_title.parameterize
       candidate = base
       counter = 1
       

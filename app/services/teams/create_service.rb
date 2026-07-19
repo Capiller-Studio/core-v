@@ -26,7 +26,7 @@ module Teams
     def validate_feature_gate!
       return if account.feature_enabled?(:teams)
 
-      raise ActiveRecord::RecordNotSaved, "Teams feature is not enabled for this account"
+      raise(ActiveRecord::RecordNotSaved, "Teams feature is not enabled for this account")
     end
 
     def build_team

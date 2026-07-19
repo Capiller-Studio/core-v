@@ -35,7 +35,7 @@ module Channels
       if respond_to?(service_method, true)
         send(service_method)
       else
-        Rails.logger.warn "ServicePicker: No delivery service implemented for #{channel.class.name} (method: #{service_method})"
+        Rails.logger.warn("ServicePicker: No delivery service implemented for #{channel.class.name} (method: #{service_method})")
       end
     end
 
@@ -56,11 +56,11 @@ module Channels
       end
       # rubocop:enable Rails/SkipsModelValidations
     rescue StandardError => e
-      Rails.logger.error "ServicePicker Email Delivery Error: #{e.message}"
+      Rails.logger.error("ServicePicker Email Delivery Error: #{e.message}")
       # rubocop:disable Rails/SkipsModelValidations
       message.update_column(:status, :failed)
       # rubocop:enable Rails/SkipsModelValidations
-      raise e # Re-raise to trigger Sidekiq retry if needed
+      raise(e) # Re-raise to trigger Sidekiq retry if needed
     end
 
     def channel_whatsapp_service

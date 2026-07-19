@@ -22,7 +22,7 @@ module Emails
     rescue StandardError => e
       Rails.logger.error("[TemplateCompilerService] MJML compilation failed: #{e.message}")
 
-      raise CompilationError, "Failed to compile MJML: #{e.message}" if strict
+      raise(CompilationError, "Failed to compile MJML: #{e.message}") if strict
 
       ""
     end

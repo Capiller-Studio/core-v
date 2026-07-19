@@ -161,7 +161,9 @@ class Conversation < ShardRecord
       members.concat(inbox_users)
     end
 
+    # rubocop:disable Performance/ChainArrayAllocation
     members.uniq.reject { |u| u == exclude_sender }
+    # rubocop:enable Performance/ChainArrayAllocation
   end
 
   private

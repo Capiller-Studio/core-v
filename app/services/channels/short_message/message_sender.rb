@@ -23,7 +23,7 @@ module Channels
                        when "signalwire" then Channels::ShortMessage::Signalwire::MessageSender
                        when "aws_sns"    then Channels::ShortMessage::AwsSns::MessageSender
                        else
-                         Rails.logger.warn "ShortMessage: Unsupported provider: #{provider}"
+                         Rails.logger.warn("ShortMessage: Unsupported provider: #{provider}")
                          nil
                        end
 

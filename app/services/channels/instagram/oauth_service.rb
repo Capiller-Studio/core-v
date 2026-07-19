@@ -121,13 +121,13 @@ module Channels
       def handle_response(response, error_prefix)
         unless response.success?
           Rails.logger.error("#{error_prefix}. Status: #{response.code}, Body: #{response.body}")
-          raise "#{error_prefix}: #{response.body}"
+          raise("#{error_prefix}: #{response.body}")
         end
 
         JSON.parse(response.body)
       rescue JSON::ParserError => e
         Rails.logger.error("Invalid JSON response from Instagram: #{response.body}")
-        raise e
+        raise(e)
       end
     end
   end

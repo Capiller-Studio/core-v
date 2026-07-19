@@ -21,7 +21,7 @@ module Webhooks
       end
     rescue StandardError => e
       Rails.logger.error("CustomEventListenWorker error: #{e.message}")
-      raise e # Re-raise for Sidekiq retry
+      raise(e) # Re-raise for Sidekiq retry
     end
 
     private

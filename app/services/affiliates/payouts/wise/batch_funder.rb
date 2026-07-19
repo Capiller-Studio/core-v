@@ -27,7 +27,9 @@ module Affiliates
           if response.success?
             ActiveRecord::Base.transaction do
               payout_batch.update!(status: :funded, funded_at: Time.current)
+              # rubocop:disable Rails/SkipsModelValidations
               payout_batch.payouts.update_all(status: :paid)
+              # rubocop:enable Rails/SkipsModelValidations
             end
             return true
           end

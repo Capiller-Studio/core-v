@@ -28,7 +28,7 @@ module Publishable
     # Generates draft/publish methods for the specified fields without any runtime reflection.
     # E.g., `publishable_fields :subject, :body, :design`
     def publishable_fields(*fields)
-      raise ArgumentError, "Must provide at least one field to publishable_fields" if fields.empty?
+      raise(ArgumentError, "Must provide at least one field to publishable_fields") if fields.empty?
       
       # For publish!
       publish_assignments = fields.map do |f|

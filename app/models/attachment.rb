@@ -33,6 +33,20 @@ class Attachment < ShardRecord
     image/gif
     image/webp
   ].freeze
+  ARTICLE_IMAGE_MAX_SIZE = 5.megabytes
+  ARTICLE_FILE_MAX_SIZE = 10.megabytes
+
+  ARTICLE_IMAGE_CONTENT_TYPES = %w[
+    image/jpeg
+    image/png
+    image/gif
+    image/webp
+    image/svg+xml
+  ].freeze
+
+  ARTICLE_FILE_EXTENSIONS = %w[
+    .pdf .doc .docx .xls .xlsx .zip .txt .csv
+  ].freeze
 
   belongs_to :resource, polymorphic: true
   belongs_to :account
@@ -40,6 +54,7 @@ class Attachment < ShardRecord
   has_one_attached :file
 
   validate :validate_email_image_constraints, if: :email_resource?
+  validate :validate_article_attachment_constraints, if: :article_resource?
 
   enum :attachment_type, { image: 0, file: 1, video: 2, audio: 3, location: 4, fallback: 5, share: 6, story_mention: 7, contact: 8 }
 
@@ -78,6 +93,31 @@ class Attachment < ShardRecord
 
     unless file.blob.content_type.in?(EMAIL_IMAGE_CONTENT_TYPES)
       errors.add(:file, I18n.t("errors.attachments.invalid_content_type"))
+    end
+  end
+
+  def article_resource?
+    resource_type == "HelpCenter::Article"
+  end
+
+  def validate_article_attachment_constraints
+    return unless file.attached?
+
+    if image?
+      if file.blob.byte_size > ARTICLE_IMAGE_MAX_SIZE
+        errors.add(:file, "too large (max 5 MB)")
+      end
+      unless file.blob.content_type.in?(ARTICLE_IMAGE_CONTENT_TYPES)
+        errors.add(:file, "invalid format (only JPG, PNG, GIF, WEBP, SVG)")
+      end
+    else
+      if file.blob.byte_size > ARTICLE_FILE_MAX_SIZE
+        errors.add(:file, "too large (max 10 MB)")
+      end
+      ext = File.extname(file.filename.to_s).downcase
+      unless ARTICLE_FILE_EXTENSIONS.include?(ext)
+        errors.add(:file, "invalid format (only PDF, DOC, XLS, ZIP, TXT, CSV)")
+      end
     end
   end
 end

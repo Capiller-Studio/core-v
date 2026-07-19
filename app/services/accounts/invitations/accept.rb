@@ -30,9 +30,9 @@ module Accounts
 
         if !invitation.pending?
           error_key = invitation.accepted? ? "already_accepted" : "expired"
-          raise StandardError, I18n.t("accounts.invitations.errors.#{error_key}")
+          raise(StandardError, I18n.t("accounts.invitations.errors.#{error_key}"))
         elsif invitation.expired?
-          raise StandardError, I18n.t("accounts.invitations.errors.expired")
+          raise(StandardError, I18n.t("accounts.invitations.errors.expired"))
         end
       end
 
@@ -61,7 +61,7 @@ module Accounts
               active_role_ids = [default_role.id]
             else
               # If even the default role is missing, we must fail to satisfy "must have at least one role"
-              raise StandardError, I18n.t("accounts.invitations.errors.no_valid_roles")
+              raise(StandardError, I18n.t("accounts.invitations.errors.no_valid_roles"))
             end
           end
 

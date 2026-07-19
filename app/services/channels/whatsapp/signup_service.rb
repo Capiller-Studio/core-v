@@ -22,14 +22,14 @@ module Channels
         # Note: 'me/client_whatsapp_business_accounts' is the standard endpoint but some apps use 'me/whatsapp_business_accounts'
         # We try the standard ones.
         wabas = fetch_wabas(client)
-        raise "No WhatsApp Business Accounts found for this user." if wabas.blank?
+        raise("No WhatsApp Business Accounts found for this user.") if wabas.blank?
 
         # For simplicity, we grab the first WABA and its first phone number.
         # In a more complex integration, you'd present a selector UI like Facebook Pages.
         waba = wabas.first
         phone_numbers = fetch_phone_numbers(client, waba["id"])
         
-        raise "No Phone Numbers found in the WhatsApp Business Account." if phone_numbers.blank?
+        raise("No Phone Numbers found in the WhatsApp Business Account.") if phone_numbers.blank?
         phone = phone_numbers.first
 
         {
@@ -66,7 +66,7 @@ module Channels
         if response.success? && response["access_token"]
           response["access_token"]
         else
-          raise "Failed to exchange code for token: #{response.body}"
+          raise("Failed to exchange code for token: #{response.body}")
         end
       end
 

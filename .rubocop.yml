@@ -1,3 +1,5 @@
+inherit_from: .rubocop_todo.yml
+
 # Omakase Ruby styling for Rails
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 
@@ -22,6 +24,7 @@ AllCops:
     - "bin/**/*"
     - "db/migrate/**/*.rb"
     - "db/migrate_shards/**/*.rb"
+    - "db/archived_migrations/**/*.rb"
     - "db/schema.rb"
     - "db/primary_de_schema.rb"
     - "test/dummy/db/schema.rb"

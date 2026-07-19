@@ -83,7 +83,7 @@ module Channel
     rescue StandardError => e
       Rails.logger.error("Facebook webhook subscription failed for page #{page_identifier}: #{e.message}")
       errors.add(:base, "Webhook subscription failed: #{e.message}")
-      throw :abort
+      throw(:abort)
     end
 
     def unsubscribe_from_webhooks

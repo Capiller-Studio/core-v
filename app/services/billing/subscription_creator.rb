@@ -71,7 +71,9 @@ module Billing
       subscription = Subscription.create!(attrs)
 
       if defined?(result) && result && result[:transactions].present?
+        # rubocop:disable Rails/SkipsModelValidations
         Transaction.where(id: result[:transactions].map(&:id)).update_all(subscription_id: subscription.id)
+        # rubocop:enable Rails/SkipsModelValidations
       end
 
       sync_plan_limits

@@ -56,10 +56,12 @@ module AssignmentPolicies
             .map(&:to_s)
         when "any"
           # Agent must have at least ONE required skill
+          # rubocop:disable Performance/ChainArrayAllocation
           user_skills
             .pluck(:user_id)
             .uniq
             .map(&:to_s)
+          # rubocop:enable Performance/ChainArrayAllocation
         else
           []
         end

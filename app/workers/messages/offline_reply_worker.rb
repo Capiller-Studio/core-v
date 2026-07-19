@@ -39,11 +39,11 @@ module Messages
           end
           # rubocop:enable Rails/SkipsModelValidations
         rescue StandardError => e
-          Rails.logger.error "OfflineReplyWorker Delivery Error: #{e.message}"
+          Rails.logger.error("OfflineReplyWorker Delivery Error: #{e.message}")
           # rubocop:disable Rails/SkipsModelValidations
           msg.update_column(:status, :failed)
           # rubocop:enable Rails/SkipsModelValidations
-          raise e
+          raise(e)
         end
       end
     end
