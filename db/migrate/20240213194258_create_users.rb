@@ -43,7 +43,7 @@ class CreateUsers < ActiveRecord::Migration[7.1]
 
       t.string :connection_token, null: false
 
-      t.references :address, null: true,  foreign_key: { on_delete: :nullify }, type: :uuid, index: false
+      t.references :address, null: true,  foreign_key: { on_delete: :nullify }, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 

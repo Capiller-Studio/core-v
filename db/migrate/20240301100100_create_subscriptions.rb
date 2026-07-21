@@ -23,6 +23,7 @@ class CreateSubscriptions < ActiveRecord::Migration[7.1]
       t.index :current_period_end
       t.index :trial_end_at
       t.index [:account_id, :status]
+      t.index :account_id, unique: true, where: "status IN (0, 1)", name: "idx_uniq_active_subscription_account"
     end
   end
 end
