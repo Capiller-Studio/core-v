@@ -63,8 +63,8 @@ module Seeds
           "data_retention_months" => 12
         },
         features: {
-          "sla" => true,
-          "api_access" => true,
+          "sla" => false,
+          "api_access" => false,
           "csat" => true,
           "email_templates" => true,
           "custom_csat" => false,
@@ -116,7 +116,7 @@ module Seeds
           "custom_csat" => true,
           "custom_email_templates" => true,
           "custom_fields" => true,
-          "automations" => false,
+          "automations" => true,
           "macros" => true,
           "audit_logs" => true,
           "labels" => true,
@@ -195,27 +195,27 @@ module Seeds
     PRICING = {
       "USD" => {
         Plan::SYMBOLIC => [0, 0],
-        Plan::ANABOLIC => [10, 8],
-        Plan::HYPERBOLIC => [19, 15],
-        Plan::PARABOLIC => [49, 39]
+        Plan::ANABOLIC => [9, 8],
+        Plan::HYPERBOLIC => [19, 17],
+        Plan::PARABOLIC => [49, 44]
       },
       "EUR" => {
         Plan::SYMBOLIC => [0, 0],
-        Plan::ANABOLIC => [10, 8], # Competitive parity
-        Plan::HYPERBOLIC => [19, 15], # Competitive parity
-        Plan::PARABOLIC => [49, 39] # Competitive parity
+        Plan::ANABOLIC => [9, 8], # Competitive parity
+        Plan::HYPERBOLIC => [19, 17], # Competitive parity
+        Plan::PARABOLIC => [49, 44] # Competitive parity
       },
       "GBP" => {
         Plan::SYMBOLIC => [0, 0],
-        Plan::ANABOLIC => [8, 6], # Proportionally lower
-        Plan::HYPERBOLIC => [15, 12],
-        Plan::PARABOLIC => [39, 31]
+        Plan::ANABOLIC => [8, 7], # Proportionally lower
+        Plan::HYPERBOLIC => [15, 13],
+        Plan::PARABOLIC => [39, 35]
       },
       "KRW" => {
         Plan::SYMBOLIC => [0, 0],
-        Plan::ANABOLIC => [14000, 11000],
-        Plan::HYPERBOLIC => [26000, 21000],
-        Plan::PARABOLIC => [68000, 54000]
+        Plan::ANABOLIC => [12000, 11000],
+        Plan::HYPERBOLIC => [26000, 23000],
+        Plan::PARABOLIC => [66000, 59000]
       }
     }.freeze
 
