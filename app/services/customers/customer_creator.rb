@@ -83,10 +83,24 @@ module Customers
       self.customer = account.customers.find_by(full_phone_number:)
     end
 
+    def generate_fallback_name
+      if params[:first_name].present? || params[:last_name].present?
+        [params[:first_name], params[:last_name]].compact_blank.join(" ")
+      elsif email.present?
+        email.split("@").first
+      elsif full_phone_number.present?
+        full_phone_number
+      elsif external_id.present?
+        "Customer #{external_id}"
+      else
+        "Unknown Customer"
+      end
+    end
+
     def create_customer
       # TODO: Fix address
       self.customer = account.customers.create!(
-        name: params[:name] || "Fancy Name Logic",
+        name: params[:name].presence || generate_fallback_name,
         full_phone_number:,
         # phone_code: params[:phone_code],
         # phone_number: params[:phone_number],
