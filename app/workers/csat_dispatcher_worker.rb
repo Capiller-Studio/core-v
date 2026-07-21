@@ -42,9 +42,9 @@ class CsatDispatcherWorker
         
         locale = conversation.locale || customer.locale || I18n.default_locale
         
-        portal_host = ENV.fetch("PORTAL_HOST", "deskbolic.com")
+        marketing_host = ENV.fetch("MARKETING_HOST", "deskbolic.com")
         protocol = Rails.env.development? || Rails.env.test? ? "http" : "https"
-        survey_url = "#{protocol}://csat.#{portal_host}/#{locale}/#{csat_response.global_routing_id}"
+        survey_url = "#{protocol}://csat.#{marketing_host}/#{locale}/#{csat_response.global_routing_id}"
         
         I18n.with_locale(locale) do
           prompt_text = csat_survey&.render_prompt(liquid_vars)
