@@ -22,5 +22,9 @@ module Affiliate
     def total_commission
       commissions.sum(:amount)
     end
+
+    def referred_user
+      account.account_users.includes(:user).find_by(owner: true)&.user || account.users.first
+    end
   end
 end
