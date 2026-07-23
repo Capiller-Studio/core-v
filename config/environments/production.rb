@@ -6,7 +6,9 @@ Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Prepare the ingress controller used to receive mail
-  config.action_mailbox.ingress = :relay
+  if config.respond_to?(:action_mailbox)
+    config.action_mailbox.ingress = :relay
+  end
   # Code is not reloaded between requests.
   config.enable_reloading = false
 
