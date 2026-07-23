@@ -13,7 +13,7 @@ class CreateAccountInvitations < ActiveRecord::Migration[8.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end
 
-    add_index :account_invitations, :email
+    add_index :account_invitations, [:account_id, :email], unique: true, where: "status = 0"
     add_index :account_invitations, :token, unique: true
     add_index :account_invitations, :status
   end

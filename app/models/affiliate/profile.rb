@@ -19,8 +19,8 @@ module Affiliate
 
     def set_defaults
       self.referral_code ||= generate_referral_code
-      self.commission_rate ||= 20.0
-      self.tenure_months ||= 6
+      self.commission_rate ||= 25.0
+      self.tenure_months ||= 12
       self.holding_days ||= 30
       self.currency ||= "USD" if has_attribute?(:currency)
       self.payouts_enabled = false if has_attribute?(:payouts_enabled) && self.payouts_enabled.nil?

@@ -1,7 +1,7 @@
 class CreateAffiliateProfiles < ActiveRecord::Migration[8.1]
   def change
     create_table :affiliate_profiles, id: :uuid do |t|
-      t.references :user, null: false, foreign_key: { on_delete: :cascade }, type: :uuid
+      t.references :user, null: false, foreign_key: { on_delete: :cascade }, type: :uuid, index: { unique: true }
       t.string :referral_code, null: false
       t.decimal :commission_rate, precision: 5, scale: 2
       t.integer :tenure_months
