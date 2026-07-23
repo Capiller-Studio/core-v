@@ -37,7 +37,7 @@ RSpec.describe Account, type: :model do
 
   describe 'Validations' do
     it { is_expected.to validate_presence_of(:timezone) }
-    it { is_expected.to validate_inclusion_of(:timezone).in_array(ActiveSupport::TimeZone::MAPPING.keys.map { |k| ActiveSupport::TimeZone[k].name }) }
+    it { is_expected.to validate_inclusion_of(:timezone).in_array(ActiveSupport::TimeZone.all.map(&:name)) }
   end
 
   describe 'Callbacks' do
