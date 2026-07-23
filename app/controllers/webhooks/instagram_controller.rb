@@ -2,7 +2,7 @@
 
 module Webhooks
   class InstagramController < ApplicationController
-    skip_before_action :verify_authenticity_token
+    skip_before_action :verify_authenticity_token, raise: false
 
     # GET /webhooks/instagram
     def hub

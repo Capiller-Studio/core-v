@@ -3,7 +3,7 @@
 module Webhooks
   module Sms
     class TwilioController < ApplicationController
-      skip_before_action :verify_authenticity_token
+      skip_before_action :verify_authenticity_token, raise: false
       before_action :find_channel
       before_action :verify_signature
 
