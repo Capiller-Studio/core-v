@@ -24,7 +24,7 @@ module Customers
       self.customer_inbox = inbox.customer_inboxes.find_by(external_id:) if external_id.present?
       return customer_inbox.customer if customer_inbox
 
-      ActiveRecord::Base.transaction do
+      ShardRecord.transaction do
         find_or_create_customer
         attach_avatar_if_present
       end
@@ -107,7 +107,7 @@ module Customers
         first_name: params[:first_name],
         middle_name: params[:middle_name],
         last_name: params[:last_name],
-        email:,
+        email: email&.downcase,
         external_id:,
         gender: params[:gender],
         address: Address.create!
