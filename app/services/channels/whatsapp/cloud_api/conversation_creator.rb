@@ -43,7 +43,7 @@ module Channels
               # Double check after acquiring lock to ensure we don't process if another thread just finished
               return if find_existing_message(parsed_params[:messages].first[:id])
 
-              ActiveRecord::Base.transaction do
+              ShardRecord.transaction do
                 find_or_create_customer
                 find_or_create_conversation
                 create_message

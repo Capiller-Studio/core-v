@@ -19,7 +19,7 @@ module Channels
         end
 
         def call
-          ActiveRecord::Base.transaction do
+          ShardRecord.transaction do
             unless find_message
               create_message
               # AWS SNS Inbound natively strips MMS natively (requires Pinpoint or external routing natively to S3)

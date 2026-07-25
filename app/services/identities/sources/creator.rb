@@ -17,7 +17,7 @@ module Identities
       def call
         validate_liquid_syntax!
 
-        ActiveRecord::Base.transaction do
+        ShardRecord.transaction do
           @source = account.identity_sources.create!(
             name: params[:name],
             source_url: params[:source_url],

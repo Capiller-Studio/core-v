@@ -12,7 +12,7 @@ module Teams
     def call
       validate_feature_gate!
 
-      ActiveRecord::Base.transaction do
+      ShardRecord.transaction do
         team.update!(team_params)
         sync_members if params.key?(:user_ids)
         sync_inboxes if params.key?(:inbox_ids)

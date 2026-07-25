@@ -32,7 +32,7 @@ module Channels
       def call
         # TODO: Important -> Use correct shard based on current-account
 
-        ActiveRecord::Base.transaction do
+        ShardRecord.transaction do
           unless find_message
             create_message
             process_attachments

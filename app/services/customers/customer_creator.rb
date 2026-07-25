@@ -24,9 +24,12 @@ module Customers
       self.customer_inbox = inbox.customer_inboxes.find_by(external_id:) if external_id.present?
       return customer_inbox.customer if customer_inbox
 
-      ShardRecord.transaction do
-        find_or_create_customer
-        attach_avatar_if_present
+      lock_key = ::RedisUtilities::Keys::CUSTOMER_CREATION_LOCK % { account_id: account.id, identifier: external_id || email || full_phone_number }
+      ::RedisUtilities::MutexHelpers.with_lock(lock_key, timeout: 5) do
+        ShardRecord.transaction do
+          find_or_create_customer
+          attach_avatar_if_present
+        end
       end
 
       customer_inbox&.customer

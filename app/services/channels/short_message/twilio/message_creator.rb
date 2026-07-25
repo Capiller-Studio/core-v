@@ -17,7 +17,7 @@ module Channels
         end
 
         def call
-          ActiveRecord::Base.transaction do
+          ShardRecord.transaction do
             unless find_message
               create_message
               process_attachments

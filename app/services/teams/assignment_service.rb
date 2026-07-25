@@ -13,7 +13,7 @@ module Teams
     def call
       validate_assignment!
 
-      ActiveRecord::Base.transaction do
+      ShardRecord.transaction do
         assign_or_unassign_team
         assign_or_auto_assign_agent
         conversation

@@ -15,7 +15,7 @@ module Channels
       end
 
       def call
-        ActiveRecord::Base.transaction do
+        ShardRecord.transaction do
           create_message
           create_attachments if attachments.any?
         end

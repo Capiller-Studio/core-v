@@ -31,7 +31,7 @@ module Channels
       end
 
       def call
-        ActiveRecord::Base.transaction do
+        ShardRecord.transaction do
           unless find_message
             return if parsed_message.content.blank? && all_unsupported_files?
 

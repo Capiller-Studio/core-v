@@ -11,7 +11,7 @@ module Teams
     def call
       validate_feature_gate!
 
-      ActiveRecord::Base.transaction do
+      ShardRecord.transaction do
         # Nullify team_id on all conversations before destroying
         # This is handled by `dependent: :nullify` on the Team model,
         # but we do it explicitly for clarity and to avoid N+1 callbacks.

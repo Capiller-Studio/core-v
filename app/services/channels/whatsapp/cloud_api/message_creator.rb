@@ -40,7 +40,7 @@ module Channels
         end
 
         def call
-          ActiveRecord::Base.transaction do
+          ShardRecord.transaction do
             create_messages unless find_message
           end
           message

@@ -12,7 +12,7 @@ module Teams
     def call
       validate_feature_gate!
 
-      ActiveRecord::Base.transaction do
+      ShardRecord.transaction do
         team = build_team
         team.save!
         add_members(team)

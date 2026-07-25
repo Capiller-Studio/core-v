@@ -36,7 +36,7 @@ module Channels
           lock_message_creation(message_id)
 
           begin
-            ActiveRecord::Base.transaction do
+            ShardRecord.transaction do
               find_or_create_customer
               find_or_create_conversation
               create_message

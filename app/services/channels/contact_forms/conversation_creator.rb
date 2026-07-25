@@ -16,7 +16,7 @@ module Channels
       def call
         find_inbox
 
-        ActiveRecord::Base.transaction do
+        ShardRecord.transaction do
           process_custom_fields
           find_or_create_customer
           create_conversation
