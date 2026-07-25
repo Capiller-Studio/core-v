@@ -172,7 +172,7 @@ module Parser
     def part_content(part)
       return unless html? || text?
 
-      decoded = part&.decoded || !multipart? ? mail.decoded : ""
+      decoded = part&.decoded || (!multipart? ? mail.decoded : "")
       change_encoding(decoded)
     end
   end
