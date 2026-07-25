@@ -21,7 +21,7 @@ module Mailboxes
         ShardRecord.with_shard do
           self.parsed_mail = ::Parser::MailParser.call(mail:)
 
-          ActiveRecord::Base.transaction do
+          ShardRecord.transaction do
             find_inbox
             find_or_create_sender
             find_or_create_conversation

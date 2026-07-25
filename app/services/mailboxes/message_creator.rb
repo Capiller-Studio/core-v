@@ -23,7 +23,7 @@ module Mailboxes
     def call
       # TODO: Important -> Use correct shard based on current-account
 
-      ActiveRecord::Base.transaction do
+      ShardRecord.transaction do
         self.message = find_message
         unless message
           create_message
