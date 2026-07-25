@@ -47,7 +47,15 @@ module Mailboxes
     def find_conversation
       return conversation if conversation.present?
 
-      find_conversation_by_uuid || find_conversation_by_in_reply_to || find_conversation_by_references
+      find_conversation_by_message_id || find_conversation_by_uuid || find_conversation_by_in_reply_to || find_conversation_by_references
+    end
+
+    # Strategy 0: Check if we already processed this exact email (idempotency for Sidekiq retries)
+    def find_conversation_by_message_id
+      return if parsed_mail.message_id.blank?
+
+      message = account.messages.where(source: :email).find_by(external_id: parsed_mail.message_id)
+      self.conversation = message&.conversation
     end
 
     # Strategy 1: reply+<uuid>@domain address pattern
