@@ -11,6 +11,7 @@ PATH
       devise
       down
       elasticsearch
+      email_reply_parser
       facebook-messenger
       flag_shih_tzu
       groupdate
@@ -220,6 +221,7 @@ GEM
     elasticsearch-api (9.3.1)
       base64
       multi_json
+    email_reply_parser (0.5.11)
     erb (6.0.6)
     erubi (1.13.1)
     ethon (0.18.0)
@@ -254,9 +256,6 @@ GEM
     flag_shih_tzu (0.3.23)
     globalid (1.4.0)
       activesupport (>= 6.1)
-    google-protobuf (4.34.1)
-      bigdecimal
-      rake (~> 13.3)
     google-protobuf (4.34.1-arm64-darwin)
       bigdecimal
       rake (~> 13.3)
@@ -267,9 +266,6 @@ GEM
       google-protobuf (~> 4.26)
     groupdate (6.8.0)
       activesupport (>= 7.2)
-    grpc (1.80.0)
-      google-protobuf (>= 3.25, < 5.0)
-      googleapis-common-protos-types (~> 1.0)
     grpc (1.80.0-arm64-darwin)
       google-protobuf (>= 3.25, < 5.0)
       googleapis-common-protos-types (~> 1.0)
@@ -413,7 +409,6 @@ GEM
       ast (~> 2.4.1)
       racc
     pdf-core (0.10.0)
-    pg (1.6.3)
     pg (1.6.3-arm64-darwin)
     pg (1.6.3-x86_64-linux)
     pp (0.6.4)

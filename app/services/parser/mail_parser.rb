@@ -115,9 +115,7 @@ module Parser
 
       @text_content ||= begin
         original_content = part_content(mail.text_part) || ""
-        parsed_content = original_content
-
-        # return if parsed_content.blank?
+        parsed_content = EmailReplyParser.parse_reply(original_content)
 
         parsed_content
       end
@@ -141,9 +139,11 @@ module Parser
     def html_content_parsed
       @html_content_parsed ||= begin
         return if html_content.blank?
+        
+        stripped_html = strip_html_quotes(html_content)
 
         sanitized_html = Rails::Html::SafeListSanitizer.new.sanitize(
-          html_content,
+          stripped_html,
           tags: ALLOWED_TAGS,
           attributes: ALLOWED_ATTRIBUTES
         )
@@ -153,6 +153,29 @@ module Parser
     end
 
     private
+
+    def strip_html_quotes(html)
+      doc = Nokogiri::HTML::DocumentFragment.parse(html)
+      
+      quote_selectors = [
+        '.gmail_quote',
+        'blockquote[type="cite"]',
+        '.yahoo_quoted',
+        '#appendonsend',
+        '.moz-cite-prefix',
+        '.WordSection1',
+        '.gmail_extra'
+      ]
+      
+      doc.search(*quote_selectors).remove
+      
+      doc.search('hr[tabindex="-1"]').each do |node|
+        node.xpath('following-sibling::*').remove
+        node.remove
+      end
+
+      doc.to_html
+    end
 
     def html?
       @html ||=
