@@ -4,6 +4,9 @@
 # VERSION: 1.0.0
 # Website: https://techbolic.com/
 
+require 'nokogiri'
+require 'email_reply_parser'
+
 module Parser
   class MailParser < ApplicationService
     include ::Utilities::StringHelpers
