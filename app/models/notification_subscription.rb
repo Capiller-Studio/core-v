@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'webpush'
+require 'web_push'
 
 # == Schema Information
 #
@@ -62,7 +62,7 @@ class NotificationSubscription < ShardRecord
 
     payload = push_payload(notification)
 
-    Webpush.payload_send(
+    WebPush.payload_send(
       message: payload.to_json,
       endpoint: data["endpoint"],
       p256dh: data["p256dh"],
