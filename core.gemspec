@@ -80,7 +80,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'mrml'
   spec.add_dependency 'stripe'
   spec.add_dependency 'email_reply_parser'
-  spec.add_dependency 'webpush'
+  spec.add_dependency 'web-push'
   # Development/Test tools for core engine development only
   spec.add_development_dependency 'dotenv-rails'
   spec.add_development_dependency 'pry'
