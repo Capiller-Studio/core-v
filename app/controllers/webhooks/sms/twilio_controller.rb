@@ -2,16 +2,13 @@
 
 module Webhooks
   module Sms
-    class TwilioController < ApplicationController
-      skip_before_action :verify_authenticity_token, raise: false
+    class TwilioController < Webhooks::BaseController
       before_action :find_channel
       before_action :verify_signature
 
       def create
-        Channels::ShortMessage::Twilio::ConversationCreator.call(
-          short_message_channel: @channel,
-          parsed_params: request.POST.to_h
-        )
+        webhook = store_incoming_webhook(source: "twilio", payload: request.POST.to_h)
+        Webhooks::TwilioEventListenWorker.perform_async(webhook.id)
 
         head(:ok)
       rescue StandardError => e

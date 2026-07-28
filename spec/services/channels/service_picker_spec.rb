@@ -79,7 +79,7 @@ RSpec.describe Channels::ServicePicker do
       let(:service) { described_class.new(conversation: conversation, message: message) }
 
       before do
-        stub_const('WebhookDelivery', double('WebhookDeliveryClass'))
+        stub_const('Webhook::Delivery', double('WebhookDeliveryClass'))
         stub_const('Integrations::Webhooks::BroadcasterWorker', double('Worker'))
       end
 
@@ -88,7 +88,7 @@ RSpec.describe Channels::ServicePicker do
         allow(conversation).to receive(:as_json).and_return({ "conv" => 2 })
         
         delivery = double('Delivery', id: 55)
-        expect(WebhookDelivery).to receive(:create!).with(
+        expect(Webhook::Delivery).to receive(:create!).with(
           hash_including(
             resource: default_channel,
             endpoint_url: 'http://hook.com',

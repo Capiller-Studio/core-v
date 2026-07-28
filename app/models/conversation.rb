@@ -76,6 +76,7 @@ class Conversation < ShardRecord
   has_many :messages, dependent: :destroy
   has_many :customer_inboxes, through: :customers
   has_many :csat_survey_responses, class_name: 'Csat::SurveyResponse', dependent: :destroy
+  has_one :last_message, -> { order(created_at: :desc) }, class_name: "Message"
 
   after_create_commit :broadcast_conversation_creation
   after_update_commit :process_sla, if: :saved_change_to_status?
@@ -117,6 +118,14 @@ class Conversation < ShardRecord
     # rubocop:disable Rails/SkipsModelValidations
     touch(:last_activity_at)
     # rubocop:enable Rails/SkipsModelValidations
+  end
+
+  def last_message_preview
+    ActionController::Base.helpers.strip_tags(last_message&.content.to_s)&.truncate(100)
+  end
+
+  def last_message_date
+    last_message&.created_at&.strftime("%d %b")
   end
 
   def should_track_changes?

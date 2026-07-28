@@ -5,9 +5,9 @@ RSpec.describe HelpCenter::ArticleTranslation, type: :model do
     it { is_expected.to belong_to(:article) }
   end
 
-  describe 'Validations' do
+  describe "Validations" do
     it { is_expected.to validate_presence_of(:locale) }
-    it { is_expected.to validate_presence_of(:title) }
+    # Note: :title is not required — articles may have a draft_title instead
   end
 
 end

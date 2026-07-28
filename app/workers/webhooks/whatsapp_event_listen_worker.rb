@@ -6,13 +6,23 @@
 
 module Webhooks
   class WhatsappEventListenWorker < BaseMutexWorker
-    def perform(params = {})
-      params = params.with_indifferent_access
+    def perform(webhook_id)
+      webhook = Webhook::Incoming.find_by(id: webhook_id)
+      return unless webhook
 
-      if params["object"] == "whatsapp_business_account"
-        process_via_global_routing(params)
-      else
-        process_via_channel_id(params)
+      begin
+        params = webhook.payload.with_indifferent_access
+
+        if params["object"] == "whatsapp_business_account"
+          process_via_global_routing(params)
+        else
+          process_via_channel_id(webhook)
+        end
+
+        webhook.processed!
+      rescue => e
+        webhook.update!(status: :failed, error_message: "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+        raise e
       end
     end
 
@@ -43,10 +53,16 @@ module Webhooks
       Rails.logger.error("WhatsappEventListenWorker routing error: #{e.message}")
     end
 
-    # Fallback: channel_id passed directly (for manual webhook setup)
-    def process_via_channel_id(params)
-      channel_id = params["channel_id"]
-      account_id = params["account_id"]
+    # Fallback: channel_id passed directly in URL (for manual webhook setup)
+    def process_via_channel_id(webhook)
+      params = webhook.payload.with_indifferent_access
+      
+      route_params = webhook.route_params
+      query_params = webhook.query_params
+      
+      channel_id = query_params["channel_id"] || route_params[:channel_id]
+      account_id = query_params["account_id"] || route_params[:account_id]
+      
       return unless channel_id && account_id
 
       account = Account.find_by(id: account_id)

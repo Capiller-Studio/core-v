@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module Webhooks
-  class InstagramController < ApplicationController
-    skip_before_action :verify_authenticity_token, raise: false
+  class InstagramController < Webhooks::BaseController
 
     # GET /webhooks/instagram
     def hub
@@ -17,7 +16,8 @@ module Webhooks
     # POST /webhooks/instagram
     def index
       # Enqueue job to handle the incoming webhook event
-      Webhooks::InstagramEventListenWorker.perform_async(params.to_unsafe_h)
+      webhook = store_incoming_webhook(source: "instagram", payload: params.to_unsafe_h)
+      Webhooks::InstagramEventListenWorker.perform_async(webhook.id)
       head(:ok)
     rescue StandardError => e
       Rails.logger.error("Instagram webhook processing error: #{e.message}")

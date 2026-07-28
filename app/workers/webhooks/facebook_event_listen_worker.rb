@@ -2,14 +2,30 @@
 
 module Webhooks
   class FacebookEventListenWorker < BaseMutexWorker
-    def perform(event_name, payload)
-      parsed_message = Parser::FacebookMessageParser.new(response: payload)
+    def perform(webhook_id)
+      webhook = Webhook::Incoming.find_by(id: webhook_id)
+      return unless webhook
 
-      case event_name.to_sym
-      when :message, :message_echo
-        process_message(parsed_message, event_name.to_sym)
-      when :delivery, :read
-        process_status(parsed_message, event_name.to_sym)
+      begin
+        event_name = webhook.event_type
+        return if event_name.blank?
+
+        # webhook.payload is already a Hash (JSONB). Re-serialize for the parser
+        # which was built to accept a JSON string.
+        payload = webhook.payload.to_json
+        parsed_message = Parser::FacebookMessageParser.new(response: payload)
+
+        case event_name.to_sym
+        when :message, :message_echo
+          process_message(parsed_message, event_name.to_sym)
+        when :delivery, :read
+          process_status(parsed_message, event_name.to_sym)
+        end
+
+        webhook.processed!
+      rescue => e
+        webhook.update!(status: :failed, error_message: "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+        raise e # Let Sidekiq retry
       end
     end
 

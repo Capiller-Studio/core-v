@@ -24,14 +24,14 @@ RSpec.describe Integrations::EventDispatcher do
 
       before do
         allow(integrations_scope).to receive(:active).and_return([webhook_integration])
-        stub_const('WebhookDelivery', double('WebhookDeliveryClass'))
+        stub_const('Webhook::Delivery', double('WebhookDeliveryClass'))
         stub_const('Integrations::Webhooks::BroadcasterWorker', double('BroadcasterWorker'))
       end
 
       it 'creates delivery and enqueues broadcaster' do
-        delivery = double('WebhookDelivery', id: 10)
+        delivery = double('Webhook::Delivery', id: 10)
         
-        expect(WebhookDelivery).to receive(:create!).with(
+        expect(Webhook::Delivery).to receive(:create!).with(
           integration: webhook_integration,
           event_name: 'conversation.created',
           endpoint_url: 'https://example.com/hook',
@@ -46,13 +46,13 @@ RSpec.describe Integrations::EventDispatcher do
 
       it 'skips if event is not subscribed' do
         allow(webhook_integration).to receive(:subscribed_events).and_return(['message.created'])
-        expect(WebhookDelivery).not_to receive(:create!)
+        expect(Webhook::Delivery).not_to receive(:create!)
         service.call
       end
 
       it 'skips if inbox is not subscribed' do
         allow(webhook_integration).to receive(:subscribed_inboxes).and_return([99])
-        expect(WebhookDelivery).not_to receive(:create!)
+        expect(Webhook::Delivery).not_to receive(:create!)
         service.call
       end
     end

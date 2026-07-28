@@ -110,7 +110,7 @@ class Account < ApplicationRecord
   has_many :skills, dependent: :destroy
   has_many :user_skills, dependent: :destroy
   has_many :chat_bots, dependent: :destroy
-  has_many :webhook_deliveries, dependent: :destroy
+  has_many :webhook_deliveries, class_name: "Webhook::Delivery", dependent: :destroy
 
   after_create :generate_default_roles
   after_create :generate_default_custom_fields
