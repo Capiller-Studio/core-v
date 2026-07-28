@@ -40,7 +40,7 @@ module Integrations
       url = integration.webhook_url
       return unless url
 
-      delivery = WebhookDelivery.create!(
+      delivery = Webhook::Delivery.create!(
         integration: integration,
         event_name: event_name,
         endpoint_url: url,

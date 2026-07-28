@@ -6,27 +6,37 @@
 
 module Webhooks
   class InstagramEventListenWorker < BaseMutexWorker
-    def perform(payload = {})
-      payload = payload.with_indifferent_access
-      entries = payload[:entry]
+    def perform(webhook_id)
+      webhook = Webhook::Incoming.find_by(id: webhook_id)
+      return unless webhook
 
-      return if entries.blank?
+      begin
+        payload = webhook.payload.with_indifferent_access
+        entries = payload[:entry]
 
-      instagram_id = entries.dig(0, :id)
-      return if instagram_id.blank?
+        return if entries.blank?
 
-      # Use GlobalRouting to find the account/shard for this Instagram channel
-      routing = GlobalRouting.find_by(route_type: "instagram", route_value: instagram_id.to_s)
-      return if routing.blank?
+        instagram_id = entries.dig(0, :id)
+        return if instagram_id.blank?
 
-      Current.set(account: routing.account) do
-        channel = Channel::Instagram.find_by(instagram_id: instagram_id.to_s, account_id: routing.account_id)
-        return unless channel_active?(channel)
+        # Use GlobalRouting to find the account/shard for this Instagram channel
+        routing = GlobalRouting.find_by(route_type: "instagram", route_value: instagram_id.to_s)
+        return if routing.blank?
 
-        Channels::Instagram::EventListener.call(
-          instagram_channel: channel,
-          payload: payload
-        )
+        Current.set(account: routing.account) do
+          channel = Channel::Instagram.find_by(instagram_id: instagram_id.to_s, account_id: routing.account_id)
+          return unless channel_active?(channel)
+
+          Channels::Instagram::EventListener.call(
+            instagram_channel: channel,
+            payload: payload
+          )
+        end
+
+        webhook.processed!
+      rescue => e
+        webhook.update!(status: :failed, error_message: "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+        raise e
       end
     end
 

@@ -14,7 +14,7 @@ module Channel
     has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
     accepts_nested_attributes_for :primary_inbox, update_only: true
 
-    has_many :webhook_deliveries, as: :resource, dependent: :destroy
+    has_many :webhook_deliveries, class_name: "Webhook::Delivery", as: :resource, dependent: :destroy
 
     encrypts :webhook_secret
     encrypts :hmac_token

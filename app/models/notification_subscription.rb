@@ -84,8 +84,8 @@ class NotificationSubscription < ShardRecord
 
   def push_payload(notification)
     locale = user_locale
-    identifier = notification.resource.try(:identifier) || ""
-    inbox_name = notification.resource.try(:inbox).try(:name) || ""
+    identifier = notification.resource.try(:identifier) || notification.resource.try(:conversation).try(:identifier) || ""
+    inbox_name = notification.resource.try(:inbox).try(:name) || notification.resource.try(:conversation).try(:inbox).try(:name) || ""
 
     {
       title: I18n.t("notifications.push.#{notification.event}.title", locale:),
@@ -94,7 +94,8 @@ class NotificationSubscription < ShardRecord
         notification_id: notification.id,
         event: notification.event,
         resource_type: notification.resource_type,
-        resource_id: notification.resource_id
+        resource_id: notification.resource_id,
+        conversation_id: notification.resource.try(:conversation_id)
       }
     }
   end

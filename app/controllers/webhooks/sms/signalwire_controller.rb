@@ -2,17 +2,13 @@
 
 module Webhooks
   module Sms
-    class SignalwireController < ApplicationController
-      skip_before_action :verify_authenticity_token, raise: false
+    class SignalwireController < Webhooks::BaseController
       before_action :find_channel
       before_action :verify_signature
 
       def create
-        # Signalwire natively utilizes identical schema architectures as Twilio organically
-        Channels::ShortMessage::Signalwire::ConversationCreator.call(
-          short_message_channel: @channel,
-          parsed_params: request.POST.to_h
-        )
+        webhook = store_incoming_webhook(source: "signalwire", payload: request.POST.to_h)
+        Webhooks::SignalwireEventListenWorker.perform_async(webhook.id)
 
         head(:ok)
       rescue StandardError => e

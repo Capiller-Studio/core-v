@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe WebhookDelivery, type: :model do
+RSpec.describe Webhook::Delivery, type: :model do
   describe 'Associations' do
     it { is_expected.to have_many(:attempts) }
     it { is_expected.to belong_to(:resource) }

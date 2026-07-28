@@ -7,7 +7,7 @@
 class BaseMutexWorker
     include Sidekiq::Worker
 
-    MUTEX_LOCK_RETRY_LIMIT = 10
+    MUTEX_LOCK_RETRY_LIMIT = 25
 
     sidekiq_options queue: "default", retry: MUTEX_LOCK_RETRY_LIMIT
 

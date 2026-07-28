@@ -2,8 +2,7 @@
 
 module Webhooks
   module Sms
-    class AwsSnsController < ApplicationController
-      skip_before_action :verify_authenticity_token, raise: false
+    class AwsSnsController < Webhooks::BaseController
       before_action :find_channel
       before_action :verify_signature
 
@@ -11,20 +10,8 @@ module Webhooks
         raw_body = request.raw_post
         aws_json = JSON.parse(raw_body) rescue {}
 
-        # 1. AWS SNS Topic Registration Handshake
-        if aws_json["Type"] == "SubscriptionConfirmation"
-          # Confirm the subscription explicitly by fetching the dynamic URL
-          HTTParty.get(aws_json["SubscribeURL"]) if aws_json["SubscribeURL"]
-          return head(:ok)
-        end
-
-        # 2. Extract Notification organically
-        if aws_json["Type"] == "Notification"
-          Channels::ShortMessage::AwsSns::ConversationCreator.call(
-            short_message_channel: @channel,
-            parsed_params: aws_json
-          )
-        end
+        webhook = store_incoming_webhook(source: "aws_sns", payload: aws_json)
+        Webhooks::AwsSnsEventListenWorker.perform_async(webhook.id)
 
         head(:ok)
       rescue StandardError => e

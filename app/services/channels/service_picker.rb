@@ -111,7 +111,7 @@ module Channels
         conversation: conversation.as_json
       }
 
-      delivery = WebhookDelivery.create!(
+      delivery = Webhook::Delivery.create!(
         resource: channel,
         event_name: "message.created",
         endpoint_url: channel.webhook_url,

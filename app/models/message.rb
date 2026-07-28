@@ -60,6 +60,7 @@ class Message < ShardRecord
   after_create_commit :broadcast_message_creation
   after_create_commit :deliver_contact_form_reply, if: -> { outgoing? && source == "help_center" }
   after_create_commit :process_sla
+  after_create_commit :touch_conversation_activity
   after_update_commit :broadcast_message_update, if: :saved_change_to_status?
 
   def incoming?
@@ -123,5 +124,9 @@ class Message < ShardRecord
 
   def process_sla
     Sla::EventProcessorWorker.perform_async(conversation_id) if account.feature_enabled?(:sla)
+  end
+
+  def touch_conversation_activity
+    conversation.update_last_activity
   end
 end

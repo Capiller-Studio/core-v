@@ -7,7 +7,7 @@ module Integrations
       sidekiq_options retry: 3, queue: "default"
 
       def perform(delivery_id, attempt_number = 1)
-        delivery = WebhookDelivery.find_by(id: delivery_id)
+        delivery = Webhook::Delivery.find_by(id: delivery_id)
         return unless delivery
 
         # Guard against duplicate dispatches
@@ -68,7 +68,7 @@ module Integrations
       private
 
       def handle_attempt(delivery:, attempt_number:, success:, http_status: nil, response_body: nil, error: nil)
-        WebhookDeliveryAttempt.create!(
+        Webhook::DeliveryAttempt.create!(
           delivery: delivery,
           attempt_number: attempt_number,
           http_status: http_status,

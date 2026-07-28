@@ -5,23 +5,35 @@ module Webhooks
     include Sidekiq::Worker
     sidekiq_options queue: "default", retry: 3
 
-    def perform(account_id, channel_id, payload)
-      payload = payload.with_indifferent_access
+    def perform(webhook_id)
+      webhook = Webhook::Incoming.find_by(id: webhook_id)
+      return unless webhook
 
-      account = Account.find_by(id: account_id)
-      return unless account
+      begin
+        payload = webhook.payload.with_indifferent_access
 
-      account.with_shard do
-        channel = Channel::Custom.find_by(id: channel_id)
-        return unless channel_active?(channel)
+        route_params = webhook.route_params
+        channel_id = route_params[:channel_id]
+        account_id = route_params[:account_id]
 
-        Current.set(account: account) do
-          process_payload(channel, payload)
+        account = Account.find_by(id: account_id)
+        return unless account
+
+        account.with_shard do
+          channel = Channel::Custom.find_by(id: channel_id)
+          return unless channel_active?(channel)
+
+          Current.set(account: account) do
+            process_payload(channel, payload)
+          end
         end
+
+        webhook.processed!
+      rescue StandardError => e
+        webhook.update!(status: :failed, error_message: "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
+        Rails.logger.error("CustomEventListenWorker error: #{e.message}")
+        raise(e) # Re-raise for Sidekiq retry
       end
-    rescue StandardError => e
-      Rails.logger.error("CustomEventListenWorker error: #{e.message}")
-      raise(e) # Re-raise for Sidekiq retry
     end
 
     private

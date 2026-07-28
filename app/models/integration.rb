@@ -2,7 +2,7 @@
 
 class Integration < ShardRecord
   belongs_to :account
-  has_many :webhook_deliveries, as: :resource, dependent: :destroy
+  has_many :webhook_deliveries, class_name: "Webhook::Delivery", as: :resource, dependent: :destroy
 
   enum :provider, { slack: 0, google_translate: 1, webhook: 2 }
 

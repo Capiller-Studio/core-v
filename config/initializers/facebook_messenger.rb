@@ -57,18 +57,22 @@ Rails.application.reloader.to_prepare do
   end
 
   Facebook::Messenger::Bot.on :message do |message|
-    Webhooks::FacebookEventListenWorker.perform_async("message", message.to_json)
+    webhook = Webhook::Incoming.create!(source: "facebook", event_type: "message", payload: JSON.parse(message.to_json), status: :pending)
+    Webhooks::FacebookEventListenWorker.perform_async(webhook.id)
   end
 
   Facebook::Messenger::Bot.on :message_echo do |message|
-    Webhooks::FacebookEventListenWorker.perform_async("message_echo", message.to_json)
+    webhook = Webhook::Incoming.create!(source: "facebook", event_type: "message_echo", payload: JSON.parse(message.to_json), status: :pending)
+    Webhooks::FacebookEventListenWorker.perform_async(webhook.id)
   end
 
   Facebook::Messenger::Bot.on :delivery do |delivery|
-    Webhooks::FacebookEventListenWorker.perform_async("delivery", delivery.to_json)
+    webhook = Webhook::Incoming.create!(source: "facebook", event_type: "delivery", payload: JSON.parse(delivery.to_json), status: :pending)
+    Webhooks::FacebookEventListenWorker.perform_async(webhook.id)
   end
 
   Facebook::Messenger::Bot.on :read do |read|
-    Webhooks::FacebookEventListenWorker.perform_async("read", read.to_json)
+    webhook = Webhook::Incoming.create!(source: "facebook", event_type: "read", payload: JSON.parse(read.to_json), status: :pending)
+    Webhooks::FacebookEventListenWorker.perform_async(webhook.id)
   end
 end
