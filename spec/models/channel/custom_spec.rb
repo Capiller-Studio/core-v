@@ -57,7 +57,7 @@ RSpec.describe Channel::Custom, type: :model do
   describe 'Instance Methods' do
     it '#webhook_endpoint returns correct url' do
       cc = create(:channel_custom)
-      host = Rails.application.credentials.dig(Rails.env.to_sym, :host) || Rails.application.credentials.dig(:host)
+      host = ENV.fetch("FRONTEND_URL", "https://app.deskbolic.com")
       expect(cc.webhook_endpoint).to eq("#{host}/webhooks/custom/#{cc.account_id}/#{cc.id}")
     end
 

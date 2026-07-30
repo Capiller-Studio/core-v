@@ -105,7 +105,7 @@ module Channel
     # Full public webhook URL for display in the edit page.
     # Users paste this into Meta's webhook configuration.
     def webhook_url
-      host = Rails.application.credentials.dig(Rails.env.to_sym, :host) || Rails.application.credentials.dig(:host)
+      host = ENV.fetch("FRONTEND_URL", "https://app.deskbolic.com")
       "#{host}/webhooks/whatsapp/#{account_id}/#{id}"
     end
 
