@@ -69,7 +69,7 @@ module Webhooks
               channel_class: channel.class.name,
               channel_id: channel.id
             }
-            Messages::StatusUpdateWorker.perform_async(channel.account_id, status, params.as_json)
+            Messages::StatusUpdateWorker.perform_async(channel.account_id, status.to_s, params.as_json)
           end
         end
       end
