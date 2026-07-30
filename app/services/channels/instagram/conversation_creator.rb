@@ -29,9 +29,6 @@ module Channels
           find_or_create_conversation
           create_message
         end
-      rescue Koala::Facebook::AuthenticationError => e
-        SystemLog.log_event("webhook.instagram.auth_error", level: :error, account: account, message: e.message)
-        raise(e)
       rescue StandardError => e
         SystemLog.log_event(
           "webhook.instagram.error", 
@@ -123,15 +120,27 @@ module Channels
       end
 
       def fetch_customer_details
-        client = Koala::Facebook::API.new(channel.access_token)
-        client.get_object(sender_id)
-      rescue Koala::Facebook::AuthenticationError => e
-        channel.authorization_error!
-        Rails.logger.error("Instagram auth error fetching customer #{sender_id}: #{e.message}")
-        nil
-      rescue Koala::Facebook::ClientError => e
-        Rails.logger.error("Instagram client error fetching customer #{sender_id}: #{e.message}")
-        nil
+        response = HTTParty.get(
+          "https://graph.instagram.com/#{Channels::Instagram::OauthService::API_VERSION}/#{sender_id}",
+          query: {
+            fields: "id,username,name,profile_picture_url",
+            access_token: channel.access_token
+          }
+        )
+
+        if response.success?
+          JSON.parse(response.body)
+        else
+          error_data = response.parsed_response&.dig("error") || {}
+          
+          if response.code == 401 || response.code == 403 || error_data["type"] == "OAuthException" || error_data["code"] == 190
+            channel.authorization_error!
+            Rails.logger.error("Instagram auth error fetching customer #{sender_id}: #{response.body}")
+          else
+            Rails.logger.error("Instagram error fetching customer #{sender_id}: #{response.body}")
+          end
+          nil
+        end
       rescue StandardError => e
         Rails.logger.error("Instagram error fetching customer #{sender_id}: #{e.message}")
         nil

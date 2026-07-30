@@ -11,19 +11,16 @@ RSpec.describe Channels::Instagram::ConversationCreator do
   let(:conversation) { double('Conversation', conversation_members: double(find_or_create_by!: true)) }
 
   describe '#call' do
-    let(:api_mock) { instance_double(Koala::Facebook::API) }
+    let(:mock_response) { instance_double(HTTParty::Response, success?: true, body: { "id" => "sender_ig", "first_name" => "John", "last_name" => "Doe", "username" => "john_ig", "profile_picture_url" => "avatar.url" }.to_json) }
 
     before do
       stub_const('Customers::CustomerCreator', double('CustomerCreator'))
       stub_const('Channels::Instagram::MessageCreator', double('MessageCreator'))
       
-      allow(Koala::Facebook::API).to receive(:new).with('token').and_return(api_mock)
-      allow(api_mock).to receive(:get_object).with('sender_ig').and_return({
-        "first_name" => "John",
-        "last_name" => "Doe",
-        "username" => "john_ig",
-        "profile_pic" => "avatar.url"
-      })
+      allow(HTTParty).to receive(:get).with(
+        "https://graph.instagram.com/v25.0/sender_ig",
+        query: { fields: "id,username,name,profile_picture_url", access_token: "token" }
+      ).and_return(mock_response)
 
       allow(service).to receive(:find_or_reopen_conversation).and_return(nil)
       allow(account).to receive_message_chain(:conversations, :create!).and_return(conversation)

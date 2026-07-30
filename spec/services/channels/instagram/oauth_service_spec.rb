@@ -16,7 +16,7 @@ RSpec.describe Channels::Instagram::OauthService do
   describe '#exchange_code' do
     let(:short_lived) { double('Response', success?: true, body: '{"access_token": "short", "user_id": 123}') }
     let(:long_lived) { double('Response', success?: true, body: '{"access_token": "long", "expires_in": 3600}') }
-    let(:user_details) { double('Response', success?: true, body: '{"user_id": 123, "username": "iguser", "name": "IG User", "profile_picture_url": "http://img"}') }
+    let(:user_details) { double('Response', success?: true, body: '{"id": 123, "user_id": 123, "username": "iguser", "name": "IG User", "profile_picture_url": "http://img"}') }
 
     before do
       allow(described_class).to receive(:post).and_return(short_lived)
