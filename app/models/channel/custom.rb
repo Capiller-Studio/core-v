@@ -42,7 +42,7 @@ module Channel
 
     # Public endpoint where the customer sends their payloads to us.
     def webhook_endpoint
-      host = Rails.application.credentials.dig(Rails.env.to_sym, :host) || Rails.application.credentials.dig(:host)
+      host = ENV.fetch("FRONTEND_URL", "https://app.deskbolic.com")
       "#{host}/webhooks/custom/#{account_id}/#{id}"
     end
 
