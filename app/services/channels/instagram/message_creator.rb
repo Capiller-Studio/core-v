@@ -158,9 +158,22 @@ module Channels
       end
 
       def fetch_story(external_id)
-        client = Koala::Facebook::API.new(instagram_channel.access_token)
-        client.get_object(external_id, fields: %w[story from])
-      rescue Koala::Facebook::AuthenticationError, Koala::Facebook::ClientError, StandardError
+        response = HTTParty.get(
+          "https://graph.instagram.com/#{Channels::Instagram::OauthService::API_VERSION}/#{external_id}",
+          query: {
+            fields: "story,from",
+            access_token: instagram_channel.access_token
+          }
+        )
+
+        if response.success?
+          JSON.parse(response.body)
+        else
+          Rails.logger.error("Instagram error fetching story #{external_id}: #{response.body}")
+          nil
+        end
+      rescue StandardError => e
+        Rails.logger.error("Instagram exception fetching story #{external_id}: #{e.message}")
         nil
       end
 

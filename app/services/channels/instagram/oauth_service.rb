@@ -57,7 +57,7 @@ module Channels
           access_token: long_lived["access_token"],
           expires_at: Time.current + long_lived["expires_in"].to_i.seconds,
           user: {
-            id: user_details["user_id"].to_s,
+            id: user_details["id"].to_s,
             username: user_details["username"],
             name: user_details["name"],
             avatar_url: user_details["profile_picture_url"]

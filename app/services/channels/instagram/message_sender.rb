@@ -30,14 +30,18 @@ module Channels
       private
 
       def send_message(params)
-        # Instagram Graph API uses the same delivery mechanism as Facebook Pages
-        # but requires the page_access_token associated with the Instagram account
-        response = Facebook::Messenger::Bot.deliver(params, access_token: instagram_channel.access_token)
-        response = JSON.parse(response)
+        response = HTTParty.post(
+          "https://graph.instagram.com/#{Channels::Instagram::OauthService::API_VERSION}/me/messages",
+          headers: { "Content-Type" => "application/json" },
+          query: { access_token: instagram_channel.access_token },
+          body: params.to_json
+        )
 
-        return log_error(response) if response["error"].present?
+        result = JSON.parse(response.body) rescue {}
 
-        message.update!(external_id: response["message_id"], status: :delivered) if response["message_id"].present?
+        return log_error(result) if !response.success? || result["error"].present?
+
+        message.update!(external_id: result["message_id"], status: :delivered) if result["message_id"].present?
       end
 
       def params
