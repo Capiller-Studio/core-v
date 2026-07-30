@@ -31,11 +31,15 @@ class CustomField < ShardRecord
   include FlagShihTzu
   include Translateable
 
+  TRANSLATABLE_FIELDS = %i[label placeholder description].freeze
+
   belongs_to :account
   has_many :translations, class_name: "CustomFieldTranslation", dependent: :destroy
   has_many :field_resources, class_name: "CustomFieldResource", dependent: :destroy
 
   accepts_nested_attributes_for :translations, allow_destroy: true
+
+  translates(*TRANSLATABLE_FIELDS)
 
   def localized_options(locale = I18n.locale)
     # 1. Try to find translation for the specific locale
