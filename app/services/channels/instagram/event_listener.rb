@@ -56,10 +56,15 @@ module Channels
 
       def process_statuses(parsed_message, event)
         watermark = event == :read ? parsed_message.read_watermark : parsed_message.delivery_watermark
-        return unless watermark
+        message_external_ids = parsed_message.message&.dig(:mids) || []
+        
+        if event == :read && parsed_message.read&.dig("mid").present?
+          message_external_ids << parsed_message.read["mid"]
+        end
+
+        return if watermark.blank? && message_external_ids.blank?
 
         status = event == :read ? :read : :delivered
-        message_external_ids = parsed_message.message&.dig(:mids) || []
 
         params = {
           external_ids: message_external_ids,
