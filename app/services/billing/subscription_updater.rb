@@ -66,9 +66,11 @@ module Billing
           billing_cycle: new_billing_cycle,
           status: :active,
           current_period_start: now,
-          current_period_end: new_end
+          current_period_end: new_end,
+          next_usage_reset_at: 1.month.from_now
         )
         sync_plan_limits
+        subscription.account.reset_monthly_counters!
         return
       end
 
@@ -93,8 +95,10 @@ module Billing
           plan: new_plan,
           billing_cycle: new_billing_cycle,
           current_period_start: now,
-          current_period_end: new_end
+          current_period_end: new_end,
+          next_usage_reset_at: 1.month.from_now
         )
+        subscription.account.reset_monthly_counters!
       else
         # Same billing cycle — prorate within the current period
         new_daily_rate = new_total_price / subscription.total_days_in_cycle

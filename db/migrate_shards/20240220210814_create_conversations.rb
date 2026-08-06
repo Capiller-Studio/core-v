@@ -6,6 +6,7 @@ class CreateConversations < ActiveRecord::Migration[7.1]
       t.string   :external_id
       t.jsonb    :configurations, null: false, default: {}
       t.jsonb    :data, null: false, default: {}
+      t.jsonb    :ai_metadata, null: false, default: {}
       t.string   :identifier, null: false
       t.integer  :status,   null: false, default: 0
       t.integer  :priority, null: false, default: Conversation.priorities[:low]
@@ -13,6 +14,7 @@ class CreateConversations < ActiveRecord::Migration[7.1]
       t.datetime :last_activity_at
       t.datetime :first_respond_at
       t.string   :locale #, null: false, default: "en"
+      t.integer  :ai_status, null: false, default: 0
 
       t.references :account,        null: false, foreign_key: false,                    type: :uuid, index: true
       t.references :inbox,          null: false, foreign_key: { on_delete: :cascade },  type: :uuid, index: true
@@ -29,6 +31,7 @@ class CreateConversations < ActiveRecord::Migration[7.1]
       t.index [:account_id, :external_id]
       t.index [:account_id, :last_activity_at]
       t.index [:account_id, :created_at]
+      t.index :ai_metadata, using: :gin
     end
   end
 end

@@ -61,7 +61,11 @@ class Message < ShardRecord
   after_create_commit :deliver_contact_form_reply, if: -> { outgoing? && source == "help_center" }
   after_create_commit :process_sla
   after_create_commit :touch_conversation_activity
+  after_create_commit :trigger_thank_you_detector, if: :incoming?
+  after_create_commit :trigger_ai_agent, if: :incoming?
   after_update_commit :broadcast_message_update, if: :saved_change_to_status?
+
+  before_save :sanitize_content, if: -> { content.present? && content_changed? }
 
   def incoming?
     sender_type == "Customer"
@@ -93,6 +97,14 @@ class Message < ShardRecord
 
   private
 
+  def sanitize_content
+    self.content = ActionController::Base.helpers.sanitize(
+      content,
+      tags: Parser::MailParser::ALLOWED_TAGS,
+      attributes: Parser::MailParser::ALLOWED_ATTRIBUTES
+    )
+  end
+
   def deliver_contact_form_reply
     Messages::ContactFormDeliveryWorker.perform_async(id)
   end
@@ -119,7 +131,9 @@ class Message < ShardRecord
   end
 
   def connection_tokens
-    (conversation.customer_inboxes.pluck(:connection_token) + account.users.pluck(:connection_token)).uniq
+    tokens = account.users.pluck(:connection_token)
+    tokens += conversation.customer_inboxes.pluck(:connection_token) unless personal?
+    tokens.uniq
   end
 
   def process_sla
@@ -128,5 +142,26 @@ class Message < ShardRecord
 
   def touch_conversation_activity
     conversation.update_last_activity
+  end
+
+  def trigger_thank_you_detector
+    # Only run the detector if the conversation was previously resolved/closed.
+    # The actual reopening logic will likely be paused or reverted if it's a thank you.
+    # If the app reopens automatically, we revert it in the worker.
+    return unless inbox.ai_thank_you_detection?
+    
+    Ai::ThankYouDetectorWorker.perform_async(id) if account.feature_enabled?(:ai_copilot) || account.feature_enabled?(:ai_agent)
+  end
+
+  def trigger_ai_agent
+    return unless conversation.ai_active?
+    
+    if inbox.ai_agent&.active_and_configured?
+      Ai::AgentWorker.perform_async(account_id, conversation_id, id, inbox.ai_agent_id)
+    else
+      # Agent was deactivated while conversation was active. Force handoff.
+      conversation.update!(ai_status: :ai_handed_off)
+      conversation.send(:auto_assign_agent) if conversation.send(:should_auto_assign?)
+    end
   end
 end

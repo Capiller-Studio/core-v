@@ -62,6 +62,8 @@ class Conversation < ShardRecord
     help_center: 8  # Submitted via a Channel::ContactForm on a Help Center portal
   }, suffix: true
 
+  enum :ai_status, { ai_inactive: 0, ai_active: 1, ai_handed_off: 2 }
+
   has_many :applied_labels, as: :labelable, dependent: :destroy
   has_many :labels, through: :applied_labels
 
@@ -79,12 +81,14 @@ class Conversation < ShardRecord
   has_one :last_message, -> { order(created_at: :desc) }, class_name: "Message"
 
   after_create_commit :broadcast_conversation_creation
+  after_create_commit :trigger_ai_classification
   after_update_commit :process_sla, if: :saved_change_to_status?
   after_update_commit :dispatch_csat, if: :saved_change_to_status?
   after_update_commit :record_status_change, if: :saved_change_to_status?
   after_update_commit :record_priority_change, if: :saved_change_to_priority?
   after_update_commit :broadcast_conversation_update
   before_save :update_last_activity_at, if: :will_save_change_to_status?
+  before_create :initialize_ai_status
   after_destroy :cleanup_unread_counts
 
 
@@ -177,6 +181,10 @@ class Conversation < ShardRecord
 
   private
 
+  def initialize_ai_status
+    self.ai_status = :ai_active if inbox.ai_agent&.active_and_configured?
+  end
+
   # TODO: Refactor to separate concern
   def broadcast_conversation_creation
     EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.created", connection_tokens, account_id)
@@ -189,6 +197,10 @@ class Conversation < ShardRecord
         event: :conversation_created
       )
     end
+  end
+
+  def trigger_ai_classification
+    Ai::ConversationClassifierWorker.perform_async(id) if inbox.ai_classification?
   end
 
   def broadcast_conversation_update

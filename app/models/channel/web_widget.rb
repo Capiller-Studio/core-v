@@ -55,6 +55,7 @@ module Channel
 
     has_many :inboxes, as: :channel, dependent: :destroy
     has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
+    accepts_nested_attributes_for :primary_inbox, update_only: true
 
     def scaled_logo
       return nil unless logo.attached?

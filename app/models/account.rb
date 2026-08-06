@@ -69,6 +69,7 @@ class Account < ApplicationRecord
   has_many :users, through: :account_users
   has_many :account_invitations, dependent: :destroy
   has_many :domains, dependent: :destroy
+  has_many :ai_wallet_transactions, class_name: "Ai::WalletTransaction", dependent: :destroy
 
   # Sharded DB Associations
   # IMPORTANT: These associations reside in a separate database shard.
@@ -110,10 +111,13 @@ class Account < ApplicationRecord
   has_many :skills, dependent: :destroy
   has_many :user_skills, dependent: :destroy
   has_many :chat_bots, dependent: :destroy
+  has_one :ai_wallet, class_name: "Ai::Wallet", dependent: :destroy
+  has_many :ai_agents, class_name: "Ai::Agent", dependent: :destroy
   has_many :webhook_deliveries, class_name: "Webhook::Delivery", dependent: :destroy
 
   after_create :generate_default_roles
   after_create :generate_default_custom_fields
+  after_create :create_default_ai_wallet
 
   def event_payload
     {
@@ -131,5 +135,9 @@ class Account < ApplicationRecord
 
   def generate_default_custom_fields
     Accounts::DefaultCustomFieldsCreator.call(account: self)
+  end
+
+  def create_default_ai_wallet
+    create_ai_wallet!(balance: 0)
   end
 end

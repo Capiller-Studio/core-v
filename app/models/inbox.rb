@@ -39,10 +39,14 @@ class Inbox < ShardRecord
   belongs_to :account
   belongs_to :csat_survey, class_name: 'Csat::Survey', optional: true
   belongs_to :conversation_reply_template, class_name: 'EmailTemplate', optional: true
+  belongs_to :ai_agent, class_name: 'Ai::Agent', optional: true
   # belongs_to :address
 
   has_flags 1 => :csat_survey_enabled, 
             2 => :auto_assign, 
+            3 => :ai_classification,
+            4 => :ai_auto_labelling,
+            5 => :ai_thank_you_detection,
             column: 'flags'
 
   enum :status, { active: 0 }
@@ -58,6 +62,7 @@ class Inbox < ShardRecord
   has_many :sla_policies, through: :sla_inboxes
   has_many :assignment_policy_inboxes, dependent: :destroy
   has_many :assignment_policies, through: :assignment_policy_inboxes
+
 
   after_destroy :cleanup_integration_settings
   after_destroy :cleanup_unread_counts

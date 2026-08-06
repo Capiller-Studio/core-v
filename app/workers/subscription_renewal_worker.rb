@@ -59,10 +59,14 @@ class SubscriptionRenewalWorker < BaseMutexWorker
       subscription.update!(
         current_period_start: now,
         current_period_end: new_end,
+        next_usage_reset_at: 1.month.from_now,
+        status: :active,
+        trial_ends_at: nil,
         data: subscription.data.merge("max_agents_in_period" => 0)
       )
 
       account.reset_monthly_counters!
+      grant_monthly_ai_credits(subscription)
     else
       subscription.update!(status: :past_due)
 
@@ -76,5 +80,26 @@ class SubscriptionRenewalWorker < BaseMutexWorker
         event: :payment_failed
       )
     end
+  end
+
+  def grant_monthly_ai_credits(subscription)
+    monthly_credits = subscription.plan.features.fetch("monthly_ai_credits", 0).to_i
+    return if monthly_credits <= 0
+
+    wallet = subscription.account.ai_wallet
+    
+    # 1. Expire any existing monthly free grants (non-rolling)
+    wallet.ai_credit_grants.monthly_free.active.update_all(balance: 0, expires_at: Time.current)
+
+    # 2. Issue a new grant for the new billing cycle
+    expires_at = 1.month.from_now
+    
+    wallet.grant_credits!(
+      monthly_credits,
+      grant_type: :monthly_free,
+      expires_at: expires_at,
+      description: "billing.events.monthly_ai_grant",
+      data: { "plan" => subscription.plan.name }
+    )
   end
 end

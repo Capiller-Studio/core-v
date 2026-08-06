@@ -5,6 +5,7 @@ module Assignable
 
   included do
     after_create_commit :auto_assign_agent, if: :should_auto_assign?
+    after_update_commit :auto_assign_agent, if: -> { saved_change_to_ai_status? && ai_handed_off? && should_auto_assign? && !assigned? }
   end
 
   # --- Agent Assignment ---
@@ -18,7 +19,9 @@ module Assignable
       return if assignee_id == user&.id
 
       old_assignee_id = assignee_id
-      update!(assignee: user)
+      updates = { assignee: user }
+      updates[:ai_status] = :ai_handed_off if ai_active?
+      update!(updates)
 
       # Ensure assignee is added as a participant so they can track unread/seen states
       conversation_members.find_or_create_by!(member: user, account: account) do |cm|
@@ -70,7 +73,9 @@ module Assignable
       return if team_id == team&.id
 
       old_team_id = team_id
-      update!(team: team)
+      updates = { team: team }
+      updates[:ai_status] = :ai_handed_off if ai_active?
+      update!(updates)
 
       if saved_change_to_team_id?
         # Notify team members that a new conversation is assigned to their team
@@ -120,7 +125,7 @@ module Assignable
   private
 
   def should_auto_assign?
-    inbox.auto_assign?
+    inbox.auto_assign? && !ai_active?
   end
 
   def auto_assign_agent

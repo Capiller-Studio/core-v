@@ -16,10 +16,13 @@ module Messages
         return if msg.read?
 
         conversation = msg.conversation
-        channel = conversation.channel
+        customer = conversation.customers.first
+        
+        # Don't send offline emails if the customer is currently online/active in the widget
+        return if ::Utilities::ActivityHelpers.activity?(account.id, "Customer", customer&.id)
+        channel = conversation.inbox.channel
         return unless channel.is_a?(Channel::WebWidget)
 
-        customer = conversation.customer
         return if customer&.email.blank?
 
         # Fallback channel logic

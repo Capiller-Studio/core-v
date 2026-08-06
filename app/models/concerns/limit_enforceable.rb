@@ -93,6 +93,7 @@ module LimitEnforceable
       new_limits[resource] ||= {}
       new_limits[resource]["current"] = 0
     end
+    new_limits["last_reset_at"] = Time.current.iso8601
     # rubocop:disable Rails/SkipsModelValidations
     update_column(:limits, new_limits)
     # rubocop:enable Rails/SkipsModelValidations

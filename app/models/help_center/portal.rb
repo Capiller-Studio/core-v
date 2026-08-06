@@ -67,6 +67,7 @@ module HelpCenter
               2 => :show_customer_portal,
               3 => :show_web_widget,
               4 => :indexing_enabled,
+              5 => :ai_training_enabled,
               column: "flags"
 
     # ui_configurations jsonb — visual/theme settings only (no feature flags here):

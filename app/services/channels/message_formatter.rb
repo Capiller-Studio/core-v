@@ -79,5 +79,20 @@ module Channels
       
       html
     end
+    
+    def self.parse_ai_markdown_to_html(markdown)
+      return markdown if markdown.blank?
+      
+      html = markdown.dup
+      
+      # Github Flavored Markdown usually returned by OpenAI
+      html.gsub!(/\*\*(.*?)\*\*/m, '<b>\1</b>')
+      html.gsub!(/__(.*?)__/m, '<b>\1</b>')
+      html.gsub!(/```(.*?)```/m, '<pre><code>\1</code></pre>')
+      html.gsub!(/`([^`]+)`/, '<code>\1</code>')
+      html.gsub!(/\n/, '<br>')
+      
+      html
+    end
   end
 end

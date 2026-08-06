@@ -20,6 +20,10 @@ class CreateHelpCenterArticleTranslations < ActiveRecord::Migration[7.1]
       # Pre-computed plain-text excerpt for search result previews (stripped of HTML/Markdown)
       t.text    :search_excerpt
 
+      # AI Training fields
+      t.jsonb   :content_embedding
+      t.boolean :ai_training_synced, default: false, null: false
+
       t.references :article, null: false, type: :uuid, foreign_key: { to_table: :help_center_articles, on_delete: :cascade }, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
@@ -28,6 +32,7 @@ class CreateHelpCenterArticleTranslations < ActiveRecord::Migration[7.1]
       t.index [:title, :locale]
       t.index [:article_id, :locale], unique: true
       t.index [:article_id, :slug]    # For slug-based lookups within an article's translations
+      t.index :ai_training_synced
     end
   end
 end

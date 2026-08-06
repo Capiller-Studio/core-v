@@ -4,22 +4,33 @@ module RedisUtilities
   class MutexHelpers
     TIMEOUT = 10.seconds
 
-    def self.with_lock(key, timeout: TIMEOUT)
-      if lock(key, timeout:)
-        yield
-        unlock(key)
+    def self.with_lock(key, timeout: TIMEOUT, wait_timeout: 5.seconds)
+      acquired = false
+      start_time = Time.current
+
+      while Time.current - start_time < wait_timeout
+        if lock(key, timeout: timeout)
+          acquired = true
+          break
+        end
+        sleep 0.1
+      end
+
+      if acquired
+        begin
+          yield
+        ensure
+          unlock(key)
+        end
       else
         raise(MutexLockError, "Could not acquire lock #{key}")
       end
-    rescue StandardError => e
-      unlock(key) unless e.is_a?(MutexLockError)
-      raise(e)
     end
 
     def self.lock(key, timeout: TIMEOUT)
       value = Time.now.to_f.to_s
 
-      RedisUtilities::Helpers.set(key, value, overwrite: false, expiry: timeout)
+      RedisUtilities::Helpers.set(key, value, overwrite: false, expiry: timeout.to_i)
     end
 
     def self.unlock(key)

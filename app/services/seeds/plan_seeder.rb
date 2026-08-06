@@ -17,8 +17,11 @@ module Seeds
           "data_retention_months" => 3
         },
         features: {
+          "monthly_ai_credits" => 0,
           "sla" => false,
           "api_access" => false,
+          "ai_copilot" => false,
+          "ai_agent" => false,
           "csat" => false,
           "email_templates" => false,
           "custom_csat" => false,
@@ -63,8 +66,11 @@ module Seeds
           "data_retention_months" => 12
         },
         features: {
+          "monthly_ai_credits" => 100,
           "sla" => false,
           "api_access" => false,
+          "ai_copilot" => true,
+          "ai_agent" => false,
           "csat" => true,
           "email_templates" => true,
           "custom_csat" => false,
@@ -109,8 +115,11 @@ module Seeds
           "data_retention_months" => 24
         },
         features: {
+          "monthly_ai_credits" => 250,
           "sla" => true,
           "api_access" => true,
+          "ai_copilot" => true,
+          "ai_agent" => true,
           "csat" => true,
           "email_templates" => true,
           "custom_csat" => true,
@@ -155,8 +164,11 @@ module Seeds
           "data_retention_months" => 36
         },
         features: {
+          "monthly_ai_credits" => 500,
           "sla" => true,
           "api_access" => true,
+          "ai_copilot" => true,
+          "ai_agent" => true,
           "csat" => true,
           "email_templates" => true,
           "custom_csat" => true,

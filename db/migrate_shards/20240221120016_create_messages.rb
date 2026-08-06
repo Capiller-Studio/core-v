@@ -14,7 +14,7 @@ class CreateMessages < ActiveRecord::Migration[7.1]
 
       t.jsonb  :configurations, default: {}, null: false
       t.jsonb  :data,           default: {}, null: false
-      t.jsonb  :sentiment,      default: {}, null: false
+      t.jsonb  :ai_metadata,    default: {}, null: false
       t.string :locale
 
       t.references :account,        null: false, foreign_key: false,                    type: :uuid, index: true
@@ -29,6 +29,7 @@ class CreateMessages < ActiveRecord::Migration[7.1]
       t.index [:conversation_id, :status]
       t.index [:conversation_id, :content_type]
       t.index [:conversation_id, :created_at]
+      t.index :ai_metadata, using: :gin
     end
   end
 end
