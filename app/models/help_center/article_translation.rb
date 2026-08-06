@@ -35,6 +35,7 @@ module HelpCenter
 
     validates :locale, presence: true
     before_validation :generate_slug, on: :create
+    before_save :mark_ai_sync_required
 
     private
 
@@ -61,6 +62,14 @@ module HelpCenter
           .where(locale: locale, slug: candidate, help_center_articles: { portal_id: article.portal_id })
           .where.not(id: id)
           .exists?
+    end
+
+    def mark_ai_sync_required
+      # Since we are using the Publishable module, title and content only change when the article is published.
+      # Therefore, if they changed, it means a meaningful update was just published.
+      if title_changed? || content_changed?
+        self.ai_training_synced = false
+      end
     end
 
     # slug is locale-specific for proper multi-language SEO.

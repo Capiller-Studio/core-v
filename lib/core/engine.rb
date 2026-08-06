@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "../core"
+
 module Core
   class Engine < ::Rails::Engine
     initializer "core.append_migrations" do |app|

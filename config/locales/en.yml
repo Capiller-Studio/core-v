@@ -1,4 +1,7 @@
 en:
+  ai:
+    widget_bot:
+      default_fallback: "Sorry, I am unable to answer this question. Connecting you to a human agent..."
   notifications:
     events:
       conversation_created: "New conversation created"

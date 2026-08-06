@@ -48,7 +48,8 @@ module Billing
         attrs.merge!(
           status: :active,
           current_period_start: now,
-          current_period_end: nil
+          current_period_end: nil,
+          next_usage_reset_at: 1.month.from_now
         )
       elsif plan.trial_days.positive? && account_eligible_for_trial?
         attrs.merge!(
@@ -64,7 +65,8 @@ module Billing
         attrs.merge!(
           status: :active,
           current_period_start: now,
-          current_period_end: period_end(now)
+          current_period_end: period_end(now),
+          next_usage_reset_at: 1.month.from_now
         )
       end
 
@@ -77,7 +79,24 @@ module Billing
       end
 
       sync_plan_limits
+      grant_initial_ai_credits(subscription)
       subscription
+    end
+
+    def grant_initial_ai_credits(subscription)
+      monthly_credits = subscription.plan.features.fetch("monthly_ai_credits", 0).to_i
+      return if monthly_credits <= 0
+
+      wallet = subscription.account.ai_wallet
+      expires_at = 1.month.from_now
+      
+      wallet.grant_credits!(
+        monthly_credits,
+        grant_type: :monthly_free,
+        expires_at: expires_at,
+        description: "billing.events.monthly_ai_grant",
+        data: { "plan" => subscription.plan.name }
+      )
     end
 
     def charge_for_subscription

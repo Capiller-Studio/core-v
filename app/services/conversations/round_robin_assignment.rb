@@ -67,11 +67,13 @@ module Conversations
       return [] if candidate_ids.blank?
 
       # Filter: AccountUser.availability must be :online
-      AccountUser.where(
-        account:,
-        user_id: candidate_ids,
-        availability: :online
-      ).pluck(:user_id).map(&:to_s)
+      # TODO: Commented out temporarily until UI is built for agent availability toggles
+      # AccountUser.where(
+      #   account:,
+      #   user_id: candidate_ids,
+      #   availability: :online
+      # ).pluck(:user_id).map(&:to_s)
+      candidate_ids
     end
 
     # True round-robin: track last assigned index per scope in Redis.

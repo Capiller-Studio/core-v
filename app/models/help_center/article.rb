@@ -84,7 +84,19 @@ module HelpCenter
 
     # before_validation :set_default_primary_category
 
-    searchkick word_start: ["translations.title", "translations.content"]
+    after_commit :queue_vector_embedding
+
+    searchkick word_start: ["translations.title", "translations.content"],
+               mappings: {
+                 properties: {
+                   translations: {
+                     type: "nested",
+                     properties: {
+                       content_embedding: { type: "dense_vector", dims: 1536 }
+                     }
+                   }
+                 }
+               }
 
     def search_data
       {
@@ -95,13 +107,15 @@ module HelpCenter
         visibility: visibility,
         views_count: views_count,
         translations: translations.map do |t|
-          {
+          data = {
             locale: t.locale,
             title: t.title,
             slug: t.slug,
             content: t.content,
             search_excerpt: t.search_excerpt
           }
+          data[:content_embedding] = t.content_embedding if t.content_embedding.present?
+          data
         end
       }
     end
@@ -118,6 +132,16 @@ module HelpCenter
     # Ignores minor continuous typing auto-saves on published articles to preserve pristine milestone logs
     def should_track_changes?
       super && (saved_change_to_status? || save_revision)
+    end
+
+    def queue_vector_embedding
+      # Only enqueue if it's a standard article (not a link) and published
+      return unless standard? && published?
+      
+      # Only enqueue if AI training is enabled for the portal
+      return unless portal.ai_training_enabled?
+      
+      Ai::VectorEmbedderWorker.perform_async(account_id, id)
     end
 
     # def set_default_primary_category

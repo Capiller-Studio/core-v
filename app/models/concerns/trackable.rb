@@ -11,8 +11,8 @@ module Trackable
     has_many :activities, as: :trackable, dependent: :destroy
 
     # Hook into save and deletion events
-    after_save :track_changes, if: :should_track_changes?
-    after_destroy :track_destruction
+    after_commit :track_changes, on: [:create, :update], if: :should_track_changes?
+    after_commit :track_destruction, on: :destroy
   end
 
   # Returns full state serialization including nested translations/configurations and attachment references
