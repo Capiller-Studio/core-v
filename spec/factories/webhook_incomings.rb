@@ -4,7 +4,7 @@ FactoryBot.define do
   factory :webhook_incoming, class: "Webhook::Incoming" do
     source { "stripe" }
     event_type { nil }
-    request_url { "https://app.deskbolic.com/webhooks/stripe" }
+    request_url { "https://deskbolic.app/webhooks/stripe" }
     headers { { "HTTP_CONTENT_TYPE" => "application/json" } }
     payload { { "id" => "evt_test", "type" => "charge.refunded" } }
     status { :pending }
