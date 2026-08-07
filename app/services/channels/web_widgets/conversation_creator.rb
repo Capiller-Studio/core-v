@@ -42,7 +42,7 @@ module Channels
           inbox: inbox,
           external_id: contact_params[:external_id],
           email: contact_params[:email],
-          params: contact_params.slice(:name, :first_name, :last_name, :avatar_url)
+          params: contact_params.slice(:name, :first_name, :last_name, :avatar_url, :locale)
         )
       end
 
@@ -62,6 +62,7 @@ module Channels
           title: conversation_data[:title].presence || conversation_data["title"],
           priority: conversation_data[:priority].presence || conversation_data["priority"] || "medium",
           data: conversation_data[:data] || conversation_data["data"] || {},
+          locale: contact_params[:locale],
           outbound_channel: web_widget_channel.fallback_channel
         )
       end

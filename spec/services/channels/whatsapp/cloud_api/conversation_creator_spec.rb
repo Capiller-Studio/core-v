@@ -6,7 +6,7 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
   let(:inbox) { double('Inbox') }
   let(:parsed_params) do
     {
-      contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" } }],
+      contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" }, "language" => "portuguese" }],
       messages: [{ type: "text", from: "987", id: "msg_wa_1" }]
     }
   end
@@ -27,7 +27,7 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
   end
 
   describe '#call' do
-    let(:customer) { double('Customer') }
+    let(:customer) { double('Customer', locale: 'en') }
     let(:conversation) { double('Conversation', conversation_members: double(find_or_create_by!: true)) }
 
     before do
@@ -45,7 +45,11 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
 
     it 'creates customer, conversation, and message' do
       expect(Customers::CustomerCreator).to receive(:call).with(
-        hash_including(external_id: "987", full_phone_number: "+987")
+        hash_including(
+          external_id: "987",
+          full_phone_number: "+987",
+          params: hash_including(locale: "pt")
+        )
       )
 
       expect(account.identities).to receive(:create!).with(

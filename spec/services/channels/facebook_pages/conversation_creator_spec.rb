@@ -7,7 +7,7 @@ RSpec.describe Channels::FacebookPages::ConversationCreator do
   let(:account) { double('Account') }
   let(:service) { described_class.new(facebook_page_channel: facebook_page_channel, parsed_message: parsed_message) }
   
-  let(:customer) { double('Customer') }
+  let(:customer) { double('Customer', locale: 'en') }
   let(:conversation) { double('Conversation', conversation_members: double(find_or_create_by!: true)) }
 
   describe '#call' do
@@ -22,7 +22,8 @@ RSpec.describe Channels::FacebookPages::ConversationCreator do
         "first_name" => "John",
         "last_name" => "Doe",
         "email" => "john@fb.com",
-        "profile_pic" => "avatar.url"
+        "profile_pic" => "avatar.url",
+        "locale" => "en_US"
       })
 
       # Mock concerns
@@ -40,7 +41,8 @@ RSpec.describe Channels::FacebookPages::ConversationCreator do
       expect(Customers::CustomerCreator).to receive(:call).with(
         hash_including(
           external_id: 'sender_fb',
-          email: 'john@fb.com'
+          email: 'john@fb.com',
+          params: hash_including(locale: 'en-US')
         )
       ).and_return(customer)
 
@@ -56,7 +58,8 @@ RSpec.describe Channels::FacebookPages::ConversationCreator do
       expect(account.conversations).to receive(:create!).with(
         inbox: inbox,
         source: :facebook_message,
-        data: {}
+        data: {},
+        locale: 'en'
       )
 
       expect(Channels::FacebookPages::MessageCreator).to receive(:call).with(

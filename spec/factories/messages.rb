@@ -9,7 +9,6 @@ FactoryBot.define do
     status { :sent }
     visibility { :global }
     data { {} }
-    sentiment { {} }
     configurations { {} }
 
     trait :outgoing do

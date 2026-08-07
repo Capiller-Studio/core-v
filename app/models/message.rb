@@ -63,6 +63,7 @@ class Message < ShardRecord
   after_create_commit :touch_conversation_activity
   after_create_commit :trigger_thank_you_detector, if: :incoming?
   after_create_commit :trigger_ai_agent, if: :incoming?
+  after_create_commit :trigger_language_detection, if: :incoming?
   after_update_commit :broadcast_message_update, if: :saved_change_to_status?
 
   before_save :sanitize_content, if: -> { content.present? && content_changed? }
@@ -163,5 +164,13 @@ class Message < ShardRecord
       conversation.update!(ai_status: :ai_handed_off)
       conversation.send(:auto_assign_agent) if conversation.send(:should_auto_assign?)
     end
+  end
+
+  def trigger_language_detection
+    return unless sender_type == "Customer"
+    return unless sender.locale.blank? || sender.locale == "en"
+    return unless conversation.messages.count <= 2
+
+    DetectLanguageWorker.perform_async(account_id, id)
   end
 end

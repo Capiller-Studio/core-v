@@ -9,7 +9,7 @@ module Ai
 
     belongs_to :account
     belongs_to :portal, class_name: "HelpCenter::Portal", optional: true
-    has_many :inboxes, dependent: :nullify
+    has_many :inboxes, foreign_key: 'ai_agent_id', dependent: :nullify
 
     enum :status, { active: 0, inactive: 1 }
     enum :agent_type, { help_center_bot: 0, custom: 1 }

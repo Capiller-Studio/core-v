@@ -4,7 +4,7 @@ RSpec.describe UsageResetWorker, type: :worker do
   describe '#perform' do
     let(:plan) { create(:plan, features: { "monthly_ai_credits" => 100 }) }
     let(:account) { create(:account) }
-    let!(:wallet) { Ai::Wallet.create!(account: account, balance: 0) }
+    let!(:wallet) { account.ai_wallet || Ai::Wallet.create!(account: account, balance: 0) }
 
     before do
       allow_any_instance_of(Account).to receive(:reset_monthly_counters!)
@@ -20,7 +20,7 @@ RSpec.describe UsageResetWorker, type: :worker do
     end
 
     context 'with an annual subscription on its monthly anniversary' do
-      let!(:subscription) { create(:subscription, account: account, plan: plan, status: :active, current_period_start: 1.month.ago) }
+      let!(:subscription) { create(:subscription, account: account, plan: plan, status: :active, current_period_start: 1.month.ago, next_usage_reset_at: 1.hour.ago) }
 
       it 'resets counters and grants AI credits' do
         expect_any_instance_of(Account).to receive(:reset_monthly_counters!)
@@ -37,7 +37,7 @@ RSpec.describe UsageResetWorker, type: :worker do
     end
 
     context 'with an annual subscription NOT on its anniversary' do
-      let!(:subscription) { create(:subscription, account: account, plan: plan, status: :active, current_period_start: 15.days.ago) }
+      let!(:subscription) { create(:subscription, account: account, plan: plan, status: :active, current_period_start: 15.days.ago, next_usage_reset_at: 15.days.from_now) }
 
       it 'skips it' do
         expect_any_instance_of(Account).not_to receive(:reset_monthly_counters!)

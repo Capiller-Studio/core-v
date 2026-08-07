@@ -36,7 +36,8 @@ RSpec.describe Customers::CustomerCreator do
           last_name: 'Doe',
           gender: 'female',
           phone_code: '+1',
-          phone_number: '5551234'
+          phone_number: '5551234',
+          locale: 'English'
         }
       end
       let(:service) do
@@ -57,6 +58,7 @@ RSpec.describe Customers::CustomerCreator do
         expect(result.email).to eq('jane@example.com')
         expect(result.full_phone_number).to eq('+15551234')
         expect(result.gender).to eq('female')
+        expect(result.locale).to eq('en')
       end
 
       it 'calls CustomerInboxCreator' do

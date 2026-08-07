@@ -49,7 +49,7 @@ class UsageResetWorker
     wallet = subscription.account.ai_wallet
     
     # 1. Expire any existing monthly free grants (non-rolling)
-    wallet.ai_credit_grants.monthly_free.active.update_all(balance: 0, expires_at: Time.current)
+    wallet.credit_grants.monthly_free.active.update_all(balance: 0, expires_at: Time.current)
 
     # 2. Issue a new grant for the new billing cycle
     wallet.grant_credits!(

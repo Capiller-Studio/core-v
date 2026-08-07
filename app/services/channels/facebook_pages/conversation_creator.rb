@@ -64,7 +64,8 @@ module Channels
         self.conversation = account.conversations.create!(
           inbox:,
           source: :facebook_message,
-          data: {}
+          data: {},
+          locale: customer.locale
         )
       end
 
@@ -84,7 +85,8 @@ module Channels
             first_name: customer_data["first_name"],
             last_name: customer_data["last_name"],
             avatar_url: customer_data["profile_pic"],
-            gender: customer_data["gender"]
+            gender: customer_data["gender"],
+            locale: ::Utilities::LocaleParser.parse(customer_data["locale"])
           }
         )
 
