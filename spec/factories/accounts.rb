@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :account do
     name { FFaker::Company.name }
-    sequence(:identifier) { |n| "acc_#{n}_#{SecureRandom.hex(4)}" }
+    sequence(:identifier) { |n| "acc-#{n}-#{SecureRandom.hex(4)}" }
     sequence(:referral_code) { |n| "REF#{n}#{SecureRandom.hex(2)}" }
     billing_data { {} }
     configurations { {} }

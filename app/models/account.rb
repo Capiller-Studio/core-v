@@ -43,7 +43,7 @@
 #
 
 class Account < ApplicationRecord
-  include CodeGenerator.new(prefix: "ACC", column: :identifier)
+  include SlugGenerator.new(source: :name, column: :identifier)
   include CodeGenerator.new(prefix: "REF", column: :referral_code)
   include Addressable
   include Billable
@@ -61,6 +61,14 @@ class Account < ApplicationRecord
   enum :status, { active: 0, suspended: 1 }
   enum :referral_commission_type, { fixed: 0 }
 
+  RESERVED_IDENTIFIERS = %w[
+    www admin mail auth api webhooks support billing console partners app beta staging test secure 
+    cdn my dashboard login register proxy help api-docs smtp imap pop dns ns host server static
+    assets blog docs status payment dev prod account accounts user users
+  ].freeze
+
+  validates :identifier, exclusion: { in: RESERVED_IDENTIFIERS, message: "is a reserved word and cannot be used" }
+  validates :identifier, format: { with: /\A[a-z0-9\-]+\z/, message: "can only contain lowercase letters, numbers, and hyphens" }, length: { minimum: 3, maximum: 63 }
   validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
 
   # Primary DB Associations

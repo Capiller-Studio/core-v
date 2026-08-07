@@ -38,6 +38,15 @@ RSpec.describe Account, type: :model do
   describe 'Validations' do
     it { is_expected.to validate_presence_of(:timezone) }
     it { is_expected.to validate_inclusion_of(:timezone).in_array(ActiveSupport::TimeZone.all.map(&:name)) }
+    it { is_expected.to validate_exclusion_of(:identifier).in_array(Account::RESERVED_IDENTIFIERS).with_message("is a reserved word and cannot be used") }
+    
+    it 'validates format of identifier' do
+      expect(build(:account, identifier: 'valid-slug-123')).to be_valid
+      
+      invalid_account = build(:account, identifier: 'invalid_slug!')
+      expect(invalid_account).not_to be_valid
+      expect(invalid_account.errors[:identifier]).to include("can only contain lowercase letters, numbers, and hyphens")
+    end
   end
 
   describe 'Callbacks' do
@@ -62,10 +71,10 @@ RSpec.describe Account, type: :model do
   end
 
   describe 'Code Generation' do
-    it 'generates identifier before validation' do
-      account = build(:account, identifier: nil)
+    it 'generates identifier before validation using slug generator' do
+      account = build(:account, identifier: nil, name: 'Acme Corp')
       account.validate
-      expect(account.identifier).to start_with('ACC')
+      expect(account.identifier).to eq('acme-corp')
     end
 
     it 'generates referral_code before validation' do

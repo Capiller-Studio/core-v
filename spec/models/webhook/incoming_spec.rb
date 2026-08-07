@@ -14,7 +14,7 @@ RSpec.describe Webhook::Incoming, type: :model do
     subject(:webhook) { build(:webhook_incoming, request_url: request_url) }
 
     context "when the router recognises the URL path" do
-      let(:request_url) { "https://app.deskbolic.com/webhooks/custom/123/456" }
+      let(:request_url) { "https://deskbolic.app/webhooks/custom/123/456" }
 
       before do
         allow(Rails.application.routes).to receive(:recognize_path)
@@ -36,7 +36,7 @@ RSpec.describe Webhook::Incoming, type: :model do
     end
 
     context "when the path does not match any route" do
-      let(:request_url) { "https://app.deskbolic.com/unknown/path" }
+      let(:request_url) { "https://deskbolic.app/unknown/path" }
 
       before do
         allow(Rails.application.routes).to receive(:recognize_path)
@@ -51,7 +51,7 @@ RSpec.describe Webhook::Incoming, type: :model do
     subject(:webhook) { build(:webhook_incoming, request_url: request_url) }
 
     context "when request_url has a query string" do
-      let(:request_url) { "https://app.deskbolic.com/webhooks/whatsapp?channel_id=99&account_id=1" }
+      let(:request_url) { "https://deskbolic.app/webhooks/whatsapp?channel_id=99&account_id=1" }
 
       it "extracts query parameters" do
         params = webhook.query_params
@@ -61,7 +61,7 @@ RSpec.describe Webhook::Incoming, type: :model do
     end
 
     context "when request_url has no query string" do
-      let(:request_url) { "https://app.deskbolic.com/webhooks/stripe" }
+      let(:request_url) { "https://deskbolic.app/webhooks/stripe" }
 
       it { expect(webhook.query_params).to eq({}) }
     end
