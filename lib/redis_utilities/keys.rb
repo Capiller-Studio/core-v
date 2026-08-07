@@ -22,6 +22,7 @@ module RedisUtilities
     POLICY_ROUND_ROBIN = "POLICY:%{account_id}:%{policy_id}:ROUND_ROBIN"
 
     AI_CLASSIFIER_LOCK = "AI_CLASSIFIER_LOCK:%{account_id}:%{conversation_id}"
+    LANGUAGE_DETECTION_LOCK = "LANGUAGE_DETECTION_LOCK:%{account_id}:%{conversation_id}"
 
     SUBSCRIPTION_LOCK = "SUBSCRIPTION_LOCK:%{account_id}"
     WALLET_LOCK = "WALLET_LOCK:%{account_id}"

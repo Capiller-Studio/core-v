@@ -49,6 +49,8 @@ RSpec.describe Conversation, type: :model do
       email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3,
       api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8
     ).with_suffix(:source) }
+
+    it { expect(conversation).to define_enum_for(:ai_status).with_values(ai_inactive: 0, ai_active: 1, ai_handed_off: 2) }
   end
 
   describe 'Callbacks' do
@@ -88,6 +90,48 @@ RSpec.describe Conversation, type: :model do
       allow(conversation).to receive(:broadcast_conversation_update)
       conversation.update!(title: 'New Title')
       expect(conversation).to have_received(:broadcast_conversation_update)
+    end
+
+    it 'calls trigger_ai_classification on create' do
+      allow(conversation).to receive(:trigger_ai_classification)
+      conversation.save!
+      expect(conversation).to have_received(:trigger_ai_classification)
+    end
+  end
+
+  describe '#initialize_ai_status' do
+    let(:account) { create(:account) }
+    let(:inbox) { create(:inbox, account: account) }
+    
+    it 'sets ai_status to ai_active if inbox has an active AI agent' do
+      allow(inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(true)
+      conv = build(:conversation, account: account, inbox: inbox)
+      conv.save!
+      expect(conv.ai_status).to eq('ai_active')
+    end
+
+    it 'leaves ai_status as ai_inactive if no active agent' do
+      allow(inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(false)
+      conv = build(:conversation, account: account, inbox: inbox)
+      conv.save!
+      expect(conv.ai_status).to eq('ai_inactive')
+    end
+  end
+
+  describe '#trigger_ai_classification' do
+    let(:account) { create(:account) }
+    let(:inbox) { create(:inbox, account: account) }
+
+    it 'enqueues ConversationClassifierWorker if inbox has ai_classification enabled' do
+      allow(inbox).to receive(:ai_classification?).and_return(true)
+      expect(Ai::ConversationClassifierWorker).to receive(:perform_async)
+      create(:conversation, account: account, inbox: inbox)
+    end
+
+    it 'does not enqueue if ai_classification is disabled' do
+      allow(inbox).to receive(:ai_classification?).and_return(false)
+      expect(Ai::ConversationClassifierWorker).not_to receive(:perform_async)
+      create(:conversation, account: account, inbox: inbox)
     end
   end
 

@@ -97,5 +97,98 @@ RSpec.describe Message, type: :model do
       message.update!(status: :delivered)
       expect(message).to have_received(:broadcast_message_update)
     end
+    it 'calls trigger_language_detection on create' do
+      message = build(:message, account: account, conversation: conversation)
+      allow(message).to receive(:trigger_language_detection)
+      message.save!
+      expect(message).to have_received(:trigger_language_detection)
+    end
+
+    it 'calls trigger_thank_you_detector on create' do
+      message = build(:message, account: account, conversation: conversation)
+      allow(message).to receive(:trigger_thank_you_detector)
+      message.save!
+      expect(message).to have_received(:trigger_thank_you_detector)
+    end
+
+    it 'calls trigger_ai_agent on create' do
+      message = build(:message, account: account, conversation: conversation)
+      allow(message).to receive(:trigger_ai_agent)
+      message.save!
+      expect(message).to have_received(:trigger_ai_agent)
+    end
+  end
+
+  describe '#trigger_language_detection' do
+    let(:account) { create(:account) }
+    let(:customer) { create(:customer, account: account, locale: 'en') }
+    let(:conversation) { create(:conversation, account: account) }
+    
+    it 'enqueues DetectLanguageWorker if it is the first or second message from a customer with no locale' do
+      expect(DetectLanguageWorker).to receive(:perform_async).twice
+      create(:message, account: account, conversation: conversation, sender: customer)
+      create(:message, account: account, conversation: conversation, sender: customer)
+    end
+
+    it 'does not enqueue if there are already 2 messages' do
+      create(:message, account: account, conversation: conversation, sender: customer)
+      create(:message, account: account, conversation: conversation, sender: customer)
+      
+      expect(DetectLanguageWorker).not_to receive(:perform_async)
+      create(:message, account: account, conversation: conversation, sender: customer)
+    end
+    
+    it 'does not enqueue if sender is not customer' do
+      user = create(:user)
+      expect(DetectLanguageWorker).not_to receive(:perform_async)
+      create(:message, account: account, conversation: conversation, sender: user)
+    end
+  end
+  describe '#trigger_thank_you_detector' do
+    let(:account) { create(:account) }
+    let(:inbox) { create(:inbox, account: account) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+    let(:customer) { create(:customer, account: account) }
+
+    it 'enqueues ThankYouDetectorWorker if inbox has ai_thank_you_detection enabled and account has AI features' do
+      allow_any_instance_of(Inbox).to receive(:ai_thank_you_detection?).and_return(true)
+      allow_any_instance_of(Account).to receive(:feature_enabled?).and_call_original
+      allow_any_instance_of(Account).to receive(:feature_enabled?).with(:ai_copilot).and_return(true)
+      expect(Ai::ThankYouDetectorWorker).to receive(:perform_async)
+      create(:message, account: account, conversation: conversation, sender: customer)
+    end
+
+    it 'does not enqueue if ai_thank_you_detection is disabled' do
+      allow_any_instance_of(Inbox).to receive(:ai_thank_you_detection?).and_return(false)
+      expect(Ai::ThankYouDetectorWorker).not_to receive(:perform_async)
+      create(:message, account: account, conversation: conversation, sender: customer)
+    end
+  end
+
+  describe '#trigger_ai_agent' do
+    let(:account) { create(:account) }
+    let(:inbox) { create(:inbox, account: account) }
+    # use build/save for conversation to avoid trigger_ai_classification mocking complexity
+    let(:conversation) do
+      conv = build(:conversation, account: account, inbox: inbox)
+      conv.ai_status = :ai_active
+      conv.save!
+      conv
+    end
+    let(:customer) { create(:customer, account: account) }
+
+    it 'enqueues AgentWorker if conversation is ai_active and inbox has an active agent' do
+      allow_any_instance_of(Inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(true)
+      allow_any_instance_of(Inbox).to receive(:ai_agent_id).and_return("agent-uuid")
+      expect(Ai::AgentWorker).to receive(:perform_async)
+      create(:message, account: account, conversation: conversation, sender: customer)
+    end
+
+    it 'forces handoff if agent is inactive but conversation was ai_active' do
+      allow_any_instance_of(Inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(false)
+      
+      create(:message, account: account, conversation: conversation, sender: customer)
+      expect(conversation.reload.ai_status).to eq('ai_handed_off')
+    end
   end
 end

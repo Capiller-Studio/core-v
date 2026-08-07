@@ -113,7 +113,8 @@ module Channels
             external_id: customer_data["wa_id"],
             full_phone_number: "+#{parsed_params[:messages].first[:from]}",
             params: {
-              name: customer_data.dig(:profile, :name)
+              name: customer_data.dig(:profile, :name),
+              locale: ::Utilities::LocaleParser.parse(customer_data["locale"] || customer_data["language"] || customer_data.dig(:profile, :locale))
             }
           )
 
@@ -148,7 +149,8 @@ module Channels
           self.conversation = account.conversations.create!(
             inbox: inbox,
             source: :whatsapp,
-            data: {}
+            data: {},
+            locale: customer.locale
           )
         end
 

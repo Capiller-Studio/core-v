@@ -64,7 +64,7 @@ RSpec.describe Channels::Instagram::EventListener do
       end
 
       it 'enqueues status update worker' do
-        parsed = double('ParsedMessage', sender_id: 'sender1', read_watermark: 12345, message: { mids: ['mid1'] })
+        parsed = double('ParsedMessage', sender_id: 'sender1', read_watermark: 12345, message: { mids: ['mid1'] }, read: { "watermark" => 12345 })
         allow(Parser::InstagramMessageParser).to receive(:new).and_return(parsed)
 
         expect(Messages::StatusUpdateWorker).to receive(:perform_async).with(

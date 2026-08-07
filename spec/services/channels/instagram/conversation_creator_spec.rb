@@ -7,11 +7,11 @@ RSpec.describe Channels::Instagram::ConversationCreator do
   let(:account) { double('Account') }
   let(:service) { described_class.new(channel: channel, parsed_message: parsed_message) }
   
-  let(:customer) { double('Customer') }
+  let(:customer) { double('Customer', locale: 'en') }
   let(:conversation) { double('Conversation', conversation_members: double(find_or_create_by!: true)) }
 
   describe '#call' do
-    let(:mock_response) { instance_double(HTTParty::Response, success?: true, body: { "id" => "sender_ig", "first_name" => "John", "last_name" => "Doe", "username" => "john_ig", "profile_picture_url" => "avatar.url" }.to_json) }
+    let(:mock_response) { instance_double(HTTParty::Response, success?: true, body: { "id" => "sender_ig", "first_name" => "John", "last_name" => "Doe", "username" => "john_ig", "profile_picture_url" => "avatar.url", "locale" => "spanish" }.to_json) }
 
     before do
       stub_const('Customers::CustomerCreator', double('CustomerCreator'))
@@ -35,7 +35,8 @@ RSpec.describe Channels::Instagram::ConversationCreator do
       expect(Customers::CustomerCreator).to receive(:call).with(
         hash_including(
           external_id: 'sender_ig',
-          email: nil
+          email: nil,
+          params: hash_including(locale: 'es')
         )
       ).and_return(customer)
 
@@ -51,7 +52,8 @@ RSpec.describe Channels::Instagram::ConversationCreator do
       expect(account.conversations).to receive(:create!).with(
         inbox: inbox,
         source: :instagram_direct_message,
-        data: {}
+        data: {},
+        locale: 'en'
       )
 
       expect(Channels::Instagram::MessageCreator).to receive(:call).with(
