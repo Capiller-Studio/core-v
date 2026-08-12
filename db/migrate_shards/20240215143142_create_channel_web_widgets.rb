@@ -2,7 +2,7 @@ class CreateChannelWebWidgets < ActiveRecord::Migration[7.1]
   def change
     create_table :channel_web_widgets, id: :uuid do |t|
       t.string  :name
-      t.string  :website_url
+      t.string  :allowed_hosts, array: true, default: []
       t.jsonb   :configurations, default: {}, null: false
       t.jsonb   :ui_configurations, default: {}, null: false
       t.jsonb   :data, default: {}, null: false
@@ -19,7 +19,7 @@ class CreateChannelWebWidgets < ActiveRecord::Migration[7.1]
 
       t.index :status
       t.index [:account_id, :name]
-      t.index :website_url
+      t.index :secret, unique: true
       t.index [:account_id, :created_at]
     end
 

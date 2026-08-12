@@ -38,14 +38,16 @@ module Access
         r.name = "Administrator"
         r.system_provided = true
         r.permissions = {
+          "account" => { "manage" => true },
           "conversations" => { "read" => true, "write" => true, "delete" => true },
           "inboxes" => { "read" => true, "write" => true, "delete" => true },
           "teams" => { "read" => true, "write" => true },
           "automations" => { "read" => true, "manage" => true },
           "macros" => { "read" => true, "manage" => true, "execute" => true },
-          "reports" => { "view" => true },
+          "reports" => { "view" => true, "export" => true },
           "settings" => { "manage" => true },
           "billing" => { "manage" => true },
+          "agents" => { "read" => true, "manage" => true, "invite" => true, "remove" => true },
           "email_templates" => { "read" => true, "manage" => true },
           "assignment_policies" => { "read" => true, "manage" => true },
           "skills" => { "read" => true, "manage" => true },
@@ -54,7 +56,14 @@ module Access
           "customers" => { "read" => true, "write" => true, "delete" => true },
           "labels" => { "read" => true, "manage" => true },
           "custom_fields" => { "read" => true, "manage" => true },
-          "integrations" => { "read" => true, "manage" => true }
+          "business_hours" => { "read" => true, "manage" => true },
+          "sla_policies" => { "read" => true, "manage" => true },
+          "csat_surveys" => { "read" => true, "manage" => true },
+          "integrations" => { "read" => true, "manage" => true },
+          "audit_logs" => { "read" => true },
+          "help_center_portals" => { "manage" => true },
+          "help_center_articles" => { "read" => true, "manage" => true },
+          "help_center_categories" => { "read" => true, "manage" => true }
         }
       end
     end
@@ -70,7 +79,9 @@ module Access
           "macros" => { "read" => true, "manage" => true, "execute" => true },
           "reports" => { "view" => true },
           "customers" => { "read" => true, "write" => true },
-          "labels" => { "read" => true, "manage" => true }
+          "labels" => { "read" => true, "manage" => true },
+          "help_center_articles" => { "read" => true },
+          "help_center_categories" => { "read" => true }
         }
       end
     end

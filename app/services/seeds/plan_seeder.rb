@@ -25,7 +25,6 @@ module Seeds
           "csat" => false,
           "email_templates" => false,
           "custom_csat" => false,
-          "custom_email_templates" => false,
           "custom_fields" => false,
           "automations" => false,
           "macros" => false,
@@ -38,6 +37,7 @@ module Seeds
           "identity_sources" => false,
           "custom_domains" => false,
           "business_hours" => false,
+          "help_center_portals" => false,
           "channels" => {
             "web_widget" => true,
             "email" => false,
@@ -74,7 +74,6 @@ module Seeds
           "csat" => true,
           "email_templates" => true,
           "custom_csat" => false,
-          "custom_email_templates" => false,
           "custom_fields" => false,
           "automations" => false,
           "macros" => false,
@@ -87,6 +86,7 @@ module Seeds
           "identity_sources" => false,
           "custom_domains" => false,
           "business_hours" => false,
+          "help_center_portals" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -123,7 +123,6 @@ module Seeds
           "csat" => true,
           "email_templates" => true,
           "custom_csat" => true,
-          "custom_email_templates" => true,
           "custom_fields" => true,
           "automations" => true,
           "macros" => true,
@@ -136,6 +135,7 @@ module Seeds
           "identity_sources" => true,
           "custom_domains" => true,
           "business_hours" => true,
+          "help_center_portals" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -172,7 +172,6 @@ module Seeds
           "csat" => true,
           "email_templates" => true,
           "custom_csat" => true,
-          "custom_email_templates" => true,
           "custom_fields" => true,
           "automations" => true,
           "macros" => true,
@@ -186,6 +185,7 @@ module Seeds
           "identity_sources" => true,
           "custom_domains" => true,
           "business_hours" => true,
+          "help_center_portals" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,

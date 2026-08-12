@@ -187,7 +187,7 @@ module Seeds
         channel_type: "web_widget",
         channel_params: {
           name: "Demo Widget",
-          website_url: "http://localhost:3000",
+          allowed_hosts: ["http://localhost:3000"],
           ui_configurations: {
             "theme_color" => "#4f46e5",
             "welcome_title" => "Welcome to Deskbolic!",

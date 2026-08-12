@@ -3,6 +3,7 @@ class CreateChannelContactForms < ActiveRecord::Migration[8.1]
     create_table :channel_contact_forms, id: :uuid do |t|
       t.string  :name                  # Internal name e.g. "Website Support Form"
       t.string  :submit_redirect_url   # Custom redirect URL after form submission
+      t.string  :allowed_hosts, array: true, default: []
       t.string  :secret, null: false   # Unique embed key for JS snippet (like Channel::WebWidget)
       t.integer :status, null: false, default: 0
       t.integer :flags,  null: false, default: 0
