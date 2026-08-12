@@ -79,7 +79,7 @@ module Seeds
     def create_web_widget(account)
       widget = Channel::WebWidget.find_or_initialize_by(account: account, name: "Demo Widget")
       widget.assign_attributes(
-        website_url: "http://localhost:3000",
+        allowed_hosts: ["http://localhost:3000"],
         ui_configurations: {
           "theme_color" => "#778DFF",
           "welcome_title" => "Welcome to Deskbolic!",

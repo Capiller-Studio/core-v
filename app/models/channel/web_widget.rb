@@ -86,7 +86,7 @@ module Channel
 
     before_validation :ensure_secret, on: :create
     validates :secret, presence: true, uniqueness: true
-    validates :website_url, presence: true, format: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true
+    validate :validate_allowed_hosts
 
     def supported_formatting
       [:bold, :italic, :strikethrough, :code, :ul, :ol, :link, :image, :file]
@@ -96,7 +96,34 @@ module Channel
       secret
     end
 
+    def allowed_hosts=(value)
+      if value.is_a?(String)
+        super(value.split(",").map(&:strip).compact_blank)
+      elsif value.is_a?(Array)
+        if value.length == 1 && value.first.is_a?(String) && value.first.include?(",")
+          super(value.first.split(",").map(&:strip).compact_blank)
+        else
+          super(value.reject(&:blank?).map(&:strip).compact_blank)
+        end
+      else
+        super
+      end
+    end
+
     private
+
+    def validate_allowed_hosts
+      unless allowed_hosts.is_a?(Array)
+        errors.add(:allowed_hosts, "must be an array")
+        return
+      end
+
+      allowed_hosts.each do |host|
+        unless host.match?(URI::DEFAULT_PARSER.make_regexp(%w[http https]))
+          errors.add(:allowed_hosts, "contains invalid URL: #{host}")
+        end
+      end
+    end
 
     def ensure_secret
       self.secret ||= SecureRandom.hex(24)

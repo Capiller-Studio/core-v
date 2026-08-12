@@ -28,8 +28,9 @@ RSpec.describe Channel::WebWidget, type: :model do
     it { is_expected.to validate_presence_of(:secret) }
     it { is_expected.to validate_uniqueness_of(:secret) }
     
-    it { is_expected.to allow_value('', nil).for(:website_url) }
-    it { is_expected.not_to allow_value('invalid-url').for(:website_url) }
+    it { is_expected.to allow_value([]).for(:allowed_hosts) }
+    it { is_expected.not_to allow_value(['invalid-url']).for(:allowed_hosts) }
+    it { is_expected.to allow_value(['https://example.com']).for(:allowed_hosts) }
   end
 
   describe 'Callbacks' do

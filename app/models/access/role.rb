@@ -20,6 +20,7 @@ module Access
     # }
 
     PERMISSION_SCHEMA = {
+      "account" => ["manage"],
       "conversations" => ["read", "write", "delete", "manage"],
       "inboxes" => ["read", "write", "delete", "manage"],
       "teams" => ["read", "write", "delete", "manage"],
@@ -41,7 +42,11 @@ module Access
       "business_hours" => ["read", "manage"],
       "sla_policies" => ["read", "manage"],
       "csat_surveys" => ["read", "manage"],
-      "integrations" => ["read", "manage"]
+      "integrations" => ["read", "manage"],
+      "audit_logs" => ["read"],
+      "help_center_portals" => ["manage"],
+      "help_center_articles" => ["read", "manage"],
+      "help_center_categories" => ["read", "manage"]
     }.freeze
   end
 end

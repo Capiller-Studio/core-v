@@ -113,7 +113,7 @@ module Customers
         email: email&.downcase,
         external_id:,
         gender: params[:gender],
-        locale: ::Utilities::LocaleParser.parse(params[:locale]),
+        locale: ::Utilities::LocaleParser.parse(params[:locale]) || 'en',
         address: Address.create!
       )
     end
