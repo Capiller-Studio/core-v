@@ -43,6 +43,9 @@
 class Message < ShardRecord
   include UnreadTrackable
 
+  searchkick word_start: [:content],
+             callbacks: :async
+
   belongs_to :conversation
   belongs_to :inbox
   belongs_to :account
@@ -74,6 +77,22 @@ class Message < ShardRecord
 
   def outgoing?
     sender_type == "User"
+  end
+
+  def search_data
+    {
+      content: ActionController::Base.helpers.strip_tags(content.to_s),
+      content_type: content_type,
+      visibility: visibility,
+      source: source,
+      conversation_id: conversation_id,
+      conversation_identifier: conversation&.identifier,
+      inbox_id: inbox_id,
+      sender_type: sender_type,
+      sender_name: sender.try(:name) || sender.try(:display_name),
+      created_at: created_at,
+      account_id: account_id
+    }
   end
 
   def event_payload
