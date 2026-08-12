@@ -48,6 +48,9 @@ class Conversation < ShardRecord
   include Trackable
   include CodeGenerator.new(prefix: "CNV", column: :identifier)
 
+  searchkick word_start: [:identifier, :title, :customer_name, :customer_email],
+             callbacks: :async
+
   belongs_to :account
   belongs_to :inbox
   belongs_to :team, optional: true
@@ -100,6 +103,28 @@ class Conversation < ShardRecord
 
   scope :for_team, ->(team) { where(team: team) }
   scope :unassigned_team, -> { where(team_id: nil) }
+
+  def search_data
+    {
+      identifier: identifier,
+      title: title,
+      status: status,
+      priority: priority,
+      source: source,
+      inbox_id: inbox_id,
+      inbox_name: inbox&.name,
+      team_id: team_id,
+      assignee_id: assignee_id,
+      customer_name: customers.map(&:name).compact.join(" "),
+      customer_email: customers.map(&:email).compact.join(" "),
+      customer_phone: customers.map(&:full_phone_number).compact.join(" "),
+      label_titles: labels.map(&:title),
+      last_message_preview: last_message_preview,
+      created_at: created_at,
+      last_activity_at: last_activity_at,
+      account_id: account_id
+    }
+  end
 
   def event_payload
     {
