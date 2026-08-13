@@ -17,7 +17,7 @@ RSpec.describe Accounts::RegistrationService do
       let(:params) { base_params.merge(account_name: 'Test Account', currency: 'USD', locale: 'en') }
       let(:service) { described_class.new(**params) }
 
-      it 'creates a user, account, and account user' do
+      it 'creates a user, account, account user, address, and assigns roles' do
         result = nil
         expect {
           result = service.call
@@ -25,15 +25,21 @@ RSpec.describe Accounts::RegistrationService do
          .and change(Account, :count).by(1)
          .and change(AccountUser, :count).by(1)
          .and change(Access::AccountUserRole, :count).by(1)
+         .and change(Address, :count).by(1)
 
         expect(result.success?).to be true
         expect(result.user.email).to eq('test@example.com')
+        expect(result.user.address.country).to eq(country)
         expect(result.account.name).to eq('Test Account')
         
         account_user = AccountUser.last
         expect(account_user.user).to eq(result.user)
         expect(account_user.account).to eq(result.account)
         expect(account_user.owner).to be true
+
+        role_assignment = Access::AccountUserRole.find_by(account_user_id: account_user.id)
+        expect(role_assignment).to be_present
+        expect(role_assignment.role.identifier).to eq('owner')
       end
     end
 
@@ -51,18 +57,57 @@ RSpec.describe Accounts::RegistrationService do
         expect(result.success?).to be true
         expect(result.user.affiliate_profile.currency).to eq('EUR')
       end
+      
+      it 'defaults currency if none provided' do
+        service = described_class.new(**base_params.merge(as_affiliate: true))
+        result = service.call
+        expect(result.user.affiliate_profile.currency).to eq('USD') # Default currency
+      end
     end
 
-    context 'when validation fails' do
+    context 'when user validation fails' do
       let(:params) { base_params.merge(email: nil) }
       let(:service) { described_class.new(**params) }
 
-      it 'returns a failure result with errors' do
+      it 'returns a failure result with errors and rolls back' do
+        expect {
+          result = service.call
+          expect(result.success?).to be false
+          expect(result.user).to be_nil
+          expect(result.errors).to include({ field: "email", message: "Email can't be blank" })
+        }.to change(User, :count).by(0).and change(Address, :count).by(0)
+      end
+    end
+
+    context 'when account validation fails' do
+      let(:params) { base_params.merge(account_name: 'Test') }
+      let(:service) { described_class.new(**params) }
+
+      before do
+        allow(Account).to receive(:create!).and_raise(ActiveRecord::RecordInvalid.new(Account.new.tap { |a| a.errors.add(:name, "can't be blank") }))
+      end
+
+      it 'rolls back the user creation and returns failure' do
+        expect {
+          result = service.call
+          expect(result.success?).to be false
+          expect(result.account).to be_nil
+          expect(result.errors).to include({ field: "name", message: "Name can't be blank" })
+        }.to change(Account, :count).by(0)
+         .and change(User, :count).by(0)
+         .and change(Address, :count).by(0)
+      end
+    end
+
+    context 'when accepting an invitation' do
+      let(:params) { base_params.merge(invitation_token: '12345') }
+      let(:service) { described_class.new(**params) }
+
+      it 'executes the pending invitation logic (currently returns nil account)' do
         result = service.call
-        
-        expect(result.success?).to be false
-        expect(result.user).to be_nil
-        expect(result.errors).to include({ field: "email", message: "Email can't be blank" })
+        expect(result.success?).to be true
+        expect(result.account).to be_nil
+        expect(result.user.email).to eq('test@example.com')
       end
     end
   end

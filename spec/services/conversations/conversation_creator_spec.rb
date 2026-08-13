@@ -2,8 +2,9 @@ require 'rails_helper'
 
 RSpec.describe Conversations::ConversationCreator do
   let(:account) { create(:account) }
-  let(:channel) { create(:channel_facebook_page, account: account) }
-  let(:inbox) { create(:inbox, account: account, channel: channel, primary_inbox: true) }
+  # Using Channel::Custom to avoid Facebook API callback stubs
+  let(:channel) { create(:channel_custom, account: account) }
+  let!(:inbox) { create(:inbox, account: account, channel: channel, primary_inbox: true) }
   let(:customer) { create(:customer, account: account) }
   let(:sender) { create(:customer, account: account) }
   
@@ -12,8 +13,6 @@ RSpec.describe Conversations::ConversationCreator do
   end
 
   before do
-    allow_any_instance_of(Channel::FacebookPage).to receive(:subscribe_to_webhooks).and_return(true)
-    allow(channel).to receive(:primary_inbox).and_return(inbox)
     allow(Channels::ServicePicker).to receive(:call)
   end
 
@@ -24,7 +23,7 @@ RSpec.describe Conversations::ConversationCreator do
         message: 'Hello world',
         sender: sender,
         customer: customer,
-        conversation_source: 'facebook_message'
+        conversation_source: 'api'
       )
     end
 
@@ -38,7 +37,7 @@ RSpec.describe Conversations::ConversationCreator do
         conversation = service.conversation
         expect(conversation.account).to eq(account)
         expect(conversation.inbox).to eq(inbox)
-        expect(conversation.source).to eq('facebook_message')
+        expect(conversation.source).to eq('api')
 
         message = service.message
         expect(message.conversation).to eq(conversation)
@@ -62,8 +61,8 @@ RSpec.describe Conversations::ConversationCreator do
       let!(:existing_conversation) { create(:conversation, account: account, inbox: inbox) }
 
       before do
-        existing_conversation.conversation_members.create!(member: customer, account: account)
-        allow(customer).to receive_message_chain(:conversations, :where, :find_by).and_return(existing_conversation)
+        # Create a member relationship directly in the DB instead of mocking methods
+        create(:conversation_member, conversation: existing_conversation, member: customer, account: account)
       end
 
       it 'appends message to existing conversation' do
@@ -72,6 +71,30 @@ RSpec.describe Conversations::ConversationCreator do
 
         message = service.message
         expect(message.conversation).to eq(existing_conversation)
+        expect(message.content).to eq('Hello world')
+      end
+    end
+
+    context 'when message creation fails' do
+      let(:invalid_service) do
+        described_class.new(
+          channel: channel,
+          message: 'Hello world',
+          sender: nil, # Will cause validation failure on Message (sender must exist)
+          customer: customer,
+          conversation_source: 'api'
+        )
+      end
+
+      it 'rolls back conversation creation within the transaction' do
+        expect {
+          begin
+            invalid_service.call
+          rescue ActiveRecord::RecordInvalid
+          end
+        }.to change(Conversation, :count).by(0)
+         .and change(Message, :count).by(0)
+         .and change(ConversationMember, :count).by(0)
       end
     end
   end

@@ -21,8 +21,10 @@ module Conversations
     end
 
     def call
-      find_or_create_conversation
-      create_message
+      Conversation.transaction do
+        find_or_create_conversation
+        create_message
+      end
     end
 
     def find_or_create_conversation
