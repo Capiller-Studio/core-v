@@ -60,6 +60,22 @@ RSpec.describe Inbox, type: :model do
         # skip if primary_inbox is not defined
       end
     end
+
+    it 'cleans up unread counts in Redis after destroy' do
+      account = create(:account)
+      user = create(:user)
+      create(:account_user, account: account, user: user)
+      inbox = create(:inbox, account: account)
+      
+      allow(RedisUtilities::Helpers).to receive(:hash_delete)
+      allow(UnreadCounts::Broadcast).to receive(:call)
+      
+      inbox.destroy
+      
+      key = RedisUtilities::Keys::UNREAD_INBOX_COUNT % { account_id: account.id, member_id: user.id }
+      expect(RedisUtilities::Helpers).to have_received(:hash_delete).with(key, inbox.id)
+      expect(UnreadCounts::Broadcast).to have_received(:call).with(member: user, account_id: account.id)
+    end
   end
 
   describe 'Scopes' do

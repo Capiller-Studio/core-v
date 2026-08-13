@@ -46,6 +46,69 @@ RSpec.describe HelpCenter::Article, type: :model do
         expect(article.stats['estimated_read_time']).to eq(10)
       end
     end
+
+    describe '#queue_vector_embedding' do
+      let(:portal) { HelpCenter::Portal.new(id: SecureRandom.uuid) }
+      let(:article) { described_class.new(id: SecureRandom.uuid, account_id: SecureRandom.uuid, portal: portal, status: :published, article_type: :standard) }
+
+      before do
+        allow(Ai::VectorEmbedderWorker).to receive(:perform_async)
+      end
+
+      it 'queues embedding if portal has ai_training_enabled' do
+        allow(portal).to receive(:ai_training_enabled?).and_return(true)
+        article.send(:queue_vector_embedding)
+        expect(Ai::VectorEmbedderWorker).to have_received(:perform_async).with(article.account_id, article.id)
+      end
+
+      it 'does not queue if ai_training is disabled' do
+        allow(portal).to receive(:ai_training_enabled?).and_return(false)
+        article.send(:queue_vector_embedding)
+        expect(Ai::VectorEmbedderWorker).not_to have_received(:perform_async)
+      end
+
+      it 'does not queue if article is not published' do
+        article.status = :draft
+        allow(portal).to receive(:ai_training_enabled?).and_return(true)
+        article.send(:queue_vector_embedding)
+        expect(Ai::VectorEmbedderWorker).not_to have_received(:perform_async)
+      end
+
+      it 'does not queue if article is not standard' do
+        article.article_type = :external_link
+        allow(portal).to receive(:ai_training_enabled?).and_return(true)
+        article.send(:queue_vector_embedding)
+        expect(Ai::VectorEmbedderWorker).not_to have_received(:perform_async)
+      end
+    end
+
+    describe '#update_category_stats' do
+      let(:category) { HelpCenter::Category.new }
+      let(:article) { described_class.new }
+
+      it 'calls update_stats! on all associated categories' do
+        allow(article).to receive(:categories).and_return([category])
+        allow(category).to receive(:update_stats!)
+        
+        article.send(:update_category_stats)
+        expect(category).to have_received(:update_stats!)
+      end
+    end
+  end
+
+  describe '#search_data' do
+    let(:article) { described_class.new(id: SecureRandom.uuid, account_id: SecureRandom.uuid, portal_id: SecureRandom.uuid, status: :published, visibility: :everyone, views_count: 5) }
+    let(:translation) { HelpCenter::ArticleTranslation.new(locale: 'en', title: 'Test', slug: 'test', content: 'content', search_excerpt: 'excerpt') }
+
+    it 'returns the expected payload structure' do
+      allow(article).to receive(:translations).and_return([translation])
+      
+      data = article.search_data
+      expect(data[:status]).to eq('published')
+      expect(data[:views_count]).to eq(5)
+      expect(data[:translations].first[:title]).to eq('Test')
+      expect(data[:translations].first[:content]).to eq('content')
+    end
   end
 
 end

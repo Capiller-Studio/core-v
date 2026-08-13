@@ -38,6 +38,40 @@ RSpec.describe Attachment, type: :model do
         expect(attachment.errors[:file]).to include(I18n.t("errors.attachments.invalid_content_type"))
       end
     end
+
+    context 'when resource is a HelpCenter::Article' do
+      let(:account) { create(:account) }
+      let(:image_attachment) { build(:attachment, resource_type: 'HelpCenter::Article', resource_id: SecureRandom.uuid, account: account, attachment_type: :image) }
+      let(:file_attachment) { build(:attachment, resource_type: 'HelpCenter::Article', resource_id: SecureRandom.uuid, account: account, attachment_type: :file) }
+
+      it 'validates image size' do
+        allow_any_instance_of(ActiveStorage::Blob).to receive(:byte_size).and_return(6.megabytes)
+        image_attachment.file.attach(io: StringIO.new('dummy'), filename: 'dummy.png', content_type: 'image/png')
+        
+        expect(image_attachment).not_to be_valid
+        expect(image_attachment.errors[:file]).to include("too large (max 5 MB)")
+      end
+
+      it 'validates image format' do
+        image_attachment.file.attach(io: StringIO.new('dummy'), filename: 'dummy.txt', content_type: 'text/plain')
+        expect(image_attachment).not_to be_valid
+        expect(image_attachment.errors[:file]).to include("invalid format (only JPG, PNG, GIF, WEBP, SVG)")
+      end
+
+      it 'validates file size' do
+        allow_any_instance_of(ActiveStorage::Blob).to receive(:byte_size).and_return(11.megabytes)
+        file_attachment.file.attach(io: StringIO.new('dummy'), filename: 'dummy.pdf', content_type: 'application/pdf')
+        
+        expect(file_attachment).not_to be_valid
+        expect(file_attachment.errors[:file]).to include("too large (max 10 MB)")
+      end
+
+      it 'validates file extension' do
+        file_attachment.file.attach(io: StringIO.new('dummy'), filename: 'dummy.xyz', content_type: 'application/xyz')
+        expect(file_attachment).not_to be_valid
+        expect(file_attachment.errors[:file]).to include("invalid format (only PDF, DOC, XLS, ZIP, TXT, CSV)")
+      end
+    end
   end
 
   describe 'Methods' do

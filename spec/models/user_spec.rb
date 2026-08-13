@@ -50,5 +50,20 @@ RSpec.describe User, type: :model do
       expect(payload[:name]).to eq(user.name)
       expect(payload[:display_name]).to eq('Jane Smith')
     end
+
+    it 'includes avatar_url if avatar is attached' do
+      user.avatar.attach(io: StringIO.new('dummy'), filename: 'avatar.png', content_type: 'image/png')
+      payload = user.event_payload
+      expect(payload[:avatar_url]).to be_present
+    end
+  end
+
+  describe '#send_devise_notification' do
+    it 'sends the devise notification in the background' do
+      user = create(:user)
+      expect {
+        user.send_devise_notification(:reset_password_instructions, 'token')
+      }.to have_enqueued_job
+    end
   end
 end
