@@ -26,4 +26,26 @@ RSpec.describe HelpCenter::Article, type: :model do
     it { is_expected.to define_enum_for(:visibility).with_values(everyone: 0, unlisted: 1, internal: 2) }
   end
 
+  describe 'Callbacks' do
+    describe '#calculate_estimated_read_time' do
+      let(:article) { described_class.new(content: 'word ' * 400) }
+
+      before do
+        article.singleton_class.class_eval { attr_accessor :stats }
+        article.stats = {}
+      end
+
+      it 'calculates and sets estimated_read_time in stats if blank' do
+        article.send(:calculate_estimated_read_time)
+        expect(article.stats['estimated_read_time']).to eq(2)
+      end
+
+      it 'does not override manually set estimated_read_time' do
+        article.stats['estimated_read_time'] = 10
+        article.send(:calculate_estimated_read_time)
+        expect(article.stats['estimated_read_time']).to eq(10)
+      end
+    end
+  end
+
 end

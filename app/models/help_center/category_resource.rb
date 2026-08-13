@@ -27,5 +27,13 @@ module HelpCenter
   class CategoryResource < ShardRecord
     belongs_to :category
     belongs_to :resource, polymorphic: true
+
+    after_commit :update_category_stats, on: [:create, :destroy]
+
+    private
+
+    def update_category_stats
+      category.update_stats!
+    end
   end
 end

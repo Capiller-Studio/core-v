@@ -77,6 +77,10 @@ module HelpCenter
     # {
     #   "external_url"             => "https://...",  (ONLY for external_link type — the redirect destination)
     #   "show_table_of_contents"   => true,           (render right-side ToC panel; ignored for external_link)
+    # }
+    #
+    # stats jsonb structure:
+    # {
     #   "estimated_read_time"      => 5               (minutes; auto-computed from content length or manually overridden)
     # }
 
@@ -84,7 +88,9 @@ module HelpCenter
 
     # before_validation :set_default_primary_category
 
+    before_save :calculate_estimated_read_time
     after_commit :queue_vector_embedding
+    after_commit :update_category_stats, if: -> { saved_change_to_status? || saved_change_to_visibility? }
 
     searchkick word_start: ["translations.title", "translations.content"],
                mappings: {
@@ -147,5 +153,24 @@ module HelpCenter
     # def set_default_primary_category
     #   self.primary_category_id ||= categories.first&.id
     # end
+
+    def calculate_estimated_read_time
+      self.stats ||= {}
+      
+      # Only auto-calculate if it's missing or blank, and content exists
+      if stats["estimated_read_time"].blank? && content.present?
+        # Sanitize HTML to get pure text and count words
+        clean_text = ActionView::Base.full_sanitizer.sanitize(content.to_s)
+        word_count = clean_text.scan(/\w+/).size
+        
+        # Assume 200 words per minute average reading speed, minimum 1 minute
+        minutes = (word_count.to_f / 200.0).ceil
+        stats["estimated_read_time"] = [minutes, 1].max
+      end
+    end
+
+    def update_category_stats
+      categories.each(&:update_stats!)
+    end
   end
 end
