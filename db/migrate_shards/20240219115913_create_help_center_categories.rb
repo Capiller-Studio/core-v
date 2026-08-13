@@ -3,7 +3,10 @@ class CreateHelpCenterCategories < ActiveRecord::Migration[7.1]
     create_table :help_center_categories, id: :uuid do |t|
       t.integer :ancestry_depth, null: false, default: 0
       t.integer :children_count, null: false, default: 0
+      t.integer :published_articles_count, null: false, default: 0
+      t.integer :views_count, null: false, default: 0
       t.jsonb   :configurations, null: false, default: {}
+      t.jsonb   :stats, null: false, default: {}
       t.string  :ancestry
       t.integer :position
       t.string  :icon_key                                 # Key from predefined icon set e.g. "book-open" (rendered per-app via Lucide)

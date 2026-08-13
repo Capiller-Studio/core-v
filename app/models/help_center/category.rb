@@ -79,6 +79,11 @@ module HelpCenter
     # The actual SVG is rendered per-app (deskbolic/helpbolic independently bundle Lucide)
     # Custom :image attachment takes precedence over icon_key when both are present
 
+    # stats jsonb structure:
+    # {
+    #   "average_read_time" => 5   (minutes; aggregated average of all published articles in this category)
+    # }
+
     translates :name, :description, :slug
 
     searchkick word_start: ["translations.name", "translations.description"]
@@ -103,6 +108,15 @@ module HelpCenter
 
     def to_param
       slug || id
+    end
+
+    def update_stats!
+      base_query = articles.published.where(visibility: :everyone)
+      self.published_articles_count = base_query.count
+      self.views_count = base_query.sum(:views_count)
+      self.stats ||= {}
+      self.stats["average_read_time"] = base_query.average(Arel.sql("COALESCE((stats->>'estimated_read_time')::numeric, 0)")).to_i
+      save!(validate: false)
     end
   end
 end

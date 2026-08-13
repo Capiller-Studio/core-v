@@ -3,6 +3,7 @@ class CreateHelpCenterArticles < ActiveRecord::Migration[7.1]
     create_table :help_center_articles, id: :uuid do |t|
       t.integer :views_count, null: false, default: 0
       t.jsonb   :configurations, null: false, default: {}
+      t.jsonb   :stats, null: false, default: {}
       t.integer :position
 
       # article_type: standard (0) — regular documentation/help article with full content editor
