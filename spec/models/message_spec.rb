@@ -144,6 +144,7 @@ RSpec.describe Message, type: :model do
       create(:message, account: account, conversation: conversation, sender: user)
     end
   end
+
   describe '#trigger_thank_you_detector' do
     let(:account) { create(:account) }
     let(:inbox) { create(:inbox, account: account) }
@@ -151,17 +152,22 @@ RSpec.describe Message, type: :model do
     let(:customer) { create(:customer, account: account) }
 
     it 'enqueues ThankYouDetectorWorker if inbox has ai_thank_you_detection enabled and account has AI features' do
-      allow_any_instance_of(Inbox).to receive(:ai_thank_you_detection?).and_return(true)
-      allow_any_instance_of(Account).to receive(:feature_enabled?).and_call_original
-      allow_any_instance_of(Account).to receive(:feature_enabled?).with(:ai_copilot).and_return(true)
+      allow(inbox).to receive(:ai_thank_you_detection?).and_return(true)
+      allow(account).to receive(:feature_enabled?).and_call_original
+      allow(account).to receive(:feature_enabled?).with(:ai_copilot).and_return(true)
       expect(Ai::ThankYouDetectorWorker).to receive(:perform_async)
-      create(:message, account: account, conversation: conversation, sender: customer)
+      message = build(:message, account: account, conversation: conversation, sender: customer)
+      allow(message).to receive(:inbox).and_return(inbox)
+      allow(message).to receive(:account).and_return(account)
+      message.save!
     end
 
     it 'does not enqueue if ai_thank_you_detection is disabled' do
-      allow_any_instance_of(Inbox).to receive(:ai_thank_you_detection?).and_return(false)
+      allow(inbox).to receive(:ai_thank_you_detection?).and_return(false)
       expect(Ai::ThankYouDetectorWorker).not_to receive(:perform_async)
-      create(:message, account: account, conversation: conversation, sender: customer)
+      message = build(:message, account: account, conversation: conversation, sender: customer)
+      allow(message).to receive(:inbox).and_return(inbox)
+      message.save!
     end
   end
 
@@ -178,16 +184,22 @@ RSpec.describe Message, type: :model do
     let(:customer) { create(:customer, account: account) }
 
     it 'enqueues AgentWorker if conversation is ai_active and inbox has an active agent' do
-      allow_any_instance_of(Inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(true)
-      allow_any_instance_of(Inbox).to receive(:ai_agent_id).and_return("agent-uuid")
+      ai_agent = double('ai_agent', active_and_configured?: true)
+      allow(inbox).to receive(:ai_agent).and_return(ai_agent)
+      allow(inbox).to receive(:ai_agent_id).and_return("agent-uuid")
       expect(Ai::AgentWorker).to receive(:perform_async)
-      create(:message, account: account, conversation: conversation, sender: customer)
+      message = build(:message, account: account, conversation: conversation, sender: customer)
+      allow(message).to receive(:inbox).and_return(inbox)
+      message.save!
     end
 
     it 'forces handoff if agent is inactive but conversation was ai_active' do
-      allow_any_instance_of(Inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(false)
+      ai_agent = double('ai_agent', active_and_configured?: false)
+      allow(inbox).to receive(:ai_agent).and_return(ai_agent)
       
-      create(:message, account: account, conversation: conversation, sender: customer)
+      message = build(:message, account: account, conversation: conversation, sender: customer)
+      allow(message).to receive(:inbox).and_return(inbox)
+      message.save!
       expect(conversation.reload.ai_status).to eq('ai_handed_off')
     end
   end

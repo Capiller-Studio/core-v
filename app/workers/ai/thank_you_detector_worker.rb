@@ -16,7 +16,7 @@ module Ai
       # When a message reopens a conversation, the conversation's status_changed_at
       # is updated synchronously just before the message is created.
       # (We use this instead of the Activity table because activities are logged asynchronously).
-      return unless conversation.status_changed_at.present?
+      return if conversation.status_changed_at.blank?
       return unless (conversation.status_changed_at - message.created_at).abs <= 5.seconds
       
       content = message.content.to_s.strip

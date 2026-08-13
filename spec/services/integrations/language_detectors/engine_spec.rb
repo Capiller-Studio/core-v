@@ -14,7 +14,9 @@ RSpec.describe Integrations::LanguageDetectors::Engine do
     end
 
     context 'when google integration is active' do
-      let!(:integration) { create(:integration, account: account, provider: :google_translate, active: true, settings: { "api_key" => "test_key" }) }
+      before do
+        create(:integration, account: account, provider: :google_translate, active: true, settings: { "api_key" => "test_key" })
+      end
 
       it 'uses google translate API for detection' do
         mock_response = instance_double(HTTParty::Response, success?: true, parsed_response: {

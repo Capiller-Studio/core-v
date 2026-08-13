@@ -77,7 +77,7 @@ module Webhooks
       active_ids = Set.new
 
       # Scan every queue (not just "default") so we don't miss dedicated queues
-      Sidekiq::Queue.all.each do |queue|
+      Sidekiq::Queue.all.each do |queue| # rubocop:disable Rails/FindEach
         queue.each do |job|
           next unless webhook_event_listener?(job.klass)
 

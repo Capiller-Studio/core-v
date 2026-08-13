@@ -27,9 +27,9 @@ module Ai
     private
 
     def validate!
-      raise "Credits must be in multiples of 1,000" unless (@credits % 1_000).zero?
-      raise "Minimum purchase is #{MIN_CREDITS} credits" if @credits < MIN_CREDITS
-      raise "Maximum purchase is #{MAX_CREDITS} credits" if @credits > MAX_CREDITS
+      raise("Credits must be in multiples of 1,000") unless (@credits % 1_000).zero?
+      raise("Minimum purchase is #{MIN_CREDITS} credits") if @credits < MIN_CREDITS
+      raise("Maximum purchase is #{MAX_CREDITS} credits") if @credits > MAX_CREDITS
     end
 
     def charge_and_credit!

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'deskbolic_web_push'
 
 # == Schema Information

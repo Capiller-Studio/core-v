@@ -15,7 +15,7 @@ module Ai
     def call
       lock_key = "ai_credit_manager_#{@account.id}"
       ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
-        raise AiInsufficientBalanceError, "AI credit balance is exhausted" unless can_afford?
+        raise(AiInsufficientBalanceError, "AI credit balance is exhausted") unless can_afford?
 
         @account.ai_wallet.deduct!(
           @cost,

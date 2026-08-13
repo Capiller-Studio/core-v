@@ -33,12 +33,12 @@ module DeskbolicWebPush
     # @option options [#to_s] :ttl Time-to-live in seconds
     # @option options [#to_s] :urgency Urgency can be very-low, low, normal, high
     # rubocop:disable Metrics/ParameterLists
-    def payload_send(message: '', endpoint:, p256dh: '', auth: '', vapid: {}, **options)
+    def payload_send(message: '', endpoint:, p256dh: '', auth: '', vapid: {}, **)
       DeskbolicWebPush::Request.new(
         message: message,
         subscription: subscription(endpoint, p256dh, auth),
         vapid: vapid,
-        **options
+        **
       ).perform
     end
     # rubocop:enable Metrics/ParameterLists

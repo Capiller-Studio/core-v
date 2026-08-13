@@ -14,11 +14,11 @@ module DeskbolicWebPush
       # FIX for OpenSSL 3.0: use .generate instead of .new + .generate_key
       server = if OpenSSL::PKey::EC.respond_to?(:generate)
                  OpenSSL::PKey::EC.generate(group_name)
-               else
+      else
                  key = OpenSSL::PKey::EC.new(group_name)
                  key.generate_key
                  key
-               end
+      end
       server_public_key_bn = server.public_key.to_bn
 
       group = OpenSSL::PKey::EC::Group.new(group_name)
@@ -46,7 +46,7 @@ module DeskbolicWebPush
 
       serverkey16bn = convert16bit(server_public_key_bn)
       rs = ciphertext.bytesize
-      raise ArgumentError, "encrypted payload is too big" if rs > 4096
+      raise(ArgumentError, "encrypted payload is too big") if rs > 4096
 
       aes128gcmheader = "#{salt}" + [rs].pack('N*') + [serverkey16bn.bytesize].pack('C*') + serverkey16bn
 
@@ -74,13 +74,13 @@ module DeskbolicWebPush
     end
 
     def assert_arguments(message, p256dh, auth)
-      raise ArgumentError, 'message cannot be blank' if blank?(message)
-      raise ArgumentError, 'p256dh cannot be blank' if blank?(p256dh)
-      raise ArgumentError, 'auth cannot be blank' if blank?(auth)
+      raise(ArgumentError, 'message cannot be blank') if blank?(message)
+      raise(ArgumentError, 'p256dh cannot be blank') if blank?(p256dh)
+      raise(ArgumentError, 'auth cannot be blank') if blank?(auth)
     end
 
     def blank?(value)
-      value.nil? || value.empty?
+      value.blank?
     end
   end
 end

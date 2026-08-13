@@ -36,7 +36,7 @@ module Webhooks
         webhook.processed!
       rescue => e
         webhook.update!(status: :failed, error_message: "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
-        raise e
+        raise(e)
       end
     end
 

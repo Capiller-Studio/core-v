@@ -14,7 +14,7 @@ module Webhooks
         aws_json = webhook.payload
 
         channel = Channel::ShortMessage.aws_sns.find_by(account_id: account_id, id: channel_id)
-        raise "Channel not found for account #{account_id} and channel #{channel_id}" unless channel
+        raise("Channel not found for account #{account_id} and channel #{channel_id}") unless channel
 
         if aws_json["Type"] == "SubscriptionConfirmation"
           HTTParty.get(aws_json["SubscribeURL"]) if aws_json["SubscribeURL"]
@@ -28,7 +28,7 @@ module Webhooks
         webhook.processed!
       rescue => e
         webhook.update!(status: :failed, error_message: "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
-        raise e
+        raise(e)
       end
     end
   end

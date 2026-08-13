@@ -60,9 +60,9 @@ module Ai
                            user: nil,
                            conversation_history: history
                          )
-                       else
+            else
                          fallback
-                       end
+            end
 
             # Check if this is an intentional handoff (the bot couldn't find an answer or the user asked for a human)
             is_handoff = (response == fallback)
@@ -110,7 +110,7 @@ module Ai
 
               trigger_human_handoff(conversation, reason: I18n.t("ai.agent.api_error_note", default: "AI Bot encountered a temporary API error. Awaiting human agent."))
             else
-              raise e
+              raise(e)
             end
           end
         end

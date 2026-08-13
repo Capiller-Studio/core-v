@@ -11,7 +11,7 @@ class UsageResetWorker
 
     # We now filter directly in SQL for any active subscription due for a usage reset!
     Subscription.where(status: :active)
-                .where("next_usage_reset_at <= ?", Time.current)
+                .where(next_usage_reset_at: ..Time.current)
                 .find_each do |subscription|
       
       # 1. Reset standard usage limits

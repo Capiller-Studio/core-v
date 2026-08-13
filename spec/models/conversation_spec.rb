@@ -104,14 +104,16 @@ RSpec.describe Conversation, type: :model do
     let(:inbox) { create(:inbox, account: account) }
     
     it 'sets ai_status to ai_active if inbox has an active AI agent' do
-      allow(inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(true)
+      ai_agent = double('ai_agent', active_and_configured?: true)
+      allow(inbox).to receive(:ai_agent).and_return(ai_agent)
       conv = build(:conversation, account: account, inbox: inbox)
       conv.save!
       expect(conv.ai_status).to eq('ai_active')
     end
 
     it 'leaves ai_status as ai_inactive if no active agent' do
-      allow(inbox).to receive_message_chain(:ai_agent, :active_and_configured?).and_return(false)
+      ai_agent = double('ai_agent', active_and_configured?: false)
+      allow(inbox).to receive(:ai_agent).and_return(ai_agent)
       conv = build(:conversation, account: account, inbox: inbox)
       conv.save!
       expect(conv.ai_status).to eq('ai_inactive')

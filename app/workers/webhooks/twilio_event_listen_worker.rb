@@ -12,7 +12,7 @@ module Webhooks
         account_id = route_params[:account_id]
 
         channel = Channel::ShortMessage.twilio.find_by(account_id: account_id, id: channel_id)
-        raise "Channel not found for account #{account_id} and channel #{channel_id}" unless channel
+        raise("Channel not found for account #{account_id} and channel #{channel_id}") unless channel
 
         Channels::ShortMessage::Twilio::ConversationCreator.call(
           short_message_channel: channel,
@@ -22,7 +22,7 @@ module Webhooks
         webhook.processed!
       rescue => e
         webhook.update!(status: :failed, error_message: "#{e.class}: #{e.message}\n#{e.backtrace.join("\n")}")
-        raise e
+        raise(e)
       end
     end
   end

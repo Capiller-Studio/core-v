@@ -67,8 +67,10 @@ class Account < ApplicationRecord
     assets blog docs status payment dev prod account accounts user users
   ].freeze
 
+  # rubocop:disable Rails/I18nLocaleTexts
   validates :identifier, exclusion: { in: RESERVED_IDENTIFIERS, message: "is a reserved word and cannot be used" }
-  validates :identifier, format: { with: /\A[a-z0-9\-]+\z/, message: "can only contain lowercase letters, numbers, and hyphens" }, length: { minimum: 3, maximum: 63 }
+  validates :identifier, format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and hyphens" }, length: { minimum: 3, maximum: 63 }
+  # rubocop:enable Rails/I18nLocaleTexts
   validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
 
   # Primary DB Associations

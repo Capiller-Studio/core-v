@@ -47,7 +47,7 @@ module Ai
           rescue => e
             # Refund the credit if API fails
             Ai::CreditManager.refund!(account: account, amount: 1, description: "Refund: OpenAI API failed")
-            raise e
+            raise(e)
           end
         end
 
@@ -56,7 +56,7 @@ module Ai
       end
     rescue => e
       Rails.logger.error("VectorEmbedderWorker Failed: #{e.message}")
-      raise e
+      raise(e)
     end
 
     private

@@ -51,7 +51,7 @@ module Ai
       # Filter out results that do not meet the AI agent's confidence threshold
       valid_hit_ids = search_results.response.dig("hits", "hits").to_a
                                     .select { |hit| hit["_score"].to_f >= threshold }
-                                    .map { |hit| hit["_id"] }
+                                    .pluck("_id")
 
       articles = search_results.select { |article| valid_hit_ids.include?(article.id.to_s) }
 

@@ -103,7 +103,7 @@ module Channel
         if value.length == 1 && value.first.is_a?(String) && value.first.include?(",")
           super(value.first.split(",").map(&:strip).compact_blank)
         else
-          super(value.reject(&:blank?).map(&:strip).compact_blank)
+          super(value.compact_blank.map(&:strip).compact_blank)
         end
       else
         super

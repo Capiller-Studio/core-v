@@ -30,15 +30,15 @@ RSpec.describe Ai::WalletTransaction, type: :model do
 
     describe '.credits' do
       it 'returns topups and refunds' do
-        expect(Ai::WalletTransaction.credits).to include(topup_tx, refund_tx)
-        expect(Ai::WalletTransaction.credits).not_to include(deduction_tx)
+        expect(described_class.credits).to include(topup_tx, refund_tx)
+        expect(described_class.credits).not_to include(deduction_tx)
       end
     end
 
     describe '.debits' do
       it 'returns deductions' do
-        expect(Ai::WalletTransaction.debits).to include(deduction_tx)
-        expect(Ai::WalletTransaction.debits).not_to include(topup_tx, refund_tx)
+        expect(described_class.debits).to include(deduction_tx)
+        expect(described_class.debits).not_to include(topup_tx, refund_tx)
       end
     end
   end

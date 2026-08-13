@@ -56,11 +56,11 @@ module Ai
       # 4. Return the parsed response content
       response.dig("choices", 0, "message", "content")
     rescue AiInsufficientBalanceError => e
-      raise e # Re-raise so the controller can handle it (e.g., render 402 Payment Required)
+      raise(e) # Re-raise so the controller can handle it (e.g., render 402 Payment Required)
     rescue => e
       # If OpenAI fails, ideally we should refund the credit here!
       refund_credit!
-      raise e
+      raise(e)
     end
 
     private

@@ -13,7 +13,7 @@ module RedisUtilities
           acquired = true
           break
         end
-        sleep 0.1
+        sleep(0.1)
       end
 
       if acquired

@@ -38,7 +38,7 @@ class DetectLanguageWorker < BaseMutexWorker
       end
     end
   rescue StandardError => e
-    raise e if e.is_a?(MutexLockError)
+    raise(e) if e.is_a?(MutexLockError)
     Rails.logger.error("DetectLanguageWorker Error for Message #{message_id}: #{e.message}")
   end
 end

@@ -2,7 +2,6 @@
 
 module Webhooks
   class InstagramController < Webhooks::BaseController
-
     # GET /webhooks/instagram
     def hub
       verify_token = Rails.application.credentials.dig(:channels, :instagram, :verify_token)

@@ -104,7 +104,7 @@ module DeskbolicWebPush
     end
 
     def jwt_header_fields
-      { "typ": "JWT", "alg": "ES256" }
+      { typ: "JWT", alg: "ES256" }
     end
 
     def audience
@@ -139,7 +139,7 @@ module DeskbolicWebPush
     end
 
     def build_payload(message, subscription)
-      return nil if message.nil? || message.empty?
+      return nil if message.blank?
 
       encrypt_payload(message, **subscription.fetch(:keys))
     end
@@ -153,7 +153,7 @@ module DeskbolicWebPush
     end
 
     def api_key?
-      !(api_key.nil? || api_key.empty?) && @endpoint =~ %r{\Ahttps://(android|gcm-http|fcm)\.googleapis\.com}
+      !(api_key.blank?) && @endpoint =~ %r{\Ahttps://(android|gcm-http|fcm)\.googleapis\.com}
     end
 
     def vapid?
@@ -167,20 +167,20 @@ module DeskbolicWebPush
     # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Style/GuardClause
     def verify_response(resp)
       if resp.is_a?(Net::HTTPGone) # 410
-        raise ExpiredSubscription.new(resp, uri.host)
+        raise(ExpiredSubscription.new(resp, uri.host))
       elsif resp.is_a?(Net::HTTPNotFound) # 404
-        raise InvalidSubscription.new(resp, uri.host)
+        raise(InvalidSubscription.new(resp, uri.host))
       elsif resp.is_a?(Net::HTTPUnauthorized) || resp.is_a?(Net::HTTPForbidden) || # 401, 403
-            resp.is_a?(Net::HTTPBadRequest) && resp.message == 'UnauthorizedRegistration' # 400, Google FCM
-        raise Unauthorized.new(resp, uri.host)
+            (resp.is_a?(Net::HTTPBadRequest) && resp.message == 'UnauthorizedRegistration') # 400, Google FCM
+        raise(Unauthorized.new(resp, uri.host))
       elsif resp.is_a?(Net::HTTPRequestEntityTooLarge) # 413
-        raise PayloadTooLarge.new(resp, uri.host)
+        raise(PayloadTooLarge.new(resp, uri.host))
       elsif resp.is_a?(Net::HTTPTooManyRequests) # 429, try again later!
-        raise TooManyRequests.new(resp, uri.host)
+        raise(TooManyRequests.new(resp, uri.host))
       elsif resp.is_a?(Net::HTTPServerError) # 5xx
-        raise PushServiceError.new(resp, uri.host)
+        raise(PushServiceError.new(resp, uri.host))
       elsif !resp.is_a?(Net::HTTPSuccess) # unknown/unhandled response error
-        raise ResponseError.new(resp, uri.host)
+        raise(ResponseError.new(resp, uri.host))
       end
     end
     # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity, Style/GuardClause

@@ -1,9 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe Ai::Wallet, type: :model do
-  let(:account) { create(:account) }
   # Use build because account factory might create a wallet via callback
   subject(:wallet) { account.ai_wallet || build(:ai_wallet, account: account) }
+
+  let(:account) { create(:account) }
+
 
   describe 'Associations' do
     it { is_expected.to belong_to(:account) }
@@ -17,7 +19,7 @@ RSpec.describe Ai::Wallet, type: :model do
     
     it 'validates uniqueness of account_id' do
       wallet.save! if wallet.new_record?
-      duplicate_wallet = Ai::Wallet.new(account: account, balance: 0)
+      duplicate_wallet = described_class.new(account: account, balance: 0)
       expect(duplicate_wallet).not_to be_valid
       expect(duplicate_wallet.errors[:account_id]).to include("has already been taken")
     end
@@ -84,7 +86,7 @@ RSpec.describe Ai::Wallet, type: :model do
     it 'creates a wallet transaction record' do
       expect {
         wallet.deduct!(30, action_type: 'generate_text', model_used: 'gpt-4', description: 'Test deduction')
-      }.to change { Ai::WalletTransaction.count }.by(1)
+      }.to change(Ai::WalletTransaction, :count).by(1)
 
       transaction = Ai::WalletTransaction.last
       expect(transaction.amount).to eq(30)
@@ -114,7 +116,7 @@ RSpec.describe Ai::Wallet, type: :model do
     it 'creates a credit grant and updates balance' do
       expect {
         wallet.grant_credits!(100, grant_type: :purchased, expires_at: 1.year.from_now, description: 'Test topup')
-      }.to change { Ai::CreditGrant.count }.by(1)
+      }.to change(Ai::CreditGrant, :count).by(1)
 
       grant = Ai::CreditGrant.last
       expect(grant.amount).to eq(100)
@@ -127,7 +129,7 @@ RSpec.describe Ai::Wallet, type: :model do
     it 'creates a wallet transaction record' do
       expect {
         wallet.grant_credits!(50, grant_type: :purchased, expires_at: 1.year.from_now)
-      }.to change { Ai::WalletTransaction.count }.by(1)
+      }.to change(Ai::WalletTransaction, :count).by(1)
 
       transaction = Ai::WalletTransaction.last
       expect(transaction.amount).to eq(50)
@@ -141,7 +143,7 @@ RSpec.describe Ai::Wallet, type: :model do
     it 'creates a refund credit grant and updates balance' do
       expect {
         wallet.refund!(25, description: 'Failed API call refund')
-      }.to change { Ai::CreditGrant.count }.by(1)
+      }.to change(Ai::CreditGrant, :count).by(1)
 
       grant = Ai::CreditGrant.last
       expect(grant.amount).to eq(25)
@@ -153,7 +155,7 @@ RSpec.describe Ai::Wallet, type: :model do
     it 'creates a refund wallet transaction record' do
       expect {
         wallet.refund!(25)
-      }.to change { Ai::WalletTransaction.count }.by(1)
+      }.to change(Ai::WalletTransaction, :count).by(1)
 
       transaction = Ai::WalletTransaction.last
       expect(transaction.amount).to eq(25)

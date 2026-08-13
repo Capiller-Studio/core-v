@@ -31,8 +31,8 @@ RSpec.describe Ai::CreditGrant, type: :model do
 
     describe '.active' do
       it 'returns grants with balance > 0 and future expiration' do
-        expect(Ai::CreditGrant.active).to include(active_grant)
-        expect(Ai::CreditGrant.active).not_to include(exhausted_grant, expired_grant)
+        expect(described_class.active).to include(active_grant)
+        expect(described_class.active).not_to include(exhausted_grant, expired_grant)
       end
     end
 

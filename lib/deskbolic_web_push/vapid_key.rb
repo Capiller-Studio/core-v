@@ -28,7 +28,7 @@ module DeskbolicWebPush
     # @return [DeskbolicWebPush::VapidKey] a VapidKey instance for the given public and private keys
     def self.from_pem(pem)
       key = new
-      src = OpenSSL::PKey.read pem
+      src = OpenSSL::PKey.read(pem)
       key.curve.public_key = src.public_key
       key.curve.private_key = src.private_key
 
@@ -40,11 +40,11 @@ module DeskbolicWebPush
     def initialize
       @curve = if OpenSSL::PKey::EC.respond_to?(:generate)
                  OpenSSL::PKey::EC.generate('prime256v1')
-               else
+      else
                  c = OpenSSL::PKey::EC.new('prime256v1')
                  c.generate_key
                  c
-               end
+      end
     end
 
     # Retrieve the encoded elliptic curve public key for VAPID protocol
@@ -76,13 +76,9 @@ module DeskbolicWebPush
       # No-op, handled in from_keys for OpenSSL 3.0 compatibility
     end
 
-    def curve_name
-      group.curve_name
-    end
+    delegate :curve_name, to: :group
 
-    def group
-      curve.group
-    end
+    delegate :group, to: :curve
 
     def to_h
       { public_key: public_key, private_key: private_key }
@@ -90,7 +86,7 @@ module DeskbolicWebPush
     alias to_hash to_h
 
     def to_pem
-      public_key = OpenSSL::PKey::EC.new curve
+      public_key = OpenSSL::PKey::EC.new(curve)
       public_key.private_key = nil
 
       curve.to_pem + public_key.to_pem

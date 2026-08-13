@@ -28,7 +28,10 @@ RSpec.describe HelpCenter::Category, type: :model do
       end
       category.stats = {}
       
-      allow(category).to receive_message_chain(:articles, :published, :where).and_return(published_articles)
+      articles_mock = double('articles_relation')
+      allow(category).to receive(:articles).and_return(articles_mock)
+      allow(articles_mock).to receive(:published).and_return(articles_mock)
+      allow(articles_mock).to receive(:where).and_return(published_articles)
       allow(published_articles).to receive(:count).and_return(5)
       allow(published_articles).to receive(:sum).with(:views_count).and_return(100)
       allow(published_articles).to receive(:average).and_return(2.5)
