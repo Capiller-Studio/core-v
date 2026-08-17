@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::CsatSurveySeeder do
+RSpec.describe Seeds::CsatSurveySeeder do
   let(:account) { create(:account, locale: 'en') }
   let!(:email_template) { create(:email_template, account: account, name: 'csat_survey') }
 

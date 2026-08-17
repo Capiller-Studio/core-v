@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::EmailTemplateSeeder do
+RSpec.describe Seeds::EmailTemplateSeeder do
   let(:account) { create(:account, locale: 'en') }
 
   describe '#seed' do

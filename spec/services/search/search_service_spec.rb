@@ -1,173 +1,158 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.xdescribe Search::SearchService, search: true do
+RSpec.describe Search::SearchService do
   let(:account) { create(:account) }
-  let(:inbox) { create(:inbox, account: account) }
-  let(:assignee) { create(:user) }
+  let(:user) { create(:user) }
   let(:team) { create(:team, account: account) }
-
-  let!(:conversation1) do
-    create(:conversation,
-           account: account,
-           inbox: inbox,
-           assignee: assignee,
-           team: team,
-           status: 'active',
-           priority: 'high',
-           created_at: 2.days.ago)
-  end
-
-  let!(:conversation2) do
-    create(:conversation,
-           account: account,
-           inbox: inbox,
-           status: 'resolved',
-           created_at: 10.days.ago)
-  end
-
-  let!(:message1) do
-    create(:message,
-           conversation: conversation1,
-           account: account,
-           inbox: inbox,
-           content: 'Hello, this is a test message regarding billing.',
-           content_type: 'text',
-           visibility: 'global',
-           created_at: 1.day.ago)
-  end
-
-  let!(:message2) do
-    create(:message,
-           conversation: conversation2,
-           account: account,
-           inbox: inbox,
-           content: 'The quick brown fox jumps over the lazy dog.',
-           content_type: 'text',
-           visibility: 'global',
-           created_at: 9.days.ago)
-  end
-
-  let!(:internal_note) do
-    create(:message,
-           conversation: conversation1,
-           account: account,
-           inbox: inbox,
-           content: 'This is an internal note about billing.',
-           content_type: 'text',
-           visibility: 'personal') # Should not be searchable
-  end
-
-  before do
-    # Force sync reindexing for the tests
-    Conversation.reindex
-    Message.reindex
-    Conversation.search_index.refresh
-    Message.search_index.refresh
-  end
+  let(:inbox) { create(:inbox, account: account) }
+  let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+  let(:message) { create(:message, conversation: conversation, account: account, inbox: inbox) }
 
   describe '#call' do
     context 'when query is blank' do
-      it 'returns empty results' do
+      it 'returns empty results without calling search' do
         service = described_class.new(query: '', account_id: account.id)
         result = service.call
 
-        expect(result[:conversations]).to be_empty
-        expect(result[:messages]).to be_empty
+        expect(result[:conversations]).to eq([])
+        expect(result[:messages]).to eq([])
       end
     end
 
     context 'when searching conversations' do
-      it 'filters by account_id' do
-        other_account = create(:account)
-        service = described_class.new(query: conversation1.identifier, account_id: other_account.id)
-        
-        expect(service.call[:conversations]).to be_empty
-      end
+      it 'passes query, account_id, and filter options to Conversation.search' do
+        expect(Conversation).to receive(:search).with(
+          'billing',
+          hash_including(
+            where: hash_including(account_id: account.id, status: 'open', assignee_id: user.id),
+            fields: Search::SearchService::CONVERSATION_FIELDS,
+            match: :word_start
+          )
+        ).and_return([conversation])
 
-      it 'returns matching conversations and respects type filter' do
-        service = described_class.new(query: conversation1.identifier, account_id: account.id, type: 'conversations')
+        expect(Message).to receive(:search).and_return([])
+
+        service = described_class.new(
+          query: 'billing',
+          account_id: account.id,
+          filters: { status: 'open', assignee_id: user.id }
+        )
         result = service.call
 
-        expect(result[:conversations]).to include(conversation1)
-        expect(result[:messages]).to be_empty
+        expect(result[:conversations]).to eq([conversation])
       end
 
-      it 'applies status filter' do
-        service = described_class.new(query: conversation1.identifier, account_id: account.id, filters: { status: 'resolved' })
-        expect(service.call[:conversations]).to be_empty
+      it 'supports filtering by date range' do
+        from_date = 7.days.ago
+        to_date = Time.current
 
-        service_resolved = described_class.new(query: conversation2.identifier, account_id: account.id, filters: { status: 'resolved' })
-        expect(service_resolved.call[:conversations]).to include(conversation2)
-      end
+        expect(Conversation).to receive(:search).with(
+          'invoice',
+          hash_including(
+            where: hash_including(
+              account_id: account.id,
+              created_at: { gte: from_date, lte: to_date }
+            )
+          )
+        ).and_return([conversation])
 
-      it 'applies assignee and team filters' do
+        expect(Message).to receive(:search).and_return([])
+
         service = described_class.new(
-          query: conversation1.identifier, 
-          account_id: account.id, 
-          filters: { assignee_id: assignee.id, team_id: team.id }
+          query: 'invoice',
+          account_id: account.id,
+          filters: { date_from: from_date, date_to: to_date }
         )
-        expect(service.call[:conversations]).to include(conversation1)
+        service.call
       end
 
-      it 'applies date range filters' do
-        service = described_class.new(
-          query: conversation1.identifier, 
-          account_id: account.id, 
-          filters: { date_from: 3.days.ago, date_to: 1.day.ago }
-        )
-        expect(service.call[:conversations]).to include(conversation1)
-        expect(service.call[:conversations]).not_to include(conversation2)
+      it 'skips conversation search when type is messages' do
+        expect(Conversation).not_to receive(:search)
+        expect(Message).to receive(:search).and_return([message])
+
+        service = described_class.new(query: 'payment', account_id: account.id, type: 'messages')
+        result = service.call
+
+        expect(result[:conversations]).to eq([])
+        expect(result[:messages]).to eq([message])
       end
     end
 
     context 'when searching messages' do
-      it 'returns matching global text messages' do
-        service = described_class.new(query: 'billing', account_id: account.id, type: 'messages')
+      it 'passes query, account_id, global text filters, and highlights to Message.search' do
+        expect(Conversation).to receive(:search).and_return([])
+        expect(Message).to receive(:search).with(
+          'refund',
+          hash_including(
+            where: hash_including(
+              account_id: account.id,
+              content_type: 'text',
+              visibility: 'global'
+            ),
+            fields: Search::SearchService::MESSAGE_FIELDS,
+            highlight: { tag: '<mark>', fields: { content: {} } }
+          )
+        ).and_return([message])
+
+        service = described_class.new(query: 'refund', account_id: account.id)
         result = service.call
 
-        expect(result[:messages]).to include(message1)
-        expect(result[:conversations]).to be_empty
+        expect(result[:messages]).to eq([message])
       end
 
-      it 'does not return personal notes' do
-        service = described_class.new(query: 'internal', account_id: account.id)
-        expect(service.call[:messages]).to be_empty
-      end
+      it 'skips message search when type is conversations' do
+        expect(Conversation).to receive(:search).and_return([conversation])
+        expect(Message).not_to receive(:search)
 
-      it 'includes highlight tags in the response' do
-        service = described_class.new(query: 'billing', account_id: account.id)
+        service = described_class.new(query: 'support', account_id: account.id, type: 'conversations')
         result = service.call
-        
-        # Searchkick provides highlights via the hit object
-        first_message = result[:messages].first
-        expect(first_message.search_highlights).to have_key(:content)
-        expect(first_message.search_highlights[:content]).to match(/<mark>billing<\/mark>/i)
+
+        expect(result[:conversations]).to eq([conversation])
+        expect(result[:messages]).to eq([])
       end
     end
 
-    context 'when searchkick raises an error' do
-      before do
+    context 'when search encounters an error' do
+      it 'rescues Searchkick::Error and returns empty arrays' do
         allow(Conversation).to receive(:search).and_raise(Searchkick::Error.new('Connection failed'))
         allow(Message).to receive(:search).and_raise(Searchkick::Error.new('Connection failed'))
-      end
 
-      it 'rescues the error and returns empty arrays' do
-        service = described_class.new(query: 'billing', account_id: account.id)
+        service = described_class.new(query: 'error_trigger', account_id: account.id)
         result = service.call
 
-        expect(result[:conversations]).to be_empty
-        expect(result[:messages]).to be_empty
+        expect(result[:conversations]).to eq([])
+        expect(result[:messages]).to eq([])
       end
     end
   end
 
   describe '#suggestions' do
-    it 'returns limited results' do
-      service = described_class.new(query: 'billing', account_id: account.id)
+    it 'passes limit 5 to both conversation and message search' do
+      expect(Conversation).to receive(:search).with(
+        'quick',
+        hash_including(limit: 5)
+      ).and_return([conversation])
+
+      expect(Message).to receive(:search).with(
+        'quick',
+        hash_including(limit: 5)
+      ).and_return([message])
+
+      service = described_class.new(query: 'quick', account_id: account.id)
       result = service.suggestions
-      
-      expect(result).to have_key(:conversations)
-      expect(result).to have_key(:messages)
+
+      expect(result[:conversations]).to eq([conversation])
+      expect(result[:messages]).to eq([message])
+    end
+
+    it 'returns empty suggestions when query is blank' do
+      service = described_class.new(query: '', account_id: account.id)
+      result = service.suggestions
+
+      expect(result[:conversations]).to eq([])
+      expect(result[:messages]).to eq([])
     end
   end
 end

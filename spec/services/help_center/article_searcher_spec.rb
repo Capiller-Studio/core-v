@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe HelpCenter::ArticleSearcher, search: true do
+RSpec.describe HelpCenter::ArticleSearcher, search: true do
   let(:account) { create(:account) }
   let(:portal) { create(:help_center_portal, account: account) }
   let(:other_portal) { create(:help_center_portal, account: account) }

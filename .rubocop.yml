@@ -27,9 +27,8 @@ AllCops:
     - "db/archived_migrations/**/*.rb"
     - "db/schema.rb"
     - "db/primary_de_schema.rb"
-    - "test/dummy/db/schema.rb"
-    - "test/dummy/db/primary_de_schema.rb"
-    - "test/dummy/bin/**/*"
+    - "db/de_schema.rb"
+    - "test/**/*"
     - "log/**/*"
     - "node_modules/**/*"
     - "public/**/*"
@@ -190,9 +189,7 @@ Style/StringChars:
   Enabled: true
 
 Rails/SkipsModelValidations:
-  Exclude:
-    - "db/migrate/**/*.rb"
-    - "db/migrate_shards/**/*.rb"
+  Enabled: false
 
 Style/Documentation:
   Enabled: false
@@ -574,11 +571,6 @@ Performance/RegexpMatch:
 
 Performance/ChainArrayAllocation:
   Enabled: true
-  Exclude:
-    - "config/**"
-    - "db/migrate/**/*.rb"
-    - "db/migrate_shards/**/*.rb"
-    - "spec/**/*_spec.rb"
 
 Performance/UriDefaultParser:
   Enabled: true
@@ -728,9 +720,3 @@ Rails/UnusedRenderContent: # new in 2.21
   Enabled: true
 Rails/WhereRange: # new in 2.25
   Enabled: true
-
-Rails/SkipsModelValidations:
-  Enabled: false
-
-Performance/ChainArrayAllocation:
-  Enabled: false

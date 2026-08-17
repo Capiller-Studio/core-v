@@ -9,6 +9,18 @@ FactoryBot.define do
     limits { {} }
     status { :active }
 
+    trait :free do
+      base_price { 0 }
+      annual_price { 0 }
+    end
+
+    trait :paid do
+      name { Plan::HYPERBOLIC }
+      display_name { 'Hyperbolic Plan' }
+      base_price { 49 }
+      annual_price { 490 }
+    end
+
     trait :momentum do
       name { Plan::HYPERBOLIC }
       display_name { 'Momentum Plan' }

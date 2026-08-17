@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::ApiDocumentationSeeder do
+RSpec.describe Seeds::ApiDocumentationSeeder do
   describe '.seed' do
     let(:domain) { 'api-docs.example.com' }
 

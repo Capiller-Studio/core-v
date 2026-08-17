@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::ContactFormSeeder do
+RSpec.describe Seeds::ContactFormSeeder do
   let(:account) { create(:account) }
 
   before do

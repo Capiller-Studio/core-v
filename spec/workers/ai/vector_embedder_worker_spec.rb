@@ -8,6 +8,12 @@ RSpec.describe Ai::VectorEmbedderWorker, type: :worker do
   let(:translation) { article.translations.first }
   let(:mock_openai_client) { double('OpenAI::Client') }
 
+  around do |example|
+    Searchkick.callbacks(false) do
+      example.run
+    end
+  end
+
   before do
     allow(OpenAI::Client).to receive(:new).and_return(mock_openai_client)
     allow(article).to receive(:reindex)

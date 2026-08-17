@@ -42,8 +42,9 @@ module Translateable
 
   def translation_for(attribute)
     # 1. Check memoized cache
+    cache_key = "#{I18n.locale}_#{attribute}"
     @_translations_cache ||= {}
-    return @_translations_cache[attribute] if @_translations_cache.key?(attribute)
+    return @_translations_cache[cache_key] if @_translations_cache.key?(cache_key)
 
     # 2. Try current locale
     target = I18n.locale.to_s
@@ -55,7 +56,7 @@ module Translateable
       translation = find_translation_in_memory(fallback) if fallback != target
     end
 
-    @_translations_cache[attribute] = translation&.send(attribute)
+    @_translations_cache[cache_key] = translation&.send(attribute)
   end
 
   def translated_to?(locale)

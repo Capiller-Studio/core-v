@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::CountriesSeeder do
+RSpec.describe Seeds::CountriesSeeder do
   describe '#seed' do
     it 'creates countries and updates required states for specific countries' do
       # Note: This test requires 'carmen' gem which is used in the seeder.

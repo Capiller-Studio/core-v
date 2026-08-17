@@ -22,7 +22,12 @@ module Webhooks
       private
 
       def find_channel
-        @channel = Channel::ShortMessage.aws_sns.find_by(account_id: params[:account_id], id: params[:channel_id])
+        account = Account.find_by(id: params[:account_id])
+        return head(:not_found) unless account
+
+        @channel = account.with_shard do
+          Channel::ShortMessage.aws_sns.find_by(id: params[:channel_id])
+        end
         head(:not_found) unless @channel
       end
 

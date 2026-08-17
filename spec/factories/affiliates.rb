@@ -13,6 +13,24 @@ FactoryBot.define do
     status { :pending }
   end
 
+  factory :affiliate_referral, class: 'Affiliate::Referral' do
+    association :profile, factory: :affiliate_profile
+    account
+    status { :active }
+  end
+
+  factory :affiliate_commission, class: 'Affiliate::Commission' do
+    association :profile, factory: :affiliate_profile
+    association :referral, factory: :affiliate_referral
+    association :transaction_record, factory: :transaction
+    amount { 25.0 }
+    original_amount { 25.0 }
+    currency { 'USD' }
+    original_currency { 'USD' }
+    status { :pending }
+    commission_type { :normal }
+  end
+
   factory :affiliate_payout, class: 'Affiliate::Payout' do
     association :profile, factory: :affiliate_profile
     amount { 100.0 }

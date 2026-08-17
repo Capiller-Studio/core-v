@@ -46,8 +46,8 @@ module Ai
                      I18n.t("ai.widget_bot.default_fallback", default: "I don't have information about that. Let me connect you with a human agent.")
 
           begin
-            # Build multi-turn conversation history for context
-            history = conversation.messages.order(:created_at).last(ai_agent.max_exchanges * 2).map do |msg|
+            recent_messages = conversation.messages.order(:created_at).last(ai_agent.max_exchanges * 2)
+            history = recent_messages.map do |msg|
               role = msg.sender_type == "Customer" ? "user" : "assistant"
               { role: role, content: ActionView::Base.full_sanitizer.sanitize(msg.content.to_s) }
             end

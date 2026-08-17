@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::StatesSeeder do
+RSpec.describe Seeds::StatesSeeder do
   let!(:us_country) { create(:country, iso: 'US') }
   let!(:ca_country) { create(:country, iso: 'CA') }
 

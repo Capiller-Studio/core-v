@@ -40,7 +40,7 @@ class Csat::Survey < ShardRecord
     return "" if template_prompt.blank?
 
     liquid_template = Liquid::Template.parse(template_prompt)
-    liquid_template.render(variables.stringify_keys)
+    liquid_template.render(variables.deep_stringify_keys)
   end
 
   private

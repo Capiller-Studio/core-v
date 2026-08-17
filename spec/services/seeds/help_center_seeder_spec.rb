@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::HelpCenterSeeder do
+RSpec.describe Seeds::HelpCenterSeeder do
   let(:account) { create(:account) }
 
   describe '#seed' do

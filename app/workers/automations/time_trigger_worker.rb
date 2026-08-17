@@ -93,13 +93,14 @@ module Automations
     def conditions_match?(rule, payload)
       return true if rule.conditions.blank? || rule.conditions["groups"].blank?
 
-      # Filter out time trigger conditions (which are already matched by the SQL query)
-      filtered_groups = (rule.conditions["groups"] || []).map do |group|
+      filtered_groups = (rule.conditions["groups"] || []).filter_map do |group|
         filtered_conditions = (group["conditions"] || []).reject do |c|
           c["attribute"] == rule.event_name
         end
+        next if filtered_conditions.empty?
+
         group.merge("conditions" => filtered_conditions)
-      end.reject { |g| g["conditions"].empty? }
+      end
 
       return true if filtered_groups.empty?
 

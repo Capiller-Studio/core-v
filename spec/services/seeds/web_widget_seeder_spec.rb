@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::WebWidgetSeeder do
+RSpec.describe Seeds::WebWidgetSeeder do
   describe '#seed' do
     it 'runs without errors and creates web widget data' do
       Searchkick.callbacks(false) do

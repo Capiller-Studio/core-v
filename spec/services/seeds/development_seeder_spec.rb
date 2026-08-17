@@ -1,7 +1,7 @@
 require 'rails_helper'
 
-RSpec.xdescribe Seeds::DevelopmentSeeder do
-  xdescribe '#seed' do
+RSpec.describe Seeds::DevelopmentSeeder do
+  describe '#seed' do
     it 'runs without errors and creates development data' do
       # Because DevelopmentSeeder uses Searchkick heavily via HelpCenterSeeder,
       # we need to disable callbacks to avoid ElasticSearch connection errors
