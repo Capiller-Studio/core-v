@@ -15,9 +15,13 @@ module Automations
 
     def perform
       Automation.time_triggers.includes(:account).find_each do |rule|
-        process_rule(rule)
+        next unless rule.account
+
+        rule.account.with_shard do
+          process_rule(rule)
+        end
       rescue StandardError => e
-        Rails.logger.error("[Automations::TimeTriggerWorker] Rule #{rule.id} failed: #{e.message}")
+        Rails.logger.error("[Automations::TimeTriggerWorker] Rule #{rule&.id} failed: #{e.message}")
       end
     end
 
@@ -89,8 +93,18 @@ module Automations
     def conditions_match?(rule, payload)
       return true if rule.conditions.blank? || rule.conditions["groups"].blank?
 
+      # Filter out time trigger conditions (which are already matched by the SQL query)
+      filtered_groups = (rule.conditions["groups"] || []).map do |group|
+        filtered_conditions = (group["conditions"] || []).reject do |c|
+          c["attribute"] == rule.event_name
+        end
+        group.merge("conditions" => filtered_conditions)
+      end.reject { |g| g["conditions"].empty? }
+
+      return true if filtered_groups.empty?
+
       Automations::ConditionEvaluator.call(
-        conditions: rule.conditions,
+        conditions: rule.conditions.merge("groups" => filtered_groups),
         payload: payload
       )
     end

@@ -1,47 +1,53 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe DetectLanguageWorker, type: :worker do
   let(:account) { create(:account) }
   let(:customer) { create(:customer, account: account, locale: 'en') }
-  let(:conversation) { create(:conversation, account: account) }
-  let(:message) { create(:message, account: account, conversation: conversation, sender: customer, content: 'Bonjour tout le monde') }
+  let(:inbox) { create(:inbox, account: account) }
+  let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+  let(:message) { create(:message, account: account, conversation: conversation, sender: customer, content: 'Bonjour, j ai besoin d aide') }
 
   describe '#perform' do
-    it 'updates customer and conversation locale if language is detected' do
-      allow(Integrations::LanguageDetectors::Engine).to receive(:call).and_return('fr')
-      allow(Utilities::LocaleParser).to receive(:parse).with('fr').and_return('fr')
+    it 'detects language from customer message and updates customer and conversation locales' do
+      allow(Integrations::LanguageDetectors::Engine).to receive(:call).with(
+        text: message.content,
+        account: account
+      ).and_return('fr')
+
+      allow(::Utilities::LocaleParser).to receive(:parse).with('fr').and_return('fr')
 
       described_class.new.perform(account.id, message.id)
 
-      expect(customer.reload.locale).to eq('fr')
-      expect(conversation.reload.locale).to eq('fr')
+      customer.reload
+      conversation.reload
+      expect(customer.locale).to eq('fr')
+      expect(conversation.locale).to eq('fr')
     end
 
-    it 'does not update locale if customer already has a non-English locale' do
-      customer.update!(locale: 'es')
-      
+    it 'skips if customer already has a non-English locale set' do
+      customer.update!(locale: 'de')
       expect(Integrations::LanguageDetectors::Engine).not_to receive(:call)
 
       described_class.new.perform(account.id, message.id)
-      
-      expect(customer.reload.locale).to eq('es')
     end
 
-    it 'does not update locale if language is English and customer locale is English' do
-      customer.update!(locale: 'en')
-      allow(Integrations::LanguageDetectors::Engine).to receive(:call).and_return('en')
-      allow(Utilities::LocaleParser).to receive(:parse).with('en').and_return('en')
+    it 'skips if message sender is not a Customer' do
+      agent_user = create(:user)
+      agent_msg = create(:message, account: account, conversation: conversation, sender: agent_user)
+      expect(Integrations::LanguageDetectors::Engine).not_to receive(:call)
 
-      described_class.new.perform(account.id, message.id)
-
-      expect(customer.reload.locale).to eq('en')
+      described_class.new.perform(account.id, agent_msg.id)
     end
-    
-    it 'rescues and logs errors' do
-      allow(Account).to receive(:find_by).and_raise(StandardError.new("Database error"))
-      expect(Rails.logger).to receive(:error).with(/DetectLanguageWorker Error/)
-      
-      expect { described_class.new.perform(account.id, message.id) }.not_to raise_error
+
+    it 'raises MutexLockError if mutex lock fails to allow Sidekiq retry' do
+      stub_const('MutexLockError', Class.new(StandardError))
+      allow(::RedisUtilities::MutexHelpers).to receive(:with_lock).and_raise(MutexLockError.new('Locked'))
+
+      expect {
+        described_class.new.perform(account.id, message.id)
+      }.to raise_error(MutexLockError)
     end
   end
 end

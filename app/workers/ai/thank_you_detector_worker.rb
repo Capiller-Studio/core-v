@@ -64,7 +64,7 @@ module Ai
     def is_obvious_thank_you?(text)
       normalized = text.downcase.gsub(/[^a-z\s]/, '')
       # Match common short phrases
-      %w[thank you thanks ty thanks a lot thank you so much awesome thanks great thanks ok thanks okay thanks].include?(normalized.strip)
+      ["thank you", "thanks", "ty", "thanks a lot", "thank you so much", "awesome thanks", "great thanks", "ok thanks", "okay thanks"].include?(normalized.strip)
     end
 
     def revert_reopen(conversation, message)

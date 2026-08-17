@@ -42,11 +42,11 @@ module Ai
               end
             else
               # If response was empty, refund the credit
-              Ai::CreditManager.refund!(account: account, amount: 1, description: "Refund: OpenAI API returned empty embedding")
+              Ai::CreditManager.refund!(account: account, amount: 1, action_type: "article_embedding")
             end
           rescue => e
             # Refund the credit if API fails
-            Ai::CreditManager.refund!(account: account, amount: 1, description: "Refund: OpenAI API failed")
+            Ai::CreditManager.refund!(account: account, amount: 1, action_type: "article_embedding")
             raise(e)
           end
         end
