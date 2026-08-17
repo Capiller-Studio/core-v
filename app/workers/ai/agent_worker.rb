@@ -17,12 +17,16 @@ module Ai
         conversation.send(:auto_assign_agent) if conversation.send(:should_auto_assign?)
         
         # Add a private note explaining the AI crash
+        ai_agent = Ai::Agent.find_by(id: _ai_agent_id)
+        sender = ai_agent || AccountUser.find_by(account: account, owner: true)&.user
+
         conversation.messages.create!(
           account: account,
           inbox_id: conversation.inbox_id,
           content: I18n.t("ai.agent.crash_note", default: "AI Agent repeatedly failed to process the customer's request. The conversation has been handed off to the human queue."),
           content_type: :activity,
-          visibility: :personal
+          visibility: :personal,
+          sender: sender
         )
       end
     end
@@ -49,7 +53,7 @@ module Ai
             end
 
             # Get the portal for RAG search (prioritize agent-specific portal, fallback to channel portal)
-            portal = ai_agent.portal || inbox.channel&.portal
+            portal = ai_agent.portal || inbox.channel&.try(:portal)
 
             response = if portal
                          Ai::HelpCenterBot.call(
@@ -81,7 +85,7 @@ module Ai
             Messages::DeliveryWorker.perform_async(ai_message.account_id, ai_message.id)
 
             if is_handoff
-              trigger_human_handoff(conversation)
+              trigger_human_handoff(conversation, sender: ai_agent)
             end
 
           rescue StandardError => e
@@ -96,7 +100,7 @@ module Ai
               )
               Messages::DeliveryWorker.perform_async(ai_message.account_id, ai_message.id)
 
-              trigger_human_handoff(conversation, reason: I18n.t("ai.widget_bot.insufficient_credits_note", default: "AI Bot automatically halted due to insufficient AI Credits. Awaiting human agent."))
+              trigger_human_handoff(conversation, sender: ai_agent, reason: I18n.t("ai.widget_bot.insufficient_credits_note", default: "AI Bot automatically halted due to insufficient AI Credits. Awaiting human agent."))
             elsif e.is_a?(OpenAI::Error) || e.is_a?(Faraday::Error)
               Rails.logger.error("[AI AgentWorker] API Error: #{e.message}")
               
@@ -108,7 +112,7 @@ module Ai
               )
               Messages::DeliveryWorker.perform_async(ai_message.account_id, ai_message.id)
 
-              trigger_human_handoff(conversation, reason: I18n.t("ai.agent.api_error_note", default: "AI Bot encountered a temporary API error. Awaiting human agent."))
+              trigger_human_handoff(conversation, sender: ai_agent, reason: I18n.t("ai.agent.api_error_note", default: "AI Bot encountered a temporary API error. Awaiting human agent."))
             else
               raise(e)
             end
@@ -119,16 +123,18 @@ module Ai
     
     private
     
-    def trigger_human_handoff(conversation, reason: nil)
+    def trigger_human_handoff(conversation, sender: nil, reason: nil)
       conversation.update!(ai_status: :ai_handed_off)
       
       if reason.present?
+        sender ||= AccountUser.find_by(account: conversation.account, owner: true)&.user
         conversation.messages.create!(
           account: conversation.account,
           inbox_id: conversation.inbox_id,
           content: reason,
           content_type: :activity,
-          visibility: :personal
+          visibility: :personal,
+          sender: sender
         )
       end
       

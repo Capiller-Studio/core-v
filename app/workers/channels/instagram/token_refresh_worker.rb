@@ -16,14 +16,16 @@ module Channels
       # 60 days and can be refreshed as long as they are at least 24 hours old
       # and have not yet expired.
       def perform
-        Account.find_each do |account|
-          account.with_shard do
+        active_shards = Account.distinct.pluck(:shard_key)
+
+        active_shards.each do |shard_key|
+          ShardRecord.connected_to(shard: shard_key.to_sym, role: :writing) do
             Channel::Instagram.where("expires_at < ?", 7.days.from_now)
                               .where("expires_at > ?", Time.current)
                               .where(status: :active)
                               .find_each do |channel|
               channel.refresh_token!
-              Rails.logger.info("Refreshed Instagram token for #{channel.instagram_id} (account #{account.id})")
+              Rails.logger.info("Refreshed Instagram token for #{channel.instagram_id} (account #{channel.account_id})")
             rescue StandardError => e
               Rails.logger.error("Failed to refresh Instagram token for #{channel.instagram_id}: #{e.message}")
             end

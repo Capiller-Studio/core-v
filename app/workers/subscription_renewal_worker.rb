@@ -61,7 +61,7 @@ class SubscriptionRenewalWorker < BaseMutexWorker
         current_period_end: new_end,
         next_usage_reset_at: 1.month.from_now,
         status: :active,
-        trial_ends_at: nil,
+        trial_end_at: nil,
         data: subscription.data.merge("max_agents_in_period" => 0)
       )
 
@@ -89,7 +89,7 @@ class SubscriptionRenewalWorker < BaseMutexWorker
     wallet = subscription.account.ai_wallet
     
     # 1. Expire any existing monthly free grants (non-rolling)
-    wallet.ai_credit_grants.monthly_free.active.update_all(balance: 0, expires_at: Time.current)
+    wallet.credit_grants.monthly_free.active.update_all(balance: 0, expires_at: Time.current)
 
     # 2. Issue a new grant for the new billing cycle
     expires_at = 1.month.from_now

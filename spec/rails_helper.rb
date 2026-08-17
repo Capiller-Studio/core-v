@@ -33,6 +33,7 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
+    Searchkick.disable_callbacks if defined?(Searchkick)
   end
 
   config.before do

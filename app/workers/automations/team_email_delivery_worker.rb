@@ -28,17 +28,23 @@ module Automations
         }
 
         # Render content
-        rendered_subject = render_template(template.subject, liquid_vars)
-        rendered_html = render_template(template.html_content, liquid_vars)
-        rendered_text = render_template(template.text_content, liquid_vars)
+        rendered_subject = if template.respond_to?(:render_subject) && template.subject.present?
+                             template.render_subject(liquid_vars)
+                           else
+                             render_template(template.try(:subject), liquid_vars)
+                           end
 
-        body = rendered_html.presence || rendered_text
+        rendered_body = if template.respond_to?(:render_body) && template.body.present?
+                          template.render_body(liquid_vars)
+                        else
+                          render_template(template.try(:body) || template.try(:html_content), liquid_vars)
+                        end
 
         # Dispatch the email directly via SystemMailer (internal team notifications do not create public conversation messages)
         SystemMailer.custom_email(
           to: user.email, 
           subject: rendered_subject, 
-          body: body
+          body: rendered_body
         ).deliver_later
       end
     end

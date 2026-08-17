@@ -27,17 +27,22 @@ module Automations
         }
 
         # Render content
-        rendered_html = render_template(template.html_content, liquid_vars)
-        rendered_text = render_template(template.text_content, liquid_vars)
+        rendered_content = if template.respond_to?(:render_body) && template.body.present?
+                             template.render_body(liquid_vars)
+                           else
+                             render_template(template.try(:body) || template.try(:html_content), liquid_vars)
+                           end
+
+        sender = conversation.assignee || AccountUser.find_by(account: account, owner: true)&.user
 
         # Create the message
         message = conversation.messages.create!(
           account: account,
           inbox: inbox,
-          content: rendered_html.presence || rendered_text.presence,
-          visibility: "public",
-          content_type: :email,
-          sender: account,
+          content: rendered_content,
+          visibility: :global,
+          content_type: :text,
+          sender: sender,
           source: conversation.source,
           data: { email_template_id: template.id, target_email: customer.email }
         )
