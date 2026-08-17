@@ -24,7 +24,7 @@ module Automations
       private
 
       def system_sender
-        AccountUser.find_by(account: account, owner: true)&.user
+        account
       end
     end
   end

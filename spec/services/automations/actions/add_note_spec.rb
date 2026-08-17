@@ -37,7 +37,7 @@ RSpec.describe Automations::Actions::AddNote do
         expect(message.content).to eq('Internal note text')
         expect(message.visibility).to eq('personal')
         expect(message.content_type).to eq('activity')
-        expect(message.sender).to eq(user)
+        expect(message.sender).to eq(account)
         expect(message.inbox).to eq(inbox)
         expect(message.source).to eq(conversation.source)
       end

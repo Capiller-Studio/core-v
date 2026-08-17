@@ -33,7 +33,7 @@ module Automations
                              render_template(template.try(:body) || template.try(:html_content), liquid_vars)
                            end
 
-        sender = conversation.assignee || AccountUser.find_by(account: account, owner: true)&.user
+        sender = conversation.assignee || account
 
         # Create the message
         message = conversation.messages.create!(

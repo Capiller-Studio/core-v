@@ -2,7 +2,7 @@
 
 module Affiliate
   class PayoutBatch < ApplicationRecord
-    include CodeGenerator.new(prefix: "BAT", column: :name)
+    include CodeGenerator.new(prefix: "BAT", column: :code)
 
     has_many :payouts, class_name: "Affiliate::Payout", foreign_key: "payout_batch_id", dependent: :nullify, inverse_of: :payout_batch
 
