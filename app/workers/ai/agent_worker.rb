@@ -18,7 +18,7 @@ module Ai
         
         # Add a private note explaining the AI crash
         ai_agent = Ai::Agent.find_by(id: _ai_agent_id)
-        sender = ai_agent || AccountUser.find_by(account: account, owner: true)&.user
+        sender = ai_agent || account
 
         conversation.messages.create!(
           account: account,
@@ -127,7 +127,7 @@ module Ai
       conversation.update!(ai_status: :ai_handed_off)
       
       if reason.present?
-        sender ||= AccountUser.find_by(account: conversation.account, owner: true)&.user
+        sender ||= conversation.account
         conversation.messages.create!(
           account: conversation.account,
           inbox_id: conversation.inbox_id,

@@ -18,7 +18,7 @@ module Affiliates
             headers: api_headers,
             body: {
               "sourceCurrency" => "USD",
-              "name" => payout_batch.name || "Affiliate Batch #{payout_batch.id}"
+              "name" => payout_batch.name.presence || payout_batch.code || "Affiliate Batch #{payout_batch.id}"
             }.to_json
           )
 
