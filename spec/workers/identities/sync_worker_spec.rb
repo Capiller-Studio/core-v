@@ -16,9 +16,9 @@ RSpec.describe Identities::SyncWorker, type: :worker do
 
       expect {
         described_class.new.perform(customer.id, identity_source.id)
-      }.to change(Identity, :count).by(1)
+      }.to change { account.with_shard { Identity.count } }.by(1)
 
-      identity = Identity.last
+      identity = account.with_shard { Identity.find_by(customer_id: customer.id) }
       expect(identity.identity_type).to eq('custom_api')
       expect(identity.external_id).to eq('ext-123')
     end
