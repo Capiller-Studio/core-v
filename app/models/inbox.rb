@@ -86,6 +86,8 @@ class Inbox < ShardRecord
   end
 
   def cleanup_unread_counts
+    return if account.blank?
+
     account.users.find_each do |user|
       key = RedisUtilities::Keys::UNREAD_INBOX_COUNT % { account_id: account_id, member_id: user.id }
       RedisUtilities::Helpers.hash_delete(key, id)

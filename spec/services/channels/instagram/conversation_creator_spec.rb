@@ -68,5 +68,30 @@ RSpec.describe Channels::Instagram::ConversationCreator do
 
       service.call
     end
+
+    context 'when Instagram returns OAuth authorization error' do
+      let(:mock_auth_error_response) do
+        instance_double(
+          HTTParty::Response,
+          success?: false,
+          code: 401,
+          body: { error: { message: "Error validating access token: Session has expired", code: 190 } }.to_json,
+          parsed_response: { "error" => { "message" => "Error validating access token: Session has expired", "code" => 190 } }
+        )
+      end
+
+      before do
+        allow(HTTParty).to receive(:get).and_return(mock_auth_error_response)
+      end
+
+      it 'calls authorization_error! on the channel and proceeds with fallback customer attributes' do
+        expect(channel).to receive(:authorization_error!)
+        expect(Customers::CustomerCreator).to receive(:call).with(
+          hash_including(external_id: 'sender_ig')
+        ).and_return(customer)
+
+        service.call
+      end
+    end
   end
 end

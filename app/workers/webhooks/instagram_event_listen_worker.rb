@@ -20,17 +20,21 @@ module Webhooks
         return if instagram_id.blank?
 
         # Use GlobalRouting to find the account/shard for this Instagram channel
-        routing = GlobalRouting.find_by(route_type: "instagram", route_value: instagram_id.to_s)
-        return if routing.blank?
+        GlobalRouting.where(route_type: "instagram", route_value: instagram_id.to_s).find_each do |routing|
+          account = routing.account
+          next unless account
 
-        Current.set(account: routing.account) do
-          channel = Channel::Instagram.find_by(instagram_id: instagram_id.to_s, account_id: routing.account_id)
-          return unless channel_active?(channel)
+          Current.set(account: account) do
+            account.with_shard do
+              channel = Channel::Instagram.find_by(instagram_id: instagram_id.to_s, account_id: routing.account_id)
+              next unless channel_active?(channel)
 
-          Channels::Instagram::EventListener.call(
-            instagram_channel: channel,
-            payload: payload
-          )
+              Channels::Instagram::EventListener.call(
+                instagram_channel: channel,
+                payload: payload
+              )
+            end
+          end
         end
 
         webhook.processed!

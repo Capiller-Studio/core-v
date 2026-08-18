@@ -7,7 +7,7 @@
 class Activity < ShardRecord
   # --- Associations ---
   belongs_to :account
-  belongs_to :trackable, polymorphic: true
+  belongs_to :trackable, polymorphic: true, optional: true
   belongs_to :actor, polymorphic: true, optional: true
 
   # --- Validations ---

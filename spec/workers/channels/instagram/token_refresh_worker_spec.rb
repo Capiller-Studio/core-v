@@ -11,8 +11,8 @@ RSpec.describe Channels::Instagram::TokenRefreshWorker, type: :worker do
 
   describe '#perform' do
     it 'refreshes tokens for active Instagram channels expiring within 7 days' do
-      expiring_channel = create(:channel_instagram, account: account, status: :active, expires_at: 3.days.from_now)
-      valid_channel = create(:channel_instagram, account: account, status: :active, expires_at: 30.days.from_now)
+      expiring_channel = account.with_shard { create(:channel_instagram, account: account, status: :active, expires_at: 3.days.from_now) }
+      valid_channel = account.with_shard { create(:channel_instagram, account: account, status: :active, expires_at: 30.days.from_now) }
 
       allow(Account).to receive_message_chain(:distinct, :pluck).with(:shard_key).and_return([account.shard_key])
 
@@ -27,7 +27,7 @@ RSpec.describe Channels::Instagram::TokenRefreshWorker, type: :worker do
     end
 
     it 'rescues errors per channel and logs' do
-      failing_channel = create(:channel_instagram, account: account, status: :active, expires_at: 3.days.from_now)
+      failing_channel = account.with_shard { create(:channel_instagram, account: account, status: :active, expires_at: 3.days.from_now) }
 
       allow(Account).to receive_message_chain(:distinct, :pluck).with(:shard_key).and_return([account.shard_key])
       allow_any_instance_of(Channel::Instagram).to receive(:refresh_token!).and_raise(StandardError.new('Graph API error'))

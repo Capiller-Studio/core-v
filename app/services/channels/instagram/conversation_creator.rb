@@ -43,9 +43,8 @@ module Channels
       private
 
       def find_inbox
-        # TODO: Logic for finding the correct inbox. Maybe: One inbox will act as default and other inboxes will
-        # receive conversations/messages based on Filters
-        self.inbox = channel.primary_inbox
+        # Use primary inbox or fallback to first associated inbox
+        self.inbox = channel.primary_inbox || channel.inboxes.first
       end
 
       def find_or_create_conversation
@@ -80,9 +79,10 @@ module Channels
           external_id: sender_id,
           email: customer_data["email"],
           params: {
+            name: customer_data["name"] || customer_data["username"],
             first_name: customer_data["first_name"],
             last_name: customer_data["last_name"],
-            avatar_url: customer_data["profile_pic"] || customer_data["avatar_url"],
+            avatar_url: customer_data["profile_pic"] || customer_data["profile_picture_url"] || customer_data["avatar_url"],
             gender: customer_data["gender"],
             locale: ::Utilities::LocaleParser.parse(customer_data["locale"])
           }
@@ -100,7 +100,7 @@ module Channels
           identifier: sender_id,
           first_name: customer_data["first_name"],
           last_name: customer_data["last_name"],
-          name: customer_data["name"] || [ customer_data["first_name"], customer_data["last_name"] ].compact.join(" "),
+          name: customer_data["name"] || [ customer_data["first_name"], customer_data["last_name"] ].compact.join(" ").presence || customer_data["username"],
           raw_response: customer_data,
           custom_attributes: {}
         )
@@ -134,8 +134,10 @@ module Channels
           JSON.parse(response.body)
         else
           error_data = response.parsed_response&.dig("error") || {}
-          
-          if response.code == 401 || response.code == 403 || error_data["type"] == "OAuthException" || error_data["code"] == 190
+          error_code = error_data["code"].to_i
+
+          # Code 190: Invalid OAuth 2.0 Access Token (expired or revoked)
+          if response.code == 401 || error_code == 190 || error_data["message"].to_s.include?("Error validating access token")
             channel.authorization_error!
             Rails.logger.error("Instagram auth error fetching customer #{sender_id}: #{response.body}")
           else
@@ -145,6 +147,9 @@ module Channels
         end
       rescue StandardError => e
         Rails.logger.error("Instagram error fetching customer #{sender_id}: #{e.message}")
+        if e.to_s.include?("The session has been invalidated") || e.to_s.include?("Error validating access token")
+          channel.authorization_error!
+        end
         nil
       end
     end

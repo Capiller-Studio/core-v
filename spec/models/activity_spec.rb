@@ -10,7 +10,7 @@ RSpec.describe Activity, type: :model do
   describe 'Associations' do
     it { is_expected.to belong_to(:account) }
     it { is_expected.to belong_to(:actor).optional }
-    it { is_expected.to belong_to(:trackable) }
+    it { is_expected.to belong_to(:trackable).optional }
   end
 
   describe 'Validations' do
