@@ -57,7 +57,7 @@ module Channels
         
         # We need to manually build the URL for 'code' exchange because Koala expects a redirect_uri for get_access_token
         # Actually, for Embedded Signup, the Facebook docs state:
-        response = HTTParty.get("https://graph.facebook.com/v25.0/oauth/access_token", query: {
+        response = HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/oauth/access_token", query: {
           client_id: app_id,
           client_secret: app_secret,
           code: code
@@ -80,7 +80,7 @@ module Channels
           client.get_object("me/client_whatsapp_business_accounts")
         rescue StandardError
           # Fallback to standard graph api if client API fails
-          HTTParty.get("https://graph.facebook.com/v25.0/me/client_whatsapp_business_accounts", headers: { "Authorization" => "Bearer #{client.access_token}" }).parsed_response["data"] || []
+          HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/me/client_whatsapp_business_accounts", headers: { "Authorization" => "Bearer #{client.access_token}" }).parsed_response["data"] || []
         end
       end
 
@@ -88,7 +88,7 @@ module Channels
         begin
           client.get_connections(waba_id, "phone_numbers")
         rescue StandardError
-          HTTParty.get("https://graph.facebook.com/v25.0/#{waba_id}/phone_numbers", headers: { "Authorization" => "Bearer #{client.access_token}" }).parsed_response["data"] || []
+          HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/#{waba_id}/phone_numbers", headers: { "Authorization" => "Bearer #{client.access_token}" }).parsed_response["data"] || []
         end
       end
     end
