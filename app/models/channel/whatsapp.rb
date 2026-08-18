@@ -42,7 +42,7 @@ module Channel
     include FlagShihTzu
 
     # Graph API version — single source of truth for all WhatsApp Cloud API calls.
-    GRAPH_API_VERSION = "v25.0"
+    GRAPH_API_VERSION = "v26.0"
     GRAPH_API_BASE = "https://graph.facebook.com"
 
     belongs_to :account

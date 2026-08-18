@@ -43,7 +43,7 @@ RSpec.describe Channel::Whatsapp, type: :model do
 
     it '#phone_number_endpoint returns graph api url' do
       wa = build(:channel_whatsapp, phone_number_id: '1234')
-      expect(wa.phone_number_endpoint).to eq("https://graph.facebook.com/v25.0/1234")
+      expect(wa.phone_number_endpoint).to eq("https://graph.facebook.com/v26.0/1234")
     end
   end
 

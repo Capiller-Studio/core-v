@@ -14,7 +14,7 @@ module Channels
         instagram_business_manage_messages
       ].freeze
 
-      API_VERSION = "v25.0"
+      API_VERSION = "v26.0"
 
       attr_reader :account
 

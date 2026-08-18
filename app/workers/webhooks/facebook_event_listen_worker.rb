@@ -43,11 +43,13 @@ module Webhooks
       RedisUtilities::MutexHelpers.with_lock(lock_key) do
         GlobalRouting.where(route_type: "facebook_page", route_value: search_id).find_each do |routing|
           Current.set(account: routing.account) do
-            Channel::FacebookPage.where(page_identifier: search_id, account_id: routing.account_id).find_each do |channel|
-              Channels::FacebookPages::ConversationCreator.call(
-                facebook_page_channel: channel,
-                parsed_message: parsed_message
-              )
+            routing.account.with_shard do
+              Channel::FacebookPage.where(page_identifier: search_id, account_id: routing.account_id).find_each do |channel|
+                Channels::FacebookPages::ConversationCreator.call(
+                  facebook_page_channel: channel,
+                  parsed_message: parsed_message
+                )
+              end
             end
           end
         end
@@ -62,14 +64,16 @@ module Webhooks
 
       GlobalRouting.where(route_type: "facebook_page", route_value: parsed_message.recipient_id).find_each do |routing|
         Current.set(account: routing.account) do
-          Channel::FacebookPage.where(page_identifier: parsed_message.recipient_id, account_id: routing.account_id).find_each do |channel|
-            params = {
-              watermark: watermark,
-              customer_external_id: parsed_message.sender_id,
-              channel_class: channel.class.name,
-              channel_id: channel.id
-            }
-            Messages::StatusUpdateWorker.perform_async(channel.account_id, status.to_s, params.as_json)
+          routing.account.with_shard do
+            Channel::FacebookPage.where(page_identifier: parsed_message.recipient_id, account_id: routing.account_id).find_each do |channel|
+              params = {
+                watermark: watermark,
+                customer_external_id: parsed_message.sender_id,
+                channel_class: channel.class.name,
+                channel_id: channel.id
+              }
+              Messages::StatusUpdateWorker.perform_async(channel.account_id, status.to_s, params.as_json)
+            end
           end
         end
       end

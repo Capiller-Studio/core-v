@@ -12,7 +12,7 @@ RSpec.describe Channels::Instagram::MessageSender do
   end
 
   describe '#call' do
-    let(:expected_url) { "https://graph.instagram.com/v25.0/me/messages" }
+    let(:expected_url) { "https://graph.instagram.com/v26.0/me/messages" }
     
     it 'delivers text message and updates status' do
       expected_params = {
