@@ -24,6 +24,8 @@
 #  index_identity_sources_on_account_id_and_name        (account_id,name)
 #
 class IdentitySource < ShardRecord
+  include UsageTrackable
+
   belongs_to :account
 
   enum :source_type, { api: 0 }
@@ -31,6 +33,8 @@ class IdentitySource < ShardRecord
   validate :validate_source_url_safety
 
   before_validation :ensure_json_defaults
+
+  tracks_usage :identity_sources
 
   private
 
@@ -53,8 +57,8 @@ class IdentitySource < ShardRecord
         return
       end
 
-      forbidden_hosts = ['localhost', '127.0.0.1', '0.0.0.0', '::1']
-      if forbidden_hosts.include?(uri.host) || uri.host.to_s.end_with?('.local') || uri.host.to_s.end_with?('.internal')
+      forbidden_hosts = [ "localhost", "127.0.0.1", "0.0.0.0", "::1" ]
+      if forbidden_hosts.include?(uri.host) || uri.host.to_s.end_with?(".local") || uri.host.to_s.end_with?(".internal")
         errors.add(:source_url, "cannot be a local or private address")
       end
     rescue URI::InvalidURIError

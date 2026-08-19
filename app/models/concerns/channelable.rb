@@ -2,23 +2,13 @@
 
 module Channelable
   extend ActiveSupport::Concern
+  include UsageTrackable
 
   included do
-    after_create_commit :increment_channel_usage
-    after_destroy_commit :decrement_channel_usage
+    tracks_usage :channels
   end
 
   def supported_formatting
     [] # Default to plain text, restrict formatting completely
-  end
-
-  private
-
-  def increment_channel_usage
-    account.increment_usage!(:channels) if account.present?
-  end
-
-  def decrement_channel_usage
-    account.decrement_usage!(:channels) if account.present?
   end
 end

@@ -42,6 +42,7 @@
 #
 class Message < ShardRecord
   include UnreadTrackable
+  include UsageTrackable
 
   searchkick word_start: [:content],
              callbacks: :async
@@ -59,6 +60,8 @@ class Message < ShardRecord
 
   has_many :attachments, as: :resource, dependent: :destroy
   has_one :csat_survey_response, class_name: 'Csat::SurveyResponse', dependent: :nullify
+
+  tracks_usage :messages_monthly, enforce: false, decrement_on_destroy: false
 
   after_create_commit :broadcast_message_creation
   after_create_commit :deliver_contact_form_reply, if: -> { outgoing? && source == "help_center" }

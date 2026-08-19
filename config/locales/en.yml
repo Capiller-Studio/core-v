@@ -151,8 +151,31 @@ en:
       attribute_updated: "Updated %{attribute}"
       team_assigned: "Assigned to team %{team_name}"
       team_unassigned: "Removed team assignment"
+  resources:
+    users: "User"
+    channels: "Channels"
+    ai_agents: "AI agents"
+    automations: "Automations"
+    macros: "Macros"
+    sla_policies: "SLA policies"
+    csat_surveys: "CSAT surveys"
+    email_templates: "Email templates"
+    email_template_layouts: "Email template layouts"
+    help_center_portals: "Help center portals"
+    custom_domains: "Custom domains"
+    business_hour_groups: "Business hour schedules"
+    teams: "Teams"
+    custom_roles: "Custom roles"
+    assignment_policies: "Assignment policies"
+    identity_sources: "Identity sources"
+    custom_fields: "Custom fields"
+    customers: "Customers"
+    conversations_monthly: "Monthly conversations"
+    messages_monthly: "Monthly messages"
   activerecord:
     errors:
+      messages:
+        limit_reached: "%{resource} limit reached for your plan. Please upgrade."
       models:
         integration:
           attributes:
@@ -162,12 +185,14 @@ en:
           attributes:
             account_id:
               active_subscription_exists: "already has an active subscription"
-        custom_field:
+        email_template:
           attributes:
             name:
-              taken_in_account: "is already taken for this account"
-            key:
-              invalid_format: "only lowercase letters, numbers, and underscores"
+              blank: "can't be blank"
+        email_template_layout:
+          attributes:
+            name:
+              blank: "can't be blank"
         team:
           attributes:
             name:
@@ -180,6 +205,16 @@ en:
               taken: "is already a member of this team"
             user:
               invalid: "does not belong to the same account as this team"
+        assignment_policy:
+          attributes:
+            business_hour_group:
+              required_with_business_hours: "must be selected when 'respect business hours' is enabled"
+        custom_field:
+          attributes:
+            name:
+              taken_in_account: "is already taken for this account"
+            key:
+              invalid_format: "only lowercase letters, numbers, and underscores"
         account_invitation:
           attributes:
             role_ids:
@@ -199,18 +234,6 @@ en:
               helpbolic_subdomain_as_custom: "cannot use helpbolic.com subdomains as custom domains — use 'subdomain' type instead"
             base:
               custom_domain_limit_reached: "Custom domain limit reached for your current plan. Please upgrade to add more domains."
-        email_template:
-          attributes:
-            name:
-              blank: "can't be blank"
-        email_template_layout:
-          attributes:
-            name:
-              blank: "can't be blank"
-        assignment_policy:
-          attributes:
-            business_hour_group:
-              required_with_business_hours: "must be selected when 'respect business hours' is enabled"
   domains:
     dns_instructions:
       record_type: "CNAME"

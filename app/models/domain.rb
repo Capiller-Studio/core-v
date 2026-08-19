@@ -37,6 +37,7 @@
 #
 class Domain < ApplicationRecord
   require "resolv"
+  include UsageTrackable
 
   belongs_to :account
   has_one :portal, class_name: "HelpCenter::Portal", dependent: :nullify
@@ -59,7 +60,8 @@ class Domain < ApplicationRecord
   validate :value_not_reserved,                 if: :subdomain?
   validate :value_is_valid_subdomain_format,    if: :subdomain?
   validate :value_is_valid_custom_domain_format, if: :custom?
-  validate :account_custom_domain_limit,        on: :create, if: :custom?
+
+  tracks_usage :custom_domains, if: :custom?
 
   # --- Scopes ---
   scope :subdomains,          -> { where(domain_type: :subdomain) }
@@ -200,14 +202,6 @@ class Domain < ApplicationRecord
 
     if value.end_with?(SUBDOMAIN_SUFFIX)
       errors.add(:value, :helpbolic_subdomain_as_custom)
-    end
-  end
-
-  def account_custom_domain_limit
-    return unless account
-
-    if account.respond_to?(:limit_reached?) && account.limit_reached?(:custom_domains)
-      errors.add(:base, :custom_domain_limit_reached)
     end
   end
 end

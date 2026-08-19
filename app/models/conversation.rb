@@ -46,6 +46,7 @@ class Conversation < ShardRecord
   include Assignable
   include SlaTrackable
   include Trackable
+  include UsageTrackable
   include CodeGenerator.new(prefix: "CNV", column: :identifier)
 
   searchkick word_start: [:identifier, :title, :customer_name, :customer_email],
@@ -82,6 +83,8 @@ class Conversation < ShardRecord
   has_many :customer_inboxes, through: :customers
   has_many :csat_survey_responses, class_name: 'Csat::SurveyResponse', dependent: :destroy
   has_one :last_message, -> { order(created_at: :desc) }, class_name: "Message"
+
+  tracks_usage :conversations_monthly, enforce: false, decrement_on_destroy: false
 
   after_create_commit :broadcast_conversation_creation
   after_create_commit :trigger_ai_classification

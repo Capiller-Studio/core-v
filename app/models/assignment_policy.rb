@@ -37,6 +37,7 @@
 #
 class AssignmentPolicy < ShardRecord
   include FlagShihTzu
+  include UsageTrackable
 
   belongs_to :account
   belongs_to :business_hour_group, optional: true
@@ -71,6 +72,7 @@ class AssignmentPolicy < ShardRecord
   validate :validate_business_hours_presence
 
   before_create :assign_next_position
+  tracks_usage :assignment_policies
 
   # --- Scopes ---
 

@@ -3,6 +3,7 @@
 module Access
   class Role < ShardRecord
     include SlugGenerator.new(source: :name, column: :identifier, scope: :account_id)
+    include UsageTrackable
 
     belongs_to :account
     has_many :account_user_roles, class_name: "Access::AccountUserRole", dependent: :destroy
@@ -10,8 +11,12 @@ module Access
     validates :name, presence: true
     validates :name, uniqueness: { scope: :account_id }
 
+    tracks_usage :custom_roles
+
     scope :system_roles, -> { where(system_provided: true) }
     scope :custom_roles, -> { where(system_provided: false) }
+
+    public
 
     # Example permissions structure:
     # {
