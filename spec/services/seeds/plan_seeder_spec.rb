@@ -8,14 +8,31 @@ RSpec.describe Seeds::PlanSeeder do
       }.to change { Plan.count }.by(Plan::NAMES.count * Core::SUPPORTED_CURRENCIES.count)
        .and change { PlanTranslation.count }.by(Plan::NAMES.count * Core::SUPPORTED_CURRENCIES.count)
 
-      # Check one specific plan
+      # Check Hyperbolic plan
       plan = Plan.find_by(name: Plan::HYPERBOLIC, currency: 'USD')
       expect(plan).not_to be_nil
       expect(plan.base_price).to eq(19)
       expect(plan.annual_price).to eq(17)
       expect(plan.limits['users_max']).to eq(30)
+      expect(plan.limits['channels']).to eq(15)
+      expect(plan.limits['ai_agents']).to eq(3)
+      expect(plan.limits['automations']).to eq(25)
+      expect(plan.limits['assignment_policies']).to eq(5)
+      expect(plan.limits['identity_sources']).to eq(0)
+      expect(plan.limits['custom_fields']).to eq(20)
       expect(plan.features['macros']).to eq(true)
+      expect(plan.features['monthly_ai_credits']).to eq(250)
       
+      # Check Parabolic plan bounded channel limit
+      parabolic = Plan.find_by(name: Plan::PARABOLIC, currency: 'USD')
+      expect(parabolic.limits['channels']).to eq(50)
+      expect(parabolic.limits['ai_agents']).to eq(15)
+      expect(parabolic.limits['assignment_policies']).to eq(25)
+      expect(parabolic.limits['identity_sources']).to eq(10)
+      expect(parabolic.limits['custom_fields']).to eq(100)
+      expect(parabolic.limits['data_retention_months']).to eq(60)
+      expect(parabolic.features['monthly_ai_credits']).to eq(500)
+
       translation = plan.translations.find_by(locale: 'en')
       expect(translation).not_to be_nil
     end

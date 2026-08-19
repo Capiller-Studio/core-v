@@ -63,13 +63,13 @@
 #
 class Customer < ShardRecord
   include Addressable
+  include Avatarable
+  include UsageTrackable
 
   belongs_to :account
 
   # TODO: Fix concern
   belongs_to :address
-
-  include Avatarable
 
   enum :status, { active: 0 }
   enum :gender, { male: 0, female: 1 }
@@ -82,6 +82,7 @@ class Customer < ShardRecord
   has_many :messages, as: :sender, dependent: :destroy
   has_many :identities, dependent: :destroy
 
+  tracks_usage :customers, enforce: false
 
   def event_payload
     {

@@ -3,6 +3,7 @@
 module Ai
   class Agent < ShardRecord
     include Translateable
+    include UsageTrackable
 
     TRANSLATABLE_FIELDS = %i[greeting_message handoff_message fallback_message].freeze
     translates(*TRANSLATABLE_FIELDS)
@@ -18,6 +19,8 @@ module Ai
     validates :name, presence: true
     validates :max_exchanges, numericality: { greater_than: 0, less_than_or_equal_to: 20 }
     validates :confidence_threshold, numericality: { greater_than_or_equal_to: 0.0, less_than_or_equal_to: 1.0 }
+
+    tracks_usage :ai_agents
 
     def active_and_configured?
       active?

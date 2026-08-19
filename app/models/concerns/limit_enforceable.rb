@@ -13,7 +13,28 @@ module LimitEnforceable
   # "max" comes from the plan, "current" is tracked here.
   # -1 means unlimited.
 
-  RESOURCES = %w[users channels customers automations conversations_monthly messages_monthly custom_domains csat_surveys email_templates email_template_layouts].freeze
+  RESOURCES = %w[
+    users
+    channels
+    ai_agents
+    automations
+    macros
+    sla_policies
+    csat_surveys
+    email_templates
+    email_template_layouts
+    help_center_portals
+    custom_domains
+    business_hour_groups
+    teams
+    custom_roles
+    assignment_policies
+    identity_sources
+    custom_fields
+    customers
+    conversations_monthly
+    messages_monthly
+  ].freeze
 
   def within_limit?(resource)
     plan = current_plan
@@ -28,9 +49,9 @@ module LimitEnforceable
   def limit_reached?(resource, strict: true)
     return !within_limit?(resource) if strict
 
-    # Soft block: Allow 10% buffer for monthly resources to improve UX
-    is_monthly = resource.to_s.include?("monthly")
-    buffer = is_monthly ? 1.1 : 1.0
+    # Soft block: Allow 10% buffer for monthly resources and customers to improve UX
+    is_soft = resource.to_s.include?("monthly") || resource.to_s == "customers"
+    buffer = is_soft ? 1.1 : 1.0
 
     plan = current_plan
     return false unless plan
@@ -52,7 +73,7 @@ module LimitEnforceable
   end
 
   def current_usage(resource)
-    limits.dig(resource.to_s, "current") || 0
+    (limits || {}).dig(resource.to_s, "current") || 0
   end
 
   def usage_percentage(resource)
@@ -67,7 +88,7 @@ module LimitEnforceable
 
   def increment_usage!(resource)
     current = current_usage(resource)
-    new_limits = limits.deep_dup
+    new_limits = (limits || {}).deep_dup
     new_limits[resource.to_s] ||= {}
     new_limits[resource.to_s]["current"] = current + 1
     # rubocop:disable Rails/SkipsModelValidations
@@ -79,7 +100,7 @@ module LimitEnforceable
 
   def decrement_usage!(resource)
     current = current_usage(resource)
-    new_limits = limits.deep_dup
+    new_limits = (limits || {}).deep_dup
     new_limits[resource.to_s] ||= {}
     new_limits[resource.to_s]["current"] = [ current - 1, 0 ].max
     # rubocop:disable Rails/SkipsModelValidations
@@ -88,7 +109,7 @@ module LimitEnforceable
   end
 
   def reset_monthly_counters!
-    new_limits = limits.deep_dup
+    new_limits = (limits || {}).deep_dup
     %w[conversations_monthly messages_monthly].each do |resource|
       new_limits[resource] ||= {}
       new_limits[resource]["current"] = 0

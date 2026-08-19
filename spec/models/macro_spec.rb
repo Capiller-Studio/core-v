@@ -59,7 +59,7 @@ RSpec.describe Macro, type: :model do
     let!(:global_macro) { create(:macro, account: account, visibility: :account_wide) }
     let!(:personal_macro) { create(:macro, account: account, visibility: :personal, scopeable: user) }
     let!(:team_macro) { create(:macro, account: account, visibility: :team, scopeable: team) }
-    let!(:system_macro) { create(:macro, account: account, is_system: true) }
+    let!(:system_macro) { create(:macro, account: account, system_provided: true) }
 
     describe '.for_user' do
       it 'returns global, personal and specific team macros' do
@@ -146,7 +146,7 @@ RSpec.describe Macro, type: :model do
         copy = personal_macro.duplicate
         expect(copy.name).to eq("#{personal_macro.name} (copy)")
         expect(copy.status).to eq('inactive')
-        expect(copy.is_system).to be false
+        expect(copy.system_provided).to be false
         expect(copy.account_id).to eq(account.id)
       end
 

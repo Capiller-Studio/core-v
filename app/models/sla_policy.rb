@@ -23,6 +23,8 @@
 #  index_sla_policies_on_account_id_and_name        (account_id,name)
 #
 class SlaPolicy < ShardRecord
+  include UsageTrackable
+
   belongs_to :account
   belongs_to :business_hour_group, optional: true
 
@@ -30,4 +32,7 @@ class SlaPolicy < ShardRecord
   has_many :inboxes, through: :sla_inboxes
   has_many :conversation_slas, dependent: :destroy
   has_many :conversations, through: :conversation_slas
+  validates :name, presence: true
+
+  tracks_usage :sla_policies
 end

@@ -30,6 +30,7 @@
 class CustomField < ShardRecord
   include FlagShihTzu
   include Translateable
+  include UsageTrackable
 
   TRANSLATABLE_FIELDS = %i[label placeholder description].freeze
 
@@ -99,6 +100,8 @@ class CustomField < ShardRecord
 
   before_validation :assign_entity_type_from_mapped_to
 
+  tracks_usage :custom_fields
+
   private
 
   def validate_default_value
@@ -119,8 +122,6 @@ class CustomField < ShardRecord
       end
     end
   end
-
-  private
 
   def assign_entity_type_from_mapped_to
     return if mapped_to.blank?

@@ -28,6 +28,7 @@
 class Team < ShardRecord
   include SlugGenerator.new(source: :name, column: :identifier, scope: :account_id)
   include Avatarable
+  include UsageTrackable
 
   belongs_to :account
 
@@ -45,6 +46,8 @@ class Team < ShardRecord
   validates :name, presence: true, length: { maximum: 255 }
   validates :identifier, presence: true, uniqueness: { scope: :account_id }
   validate :validate_configurations
+
+  tracks_usage :teams
 
   # --- Scopes ---
 

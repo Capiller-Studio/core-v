@@ -13,6 +13,10 @@ module Billable
     after_create :create_wallet!
   end
 
+  def active_subscription
+    super || subscriptions.current.first
+  end
+
   def current_plan
     active_subscription&.plan
   end
@@ -22,7 +26,7 @@ module Billable
   end
 
   def trialing?
-    active_subscription&.trialing?
+    active_subscription&.trialing? || false
   end
 
   def on_free_plan?

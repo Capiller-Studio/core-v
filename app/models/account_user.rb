@@ -36,6 +36,7 @@
 #
 class AccountUser < ApplicationRecord
   include AccessControl
+  include UsageTrackable
 
   belongs_to :account
   belongs_to :user
@@ -44,9 +45,8 @@ class AccountUser < ApplicationRecord
   enum :availability, { online: 0, offline: 1 }
   enum :status, { active: 0 }
 
-  before_create :enforce_user_limit!
-  after_create_commit :on_agent_added
-  after_destroy_commit :on_agent_removed
+  tracks_usage :users
+  after_create_commit :track_agent_count
 
   # --- Owner Protections ---
   validate :owner_immutable, on: :update
@@ -55,20 +55,8 @@ class AccountUser < ApplicationRecord
 
   private
 
-  def enforce_user_limit!
-    return if account.within_limit?(:users)
-
-    errors.add(:base, "User limit reached for your plan. Please upgrade.")
-    throw(:abort)
-  end
-
-  def on_agent_added
-    account.increment_usage!(:users)
-    account.track_agent_count!
-  end
-
-  def on_agent_removed
-    account.decrement_usage!(:users)
+  def track_agent_count
+    account&.track_agent_count!
   end
 
   # Owner status cannot be removed once assigned

@@ -80,7 +80,7 @@ RSpec.describe Automation, type: :model do
         copy = auto.duplicate
         expect(copy.name).to eq("#{auto.name} (copy)")
         expect(copy.status).to eq('inactive')
-        expect(copy.is_system).to be false
+        expect(copy.system_provided).to be false
         expect(copy.position).to be_nil
       end
 

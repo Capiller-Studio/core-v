@@ -19,6 +19,8 @@
 #  index_business_hour_groups_on_account_id_and_name        (account_id,name)
 #
 class BusinessHourGroup < ShardRecord
+  include UsageTrackable
+
   belongs_to :account
 
   has_many :business_hours, dependent: :destroy
@@ -28,4 +30,6 @@ class BusinessHourGroup < ShardRecord
   validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
 
   accepts_nested_attributes_for :business_hours, allow_destroy: true
+
+  tracks_usage :business_hour_groups
 end

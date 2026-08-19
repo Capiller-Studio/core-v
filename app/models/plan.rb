@@ -45,7 +45,11 @@ class Plan < ApplicationRecord
 
   # Limit helpers — returns -1 for unlimited
   def limit_for(resource)
-    limits[resource.to_s] || -1
+    res = resource.to_s
+    return limits[res] if limits.key?(res)
+    return limits["users_max"] if res == "users" && limits.key?("users_max")
+
+    -1
   end
 
   def unlimited?(resource)

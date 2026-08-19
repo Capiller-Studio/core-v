@@ -49,7 +49,7 @@ module Channel
 
     enum :status, { active: 0, disconnected: 1 }
 
-    validates :instagram_id, presence: true, uniqueness: true
+    validates :instagram_id, presence: true, uniqueness: { case_sensitive: false }
     validates :access_token, presence: true
     validates :expires_at, presence: true
 

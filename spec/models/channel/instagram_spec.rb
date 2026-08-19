@@ -8,10 +8,10 @@ RSpec.describe Channel::Instagram, type: :model do
   end
 
   describe 'Validations' do
-    subject { create(:channel_instagram) }
+    subject { build(:channel_instagram) }
 
     it { is_expected.to validate_presence_of(:instagram_id) }
-    it { is_expected.to validate_uniqueness_of(:instagram_id) }
+    it { is_expected.to validate_uniqueness_of(:instagram_id).case_insensitive }
     it { is_expected.to validate_presence_of(:access_token) }
     it { is_expected.to validate_presence_of(:expires_at) }
   end

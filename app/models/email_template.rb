@@ -15,6 +15,7 @@
 class EmailTemplate < ShardRecord
   include Translateable
   include Publishable
+  include UsageTrackable
 
   publishable_fields :subject, :body, :design
 
@@ -87,28 +88,7 @@ class EmailTemplate < ShardRecord
   validates :name, presence: true
   validates :template_type, presence: true
 
-  before_create :enforce_email_templates_limit!
-  after_create_commit :increment_email_templates_usage
-  after_destroy_commit :decrement_email_templates_usage
-
-  private
-
-  def enforce_email_templates_limit!
-    return if account.within_limit?(:email_templates)
-
-    errors.add(:base, "Email templates limit reached for your plan. Please upgrade.")
-    throw(:abort)
-  end
-
-  def increment_email_templates_usage
-    account.increment_usage!(:email_templates)
-  end
-
-  def decrement_email_templates_usage
-    account.decrement_usage!(:email_templates)
-  end
-
-  public
+  tracks_usage :email_templates
 
   # Render the template body using Liquid with variable interpolation.
   # Always uses the PUBLISHED compiled_html (never draft).

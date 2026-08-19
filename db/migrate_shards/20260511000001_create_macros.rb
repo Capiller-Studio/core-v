@@ -25,7 +25,7 @@ class CreateMacros < ActiveRecord::Migration[8.1]
       t.integer :flags,       null: false, default: 0
 
       # System macros are non-deletable, created by the platform.
-      t.boolean :is_system,   null: false, default: false
+      t.boolean :system_provided, null: false, default: false
 
       # Polymorphic scope owner:
       #   visibility: :personal     → scopeable_type: "User", scopeable_id: user.id
@@ -41,7 +41,7 @@ class CreateMacros < ActiveRecord::Migration[8.1]
       t.index [:account_id, :visibility]
       t.index [:account_id, :scopeable_type, :scopeable_id], name: "idx_macros_scopeable"
       t.index [:account_id, :name]
-      t.index [:account_id, :is_system]
+      t.index [:account_id, :system_provided]
       t.index [:account_id, :status]
       t.index :created_at
     end

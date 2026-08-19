@@ -30,6 +30,7 @@ module HelpCenter
   class Portal < ShardRecord
     include FlagShihTzu
     include Translateable
+    include UsageTrackable
 
     translates :hero_title, :hero_subtitle, :header_tagline, :contact_page_title, :contact_page_subtitle, :footer_text, :search_placeholder
 
@@ -85,5 +86,7 @@ module HelpCenter
     #   "google_analytics_id" => "UA-XXXXX",
     #   "custom_css"          => ""           (injected into <style> tag on portal pages)
     # }
+
+    tracks_usage :help_center_portals
   end
 end

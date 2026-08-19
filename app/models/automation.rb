@@ -12,26 +12,27 @@
 #  description      :text
 #  event_name       :string
 #  flags            :integer          default(0), not null
-#  is_system        :boolean          default(FALSE), not null
 #  name             :string           not null
 #  position         :integer
 #  status           :integer          default("active"), not null
+#  system_provided  :boolean          default(FALSE), not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  account_id       :uuid             not null
 #
 # Indexes
 #
-#  idx_automations_event_lookup      (account_id,automation_type,event_name,status)
-#  idx_automations_execution_order   (account_id,automation_type,status,position)
-#  index_automations_on_account_id                 (account_id)
-#  index_automations_on_account_id_and_created_at  (account_id,created_at)
-#  index_automations_on_account_id_and_is_system   (account_id,is_system)
-#  index_automations_on_account_id_and_name        (account_id,name)
+#  idx_automations_event_lookup                     (account_id,automation_type,event_name,status)
+#  idx_automations_execution_order                  (account_id,automation_type,status,position)
+#  index_automations_on_account_id                  (account_id)
+#  index_automations_on_account_id_and_created_at   (account_id,created_at)
+#  index_automations_on_account_id_and_name         (account_id,name)
+#  index_automations_on_account_id_and_system_provided (account_id,system_provided)
 #
 class Automation < ShardRecord
   include Actionable
   include FlagShihTzu
+  include UsageTrackable
 
   belongs_to :account
 
@@ -48,9 +49,12 @@ class Automation < ShardRecord
   validate :validate_conditions_jsonb
 
   before_create :assign_next_position
+  tracks_usage :automations
 
   # --- Scopes ---
 
+  scope :system_automations, -> { where(system_provided: true) }
+  scope :custom_automations, -> { where(system_provided: false) }
   scope :event_triggers_for, ->(event_name) {
     where(automation_type: :event_trigger, event_name: event_name, status: :active).order(:position)
   }
@@ -64,7 +68,7 @@ class Automation < ShardRecord
     dup.tap do |copy|
       copy.name = new_name || "#{name} (copy)"
       copy.status = :inactive
-      copy.is_system = false
+      copy.system_provided = false
       copy.position = nil # Will be auto-assigned by before_create
     end
   end

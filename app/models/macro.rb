@@ -8,11 +8,11 @@
 #  actions         :jsonb            not null
 #  description     :text
 #  flags           :integer          default(0), not null
-#  is_system       :boolean          default(FALSE), not null
 #  name            :string           not null
 #  scopeable_type  :string
 #  scopeable_id    :uuid
 #  status          :integer          default("active"), not null
+#  system_provided :boolean          default(FALSE), not null
 #  visibility      :integer          default("account_wide"), not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
@@ -21,6 +21,7 @@
 class Macro < ShardRecord
   include Actionable
   include FlagShihTzu
+  include UsageTrackable
 
   belongs_to :account
   belongs_to :scopeable, polymorphic: true, optional: true
@@ -32,6 +33,8 @@ class Macro < ShardRecord
   validates :name, presence: true
   validate :scopeable_matches_visibility
 
+  tracks_usage :macros
+
   # --- Scopes ---
 
   # All macros accessible by a given user:
@@ -41,7 +44,7 @@ class Macro < ShardRecord
   #   4. System macros
   scope :for_user, ->(user, team_ids: []) {
     account_wide_or_system = where(visibility: :account_wide)
-                               .or(where(is_system: true))
+                               .or(where(system_provided: true))
 
     personal = where(visibility: :personal, scopeable_type: "User", scopeable_id: user.id)
 
@@ -53,10 +56,10 @@ class Macro < ShardRecord
     end
   }
 
-  scope :account_wide_macros, -> { where(visibility: :account_wide, is_system: false) }
+  scope :account_wide_macros, -> { where(visibility: :account_wide, system_provided: false) }
   scope :personal_macros, ->(user) { where(visibility: :personal, scopeable_type: "User", scopeable_id: user.id) }
   scope :team_macros, ->(team) { where(visibility: :team, scopeable_type: "Team", scopeable_id: team.id) }
-  scope :system_macros, -> { where(is_system: true) }
+  scope :system_macros, -> { where(system_provided: true) }
 
   # --- Instance Methods ---
 
@@ -76,7 +79,7 @@ class Macro < ShardRecord
     dup.tap do |copy|
       copy.name = new_name || "#{name} (copy)"
       copy.status = :inactive
-      copy.is_system = false
+      copy.system_provided = false
     end
   end
 

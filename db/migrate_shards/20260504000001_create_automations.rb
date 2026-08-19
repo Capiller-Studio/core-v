@@ -90,9 +90,9 @@ class CreateAutomations < ActiveRecord::Migration[8.1]
       # flags (FlagShihTzu bit fields):
       #   1 => :stop_processing — if this rule fires, skip all lower-priority rules for this event
 
-      # is_system: true for platform-provided automations (e.g., auto-close after 48h).
+      # system_provided: true for platform-provided automations (e.g., auto-close after 48h).
       # Users can toggle on/off but cannot delete system automations.
-      t.boolean :is_system, null: false, default: false
+      t.boolean :system_provided, null: false, default: false
 
       # configurations jsonb — type-specific settings (currently for time_trigger scheduling):
       # {
@@ -109,7 +109,7 @@ class CreateAutomations < ActiveRecord::Migration[8.1]
       t.index [:account_id, :automation_type, :event_name, :status], name: "idx_automations_event_lookup"
       t.index [:account_id, :automation_type, :status, :position],   name: "idx_automations_execution_order"
       t.index [:account_id, :name]
-      t.index [:account_id, :is_system]
+      t.index [:account_id, :system_provided]
       t.index [:account_id, :created_at]
     end
   end
