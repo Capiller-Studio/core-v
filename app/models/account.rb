@@ -105,6 +105,7 @@ class Account < ApplicationRecord
   has_many :email_templates, dependent: :destroy
   has_many :email_template_layouts, dependent: :destroy
   has_many :notification_settings, dependent: :destroy
+  has_many :notifications, dependent: :destroy
   has_many :csat_surveys, class_name: "Csat::Survey", dependent: :destroy
   has_many :csat_survey_responses, class_name: "Csat::SurveyResponse", dependent: :destroy
   has_many :campaigns, dependent: :destroy
