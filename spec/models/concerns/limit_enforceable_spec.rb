@@ -66,11 +66,67 @@ RSpec.describe LimitEnforceable, type: :model do
   end
 
   describe '#reset_monthly_counters!' do
-    it 'resets monthly resource counters to 0' do
+    it 'resets monthly resource counters to 0 and clears notification flags' do
+      account.update_column(:limits, {
+        'conversations_monthly' => { 'current' => 100, 'notified_80_at' => '2026-08-01T00:00:00Z', 'notified_100_at' => '2026-08-10T00:00:00Z' },
+        'messages_monthly' => { 'current' => 500 }
+      })
+
       account.reset_monthly_counters!
       expect(account.current_usage('conversations_monthly')).to eq(0)
       expect(account.current_usage('messages_monthly')).to eq(0)
+      expect(account.limits.dig('conversations_monthly', 'notified_80_at')).to be_nil
+      expect(account.limits.dig('conversations_monthly', 'notified_100_at')).to be_nil
       expect(account.limits['last_reset_at']).to be_present
+    end
+  end
+
+  describe 'notification state-transition triggering & anti-spam' do
+    let(:user) { create(:user) }
+    let!(:account_user) { create(:account_user, account: account, user: user, owner: true) }
+
+    before do
+      account.update_column(:limits, { 'conversations_monthly' => { 'current' => 79 } })
+    end
+
+    it 'triggers limit_approaching only when crossing the 80% boundary' do
+      expect {
+        account.increment_usage!('conversations_monthly') # 79 -> 80 (crosses 80%)
+      }.to change { account.notifications.where(event: :limit_approaching).count }.by(1)
+
+      expect {
+        account.increment_usage!('conversations_monthly') # 80 -> 81 (already past 80%)
+        account.increment_usage!('conversations_monthly') # 81 -> 82
+      }.not_to change { account.notifications.where(event: :limit_approaching).count }
+    end
+
+    it 'triggers limit_reached only when crossing the 100% boundary' do
+      account.update_column(:limits, { 'conversations_monthly' => { 'current' => 99 } })
+
+      expect {
+        account.increment_usage!('conversations_monthly') # 99 -> 100 (crosses 100%)
+      }.to change { account.notifications.where(event: :limit_reached).count }.by(1)
+
+      expect {
+        account.increment_usage!('conversations_monthly') # 100 -> 101
+        account.increment_usage!('conversations_monthly') # 101 -> 102
+      }.not_to change { account.notifications.where(event: :limit_reached).count }
+    end
+
+    it 'records notification timestamps in limits metadata' do
+      account.increment_usage!('conversations_monthly') # 79 -> 80
+      expect(account.limits.dig('conversations_monthly', 'notified_80_at')).to be_present
+    end
+
+    it 'deduplicates notifications for persistent resources' do
+      account.update_column(:limits, { 'users' => { 'current' => 3 } }) # limit is 5, 80% is 4
+      expect {
+        account.increment_usage!('users') # 3 -> 4 (crosses 80%)
+      }.to change { account.notifications.where(event: :limit_approaching).count }.by(1)
+
+      expect {
+        account.increment_usage!('users') # 4 -> 5 (crosses 100%)
+      }.to change { account.notifications.where(event: :limit_reached).count }.by(1)
     end
   end
 end

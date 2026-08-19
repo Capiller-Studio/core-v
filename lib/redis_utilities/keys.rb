@@ -23,6 +23,7 @@ module RedisUtilities
 
     AI_CLASSIFIER_LOCK = "AI_CLASSIFIER_LOCK:%{account_id}:%{conversation_id}"
     LANGUAGE_DETECTION_LOCK = "LANGUAGE_DETECTION_LOCK:%{account_id}:%{conversation_id}"
+    LIMIT_NOTIFICATION_LOCK = "LIMIT_NOTIFICATION:%{account_id}:%{resource}:%{threshold}:%{window}"
 
     SUBSCRIPTION_LOCK = "SUBSCRIPTION_LOCK:%{account_id}"
     WALLET_LOCK = "WALLET_LOCK:%{account_id}"
