@@ -20,8 +20,7 @@ module Affiliates
           end
         end
       rescue StandardError => e
-        payout.update!(status: :failed)
-        Rails.logger.error("Payout Processor Failed [Payout ID: #{payout.id}]: #{e.message}")
+        handle_failure!(e)
         nil
       end
 
@@ -38,12 +37,27 @@ module Affiliates
 
       def process_manual!
         payout.update!(status: :paid)
+        Affiliates::Payouts::InvoiceWorker.perform_async(payout.id)
       end
 
       def process_wise!
-        # Hand off Wise payout to background worker for fault tolerance
         payout.update!(status: :processing)
         Affiliates::Wise::TransferWorker.perform_async(payout.id)
+      end
+
+      def handle_failure!(error)
+        Rails.logger.error("Payout Processor Failed [Payout ID: #{payout.id}]: #{error.message}")
+        ActiveRecord::Base.transaction do
+          payout.update!(status: :failed)
+          # Restore commissions to available status on failure to prevent lost balances
+          if payout.commission_ids.present?
+            # rubocop:disable Rails/SkipsModelValidations
+            payout.profile.commissions.where(id: payout.commission_ids).update_all(status: :available)
+            # rubocop:enable Rails/SkipsModelValidations
+          end
+        end
+      rescue StandardError => rollback_error
+        Rails.logger.error("Failed to restore commissions on payout failure: #{rollback_error.message}")
       end
     end
   end

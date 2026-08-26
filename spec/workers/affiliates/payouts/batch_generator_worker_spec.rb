@@ -1,75 +1,94 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe Affiliates::Payouts::BatchGeneratorWorker, type: :worker do
+RSpec.describe Affiliates::Payouts::BatchGeneratorWorker do
+  let(:worker) { described_class.new }
   let!(:profile1) { create(:affiliate_profile, payouts_enabled: true) }
   let!(:profile2) { create(:affiliate_profile, payouts_enabled: true) }
   let!(:disabled_profile) { create(:affiliate_profile, payouts_enabled: false) }
 
-  describe '#perform' do
-    context 'when batch_payout is true' do
-      it 'creates a payout batch, generates payouts for eligible profiles, and enqueues BatchGroupCreatorWorker' do
-        payout1 = create(:affiliate_payout, profile: profile1)
-        payout2 = create(:affiliate_payout, profile: profile2)
+  before do
+    allow(::RedisUtilities::MutexHelpers).to receive(:with_lock).and_yield
+    allow(Affiliates::BankDetailsValidator).to receive(:call).and_return(double(success?: true))
+  end
 
-        allow(Affiliates::Payouts::Generator).to receive(:call).with(profile: profile1).and_return(payout1)
-        allow(Affiliates::Payouts::Generator).to receive(:call).with(profile: profile2).and_return(payout2)
+  describe "#perform" do
+    it "acquires a distributed lock on PAYOUT_GENERATION_LOCK" do
+      expect(::RedisUtilities::MutexHelpers).to receive(:with_lock)
+        .with(::RedisUtilities::Keys::PAYOUT_GENERATION_LOCK)
+        .and_yield
 
-        expect(Affiliates::Wise::BatchGroupCreatorWorker).to receive(:perform_async).with(kind_of(String))
+      worker.perform
+    end
 
-        described_class.new.perform
+    it "handles MutexLockError gracefully without raising" do
+      allow(::RedisUtilities::MutexHelpers).to receive(:with_lock)
+        .and_raise(MutexLockError.new("Resource locked"))
 
-        batch = Affiliate::PayoutBatch.last
-        expect(payout1.reload.payout_batch_id).to eq(batch.id)
-        expect(payout2.reload.payout_batch_id).to eq(batch.id)
+      expect(Rails.logger).to receive(:warn).with(/Payout Batch Generation skipped/)
+      expect { worker.perform }.not_to raise_error
+    end
+
+    context "when running in grouped batch mode (batch_payout = true)" do
+      context "with manual provider" do
+        it "creates a payout batch, generates payouts, and marks them funded and paid" do
+          create(:affiliate_commission, profile: profile1, status: :available, amount: 100.0)
+          create(:affiliate_commission, profile: profile2, status: :available, amount: 200.0)
+
+          expect {
+            worker.perform(nil, true, "manual")
+          }.to change(Affiliate::PayoutBatch, :count).by(1)
+           .and change(Affiliate::Payout, :count).by(2)
+
+          batch = Affiliate::PayoutBatch.last
+          expect(batch.status).to eq("funded")
+          expect(batch.provider).to eq("manual")
+          expect(batch.total_amount).to eq(300.0)
+          expect(batch.payouts.pluck(:status).uniq).to eq(["paid"])
+        end
+
+        it "destroys the batch if no eligible payouts were generated" do
+          expect {
+            worker.perform(nil, true, "manual")
+          }.not_to change(Affiliate::PayoutBatch, :count)
+        end
       end
 
-      it 'filters by profile_ids when provided' do
-        payout1 = create(:affiliate_payout, profile: profile1)
-        expect(Affiliates::Payouts::Generator).to receive(:call).with(profile: profile1).and_return(payout1)
-        expect(Affiliates::Payouts::Generator).not_to receive(:call).with(profile: profile2)
+      context "with wise provider" do
+        it "creates a payout batch, sets status to processing, and enqueues BatchGroupCreatorWorker" do
+          create(:affiliate_commission, profile: profile1, status: :available, amount: 150.0)
 
-        allow(Affiliates::Wise::BatchGroupCreatorWorker).to receive(:perform_async)
+          expect(Affiliates::Wise::BatchGroupCreatorWorker).to receive(:perform_async).with(anything)
 
-        described_class.new.perform([profile1.id], true)
-      end
+          expect {
+            worker.perform([profile1.id], true, "wise")
+          }.to change(Affiliate::PayoutBatch, :count).by(1)
+           .and change(Affiliate::Payout, :count).by(1)
 
-      it 'does not enqueue worker if no payouts were generated' do
-        allow(Affiliates::Payouts::Generator).to receive(:call).and_return(nil)
-        expect(Affiliates::Wise::BatchGroupCreatorWorker).not_to receive(:perform_async)
-
-        described_class.new.perform
+          batch = Affiliate::PayoutBatch.last
+          expect(batch.status).to eq("processing")
+          expect(batch.provider).to eq("wise")
+          expect(batch.total_amount).to eq(150.0)
+        end
       end
     end
 
-    context 'when batch_payout is false' do
-      it 'generates standalone payouts and processes each immediately' do
-        payout1 = create(:affiliate_payout, profile: profile1)
-        payout2 = create(:affiliate_payout, profile: profile2)
+    context "when running in standalone individual mode (batch_payout = false)" do
+      it "generates standalone payouts without creating a PayoutBatch" do
+        create(:affiliate_commission, profile: profile1, status: :available, amount: 75.0)
 
-        allow(Affiliates::Payouts::Generator).to receive(:call).with(profile: profile1).and_return(payout1)
-        allow(Affiliates::Payouts::Generator).to receive(:call).with(profile: profile2).and_return(payout2)
+        expect {
+          expect {
+            worker.perform([profile1.id], false, "manual")
+          }.to change(Affiliate::Payout, :count).by(1)
+        }.not_to change(Affiliate::PayoutBatch, :count)
 
-        expect(Affiliates::Payouts::Processor).to receive(:call).with(payout: payout1)
-        expect(Affiliates::Payouts::Processor).to receive(:call).with(payout: payout2)
-
-        described_class.new.perform(nil, false)
+        payout = Affiliate::Payout.last
+        expect(payout.payout_batch_id).to be_nil
+        expect(payout.status).to eq("paid")
+        expect(payout.amount).to eq(75.0)
       end
-    end
-
-    it 'returns early if no eligible profiles exist' do
-      Affiliate::Profile.update_all(payouts_enabled: false)
-      expect(Affiliates::Payouts::Generator).not_to receive(:call)
-
-      described_class.new.perform
-    end
-
-    it 'rescues and logs errors when generating payout for a profile' do
-      allow(Affiliates::Payouts::Generator).to receive(:call).and_raise(StandardError.new('Generation error'))
-      expect(Rails.logger).to receive(:error).with(/Payout generation failed for profile/).at_least(:once)
-
-      expect { described_class.new.perform }.not_to raise_error
     end
   end
 end

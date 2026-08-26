@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rails_helper"
 
 RSpec.describe Seeds::AdminSeeder do
@@ -5,12 +7,12 @@ RSpec.describe Seeds::AdminSeeder do
     described_class.seed(email: email, password: password, name: name)
   end
 
-  let(:email) { "platform-admin@example.com" }
+  let(:email) { "ahsan@techbolic.com" }
   let(:password) { "SecurePassword123!" }
-  let(:name) { "Platform Admin" }
+  let(:name) { "Ahsan" }
 
   describe ".seed" do
-    it "persists the super admin role assignment" do
+    it "persists the super admin role assignment and standard roles" do
       staff = seed_admin
       super_admin_role = Platform::Role.find_by!(identifier: "super_admin")
 
@@ -19,11 +21,11 @@ RSpec.describe Seeds::AdminSeeder do
       expect(staff.roles.reload.pluck(:identifier)).to contain_exactly("super_admin")
     end
 
-    it "creates only the super admin role" do
-      staff = seed_admin
+    it "creates all standard roles defined in the seeder" do
+      seed_admin
 
-      expect(Platform::Role.pluck(:identifier)).to contain_exactly("super_admin")
-      expect(staff.roles.reload.pluck(:identifier)).to contain_exactly("super_admin")
+      expected_identifiers = %w[super_admin admin finance support affiliate_manager read_only]
+      expect(Platform::Role.pluck(:identifier)).to match_array(expected_identifiers)
     end
 
     it "does not create another admin when run again" do
@@ -42,12 +44,12 @@ RSpec.describe Seeds::AdminSeeder do
 
     it "removes other assignments and remains idempotent" do
       staff = seed_admin
-      billing_role = Platform::Role.create!(
-        identifier: "billing_admin",
-        name: "Billing Admin",
+      custom_role = Platform::Role.create!(
+        identifier: "custom_role",
+        name: "Custom Role",
         permissions: {}
       )
-      Platform::StaffRole.create!(staff: staff, role: billing_role)
+      Platform::StaffRole.create!(staff: staff, role: custom_role)
 
       2.times do
         described_class.seed(email: email, password: password, name: name)
@@ -66,5 +68,13 @@ RSpec.describe Seeds::AdminSeeder do
       expect(Platform::Role.find_by!(identifier: "super_admin").permissions).to eq(expected_permissions)
     end
 
+    it "builds read_only permissions with only read access" do
+      seed_admin
+      expected_permissions = Platform::Role::PERMISSION_SCHEMA.transform_values do |actions|
+        actions.index_with { |action| action == "read" }
+      end
+
+      expect(Platform::Role.find_by!(identifier: "read_only").permissions).to eq(expected_permissions)
+    end
   end
 end

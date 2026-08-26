@@ -4,7 +4,9 @@ class CreateAffiliatePayoutBatches < ActiveRecord::Migration[8.1]
       t.string :code, null: false
       t.string :name
       t.integer :status, default: 0, null: false
+      t.integer :provider, default: 0, null: false
       t.string :external_id
+      t.decimal :total_amount, precision: 12, scale: 2, default: 0
       t.datetime :funded_at
       t.jsonb :data, default: {}
 
@@ -17,3 +19,4 @@ class CreateAffiliatePayoutBatches < ActiveRecord::Migration[8.1]
     add_index :affiliate_payout_batches, :created_at
   end
 end
+

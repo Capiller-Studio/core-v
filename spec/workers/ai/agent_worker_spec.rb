@@ -22,7 +22,8 @@ RSpec.describe Ai::AgentWorker, type: :worker do
           described_class.new.perform(account.id, conversation.id, message.id, ai_agent.id)
         }.to change { conversation.messages.count }.by(1)
 
-        ai_msg = conversation.messages.reload.last
+        ai_msg = conversation.messages.where(sender: ai_agent).last
+        expect(ai_msg).to be_present
         expect(ai_msg.content).to eq('<p>Here is how you reset your password</p>')
         expect(ai_msg.sender).to eq(ai_agent)
       end

@@ -16,34 +16,43 @@ module Affiliates
           return false if payout.paid?
           return false if payout.external_id.blank?
 
-          response = HTTParty.post(
-            fund_endpoint,
-            headers: api_headers,
-            body: { "type" => "BALANCE" }.to_json
-          )
-          
-          record_api_response(response)
+          lock_key = format(::RedisUtilities::Keys::PAYOUT_LOCK, profile_id: payout.affiliate_profile_id)
 
-          if response.success?
-            payout.update!(status: :paid)
-            return true
-          end
+          ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+            payout.reload
+            return false if payout.paid?
 
-          if response.headers["x-2fa-approval-result"]&.upcase == "REJECTED"
-            new_token = response.headers["x-2fa-approval"]
-            if attempts < 2
-              return self.class.call(
-                payout: payout,
-                token: new_token,
-                attempts: attempts + 1
-              )
+            response = HTTParty.post(
+              fund_endpoint,
+              headers: api_headers,
+              body: { "type" => "BALANCE" }.to_json
+            )
+
+            record_api_response(response)
+
+            if response.success?
+              payout.update!(status: :paid)
+              Affiliates::Payouts::InvoiceWorker.perform_async(payout.id)
+              return true
             end
-          end
 
-          payout.update!(status: :failed)
-          false
+            if response.headers["x-2fa-approval-result"]&.upcase == "REJECTED"
+              new_token = response.headers["x-2fa-approval"]
+              if attempts < 2
+                return self.class.call(
+                  payout: payout,
+                  token: new_token,
+                  attempts: attempts + 1
+                )
+              end
+            end
+
+            payout.update!(status: :failed)
+            false
+          end
         rescue StandardError => e
-          Rails.logger.error("Wise Funder Exception [Payout ID: #{payout.id}]: #{e.message}")
+          Rails.logger.error("Wise Funder Exception [Payout ID: #{payout&.id}]: #{e.message}")
+          payout&.update!(status: :failed)
           false
         end
 

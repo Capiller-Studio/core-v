@@ -16,39 +16,50 @@ module Affiliates
           return false if payout_batch.funded?
           return false if payout_batch.external_id.blank?
 
-          response = HTTParty.post(
-            fund_endpoint,
-            headers: api_headers,
-            body: { "type" => "BALANCE" }.to_json
-          )
-          
-          record_api_response(response)
+          lock_key = format(::RedisUtilities::Keys::PAYOUT_BATCH_LOCK, batch_id: payout_batch.id)
 
-          if response.success?
-            ActiveRecord::Base.transaction do
-              payout_batch.update!(status: :funded, funded_at: Time.current)
-              # rubocop:disable Rails/SkipsModelValidations
-              payout_batch.payouts.update_all(status: :paid)
-              # rubocop:enable Rails/SkipsModelValidations
+          ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+            payout_batch.reload
+            return false if payout_batch.funded?
+
+            response = HTTParty.post(
+              fund_endpoint,
+              headers: api_headers,
+              body: { "type" => "BALANCE" }.to_json
+            )
+
+            record_api_response(response)
+
+            if response.success?
+              ActiveRecord::Base.transaction do
+                payout_batch.update!(status: :funded, funded_at: Time.current)
+                # rubocop:disable Rails/SkipsModelValidations
+                payout_batch.payouts.update_all(status: :paid)
+                # rubocop:enable Rails/SkipsModelValidations
+              end
+              payout_batch.payouts.find_each do |p|
+                Affiliates::Payouts::InvoiceWorker.perform_async(p.id)
+              end
+              return true
             end
-            return true
-          end
 
-          if response.headers["x-2fa-approval-result"]&.upcase == "REJECTED"
-            new_token = response.headers["x-2fa-approval"]
-            if attempts < 2
-              return self.class.call(
-                payout_batch: payout_batch,
-                token: new_token,
-                attempts: attempts + 1
-              )
+            if response.headers["x-2fa-approval-result"]&.upcase == "REJECTED"
+              new_token = response.headers["x-2fa-approval"]
+              if attempts < 2
+                return self.class.call(
+                  payout_batch: payout_batch,
+                  token: new_token,
+                  attempts: attempts + 1
+                )
+              end
             end
-          end
 
-          payout_batch.update!(status: :failed)
-          false
+            payout_batch.update!(status: :failed)
+            false
+          end
         rescue StandardError => e
-          Rails.logger.error("Wise Batch Funder Exception [Batch ID: #{payout_batch.id}]: #{e.message}")
+          Rails.logger.error("Wise Batch Funder Exception [Batch ID: #{payout_batch&.id}]: #{e.message}")
+          payout_batch&.update!(status: :failed)
           false
         end
 

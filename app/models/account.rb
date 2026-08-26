@@ -80,6 +80,8 @@ class Account < ApplicationRecord
   has_many :account_invitations, dependent: :destroy
   has_many :domains, dependent: :destroy
   has_many :ai_wallet_transactions, class_name: "Ai::WalletTransaction", dependent: :destroy
+  has_many :account_plans, dependent: :destroy
+  has_many :custom_plans, through: :account_plans, source: :plan
 
   # Sharded DB Associations
   # IMPORTANT: These associations reside in a separate database shard.

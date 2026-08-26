@@ -31,6 +31,8 @@ module RedisUtilities
     RENEWAL_LOCK = "RENEWAL_LOCK:%{account_id}"
     COMMISSION_LOCK = "COMMISSION_LOCK:%{transaction_id}"
     PAYOUT_LOCK = "PAYOUT_LOCK:%{profile_id}"
+    PAYOUT_BATCH_LOCK = "PAYOUT_BATCH_LOCK:%{batch_id}"
+    PAYOUT_GENERATION_LOCK = "PAYOUT_GENERATION_LOCK"
     PAYMENT_METHOD_LOCK = "PAYMENT_METHOD_LOCK:%{account_id}"
     WEBHOOK_EVENT_LOCK = "WEBHOOK_EVENT_LOCK:%{provider}:%{event_id}"
 

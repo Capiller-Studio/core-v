@@ -11,22 +11,29 @@ module Affiliates
         end
 
         def call
-          return if payout.external_id.present? # Already created
-          return unless validate_bank_data!
+          return payout.external_id if payout.external_id.present?
 
-          quote_id = create_quote
-          return unless quote_id
+          lock_key = format(::RedisUtilities::Keys::PAYOUT_LOCK, profile_id: payout.affiliate_profile_id)
 
-          account_id = create_account
-          return unless account_id
+          ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+            payout.reload
+            return payout.external_id if payout.external_id.present?
+            return unless validate_bank_data!
 
-          transfer_id = create_transfer(quote_id, account_id)
-          return unless transfer_id
+            quote_id = create_quote
+            return unless quote_id
 
-          payout.update!(external_id: transfer_id)
+            account_id = create_account
+            return unless account_id
+
+            transfer_id = create_transfer(quote_id, account_id)
+            return unless transfer_id
+
+            payout.update!(external_id: transfer_id)
+            transfer_id
+          end
         rescue StandardError => e
           Rails.logger.error("Wise Transfer Creator Failed [Payout ID: #{payout.id}]: #{e.message}")
-          # Raise the error so Sidekiq will retry it if appropriate
           raise(e)
         end
 
@@ -40,10 +47,12 @@ module Affiliates
           end
           true
         end
-        
+
         def fail_payout!(reason)
-          payout.update!(status: :failed)
-          payout.update!(data: payout.data.merge("error" => reason))
+          ActiveRecord::Base.transaction do
+            payout.update!(status: :failed)
+            payout.update!(data: payout.data.merge("error" => reason))
+          end
         end
 
         def create_quote
@@ -57,17 +66,17 @@ module Affiliates
               "profile" => profile_id
             }.to_json
           )
-          
+
           record_api_response("quote", response)
           raise("Wise Quote failed: #{response.body}") unless response.success?
-          
+
           JSON.parse(response.body)["id"]
         end
 
         def create_account
           profile = payout.profile
           payload = profile.wise_bank_details_payload
-          
+
           response = HTTParty.post(
             "#{api_endpoint}/v1/accounts",
             headers: api_headers,
@@ -79,10 +88,10 @@ module Affiliates
               "details" => payload[:details]
             }.to_json
           )
-          
+
           record_api_response("account", response)
           raise("Wise Account creation failed: #{response.body}") unless response.success?
-          
+
           JSON.parse(response.body)["id"]
         end
 
@@ -105,10 +114,10 @@ module Affiliates
               "details" => { "reference" => "Affiliate Payout #{payout.code}" }
             }.to_json
           )
-          
+
           record_api_response("transfer", response)
           raise("Wise Transfer failed: #{response.body}") unless response.success?
-          
+
           JSON.parse(response.body)["id"]
         end
 
@@ -117,7 +126,7 @@ module Affiliates
           raise("Payout Batch external_id missing") if batch.external_id.blank?
 
           endpoint = URI.join(api_endpoint, "/v3/profiles/#{profile_id}/batch-groups/#{batch.external_id}/transfers").to_s
-          
+
           response = HTTParty.post(
             endpoint,
             headers: api_headers,
@@ -128,17 +137,16 @@ module Affiliates
               "details" => { "reference" => "Affiliate Payout #{payout.code}" }
             }.to_json
           )
-          
+
           record_api_response("transfer", response)
           raise("Wise Batch Transfer failed: #{response.body}") unless response.success?
-          
+
           JSON.parse(response.body)["id"]
         end
 
         def record_api_response(step, response)
-          # Atomic DB update block to persist Wise interaction state safely
           ActiveRecord::Base.transaction do
-            payout.reload # ensure latest state
+            payout.reload
             body = (JSON.parse(response.body) rescue {})
             api_logs = payout.data["api_responses"] || {}
             api_logs[step] = body
