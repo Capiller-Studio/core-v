@@ -18,37 +18,32 @@ module Affiliates
 
         ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
           ActiveRecord::Base.transaction do
-            # Strangle all 'available' ledgers strictly
-            available_commissions = profile.commissions.available
+            # Pessimistic row locking on available commissions to avoid concurrent double-claims
+            commission_records = profile.commissions.available.lock("FOR UPDATE").to_a
+            return if commission_records.empty?
 
-            return if available_commissions.empty?
-
-            total_payout = available_commissions.sum(:amount)
-
-            # Guard: If refunds outpace current available revenue, we carry over the negative balance organically
+            total_payout = commission_records.sum(&:amount)
+            # Guard: If negative adjustments outpace available commissions, carry balance over
             return if total_payout <= 0
 
-            # Package them organically
+            commission_ids = commission_records.map(&:id)
+
             payout = profile.payouts.create!(
               amount: total_payout,
               currency: profile.currency,
               status: :processing,
-              commission_ids: available_commissions.pluck(:id)
+              commission_ids: commission_ids
             )
 
-            # Strangle double-spend risks
             # rubocop:disable Rails/SkipsModelValidations
-            available_commissions.update_all(status: :paid)
+            profile.commissions.where(id: commission_ids).update_all(status: :paid)
             # rubocop:enable Rails/SkipsModelValidations
-
-            # Generate PDF organically in background
-            # Affiliates::Payouts::InvoicePdfWorker.perform_async(payout.id)
 
             payout
           end
         end
       rescue StandardError => e
-        Rails.logger.error("Payout Manual Generation Failed: #{e.message}")
+        Rails.logger.error("Payout Manual Generation Failed [Profile ID: #{profile&.id}]: #{e.message}")
         nil
       end
     end

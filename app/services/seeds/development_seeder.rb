@@ -52,14 +52,13 @@ module Seeds
         account = user&.accounts&.first
         if user && account
           puts "    ✓ Already exists"
-          enable_all_features!(account)
+          assign_billing_defaults!(account)
           return [account, user]
         end
         raise("Registration failed: #{result.errors.inspect}")
       end
 
       account = result.account
-      enable_all_features!(account)
       assign_billing_defaults!(account)
 
       puts "    ✓ Account: #{account.name} (#{account.identifier})"
@@ -69,9 +68,11 @@ module Seeds
     end
 
     def assign_billing_defaults!(account)
-      plan = Plan.find_by!(name: Plan::ANABOLIC, currency: account.currency)
+      plan = Plan.find_by!(name: Plan::HYPERBOLIC, currency: account.currency)
       
-      unless account.subscribed?
+      if account.active_subscription.present?
+        account.active_subscription.update!(plan: plan)
+      else
         Billing::SubscriptionCreator.call(account: account, plan: plan, quantity: 5)
       end
 

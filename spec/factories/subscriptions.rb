@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :subscription do
     account
-    plan
+    plan { Plan.find_by(name: Plan::ANABOLIC, currency: "USD") || association(:plan) }
     status { :active }
     billing_cycle { :monthly }
     provider { :stripe }

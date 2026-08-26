@@ -64,7 +64,7 @@
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :confirmable, :lockable
+         :confirmable, :lockable, :trackable
   belongs_to :address
 
   include Avatarable

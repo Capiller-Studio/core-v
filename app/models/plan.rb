@@ -17,14 +17,25 @@ class Plan < ApplicationRecord
   enum :visibility, { public_plan: 0, private_plan: 1 }
 
   has_many :subscriptions, dependent: :restrict_with_error
+  has_many :account_plans, dependent: :destroy
+  has_many :allowed_accounts, through: :account_plans, source: :account
 
   translates(*TRANSLATABLE_FIELDS)
 
   scope :available, -> { where(status: :active).order(:position) }
+  scope :public_only, -> { where(visibility: :public_plan) }
+  scope :private_only, -> { where(visibility: :private_plan) }
   scope :free, -> { where(base_price: 0) }
   scope :paid, -> { where("base_price > 0") }
+  scope :available_for, ->(account) {
+    if account.present?
+      where(visibility: :public_plan).or(where(id: account.custom_plan_ids))
+    else
+      where(visibility: :public_plan)
+    end
+  }
 
-  validates :name, presence: true, uniqueness: { scope: :currency }, inclusion: { in: NAMES }
+  validates :name, presence: true, uniqueness: { scope: :currency }
   validates :currency, presence: true, inclusion: { in: Core::SUPPORTED_CURRENCIES }
 
   def free?
@@ -58,7 +69,7 @@ class Plan < ApplicationRecord
 
   # Feature helpers — checks features jsonb
   def feature_enabled?(feature)
-    keys = feature.to_s.split('.')
+    keys = feature.to_s.split(".")
     if keys.size > 1
       features.dig(*keys) == true
     else
