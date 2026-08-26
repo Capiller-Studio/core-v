@@ -7,36 +7,42 @@
 module Channels
   module Whatsapp
     class SignupService < ApplicationService
-      attr_reader :code, :account
+      attr_reader :code, :account, :provided_waba_id, :provided_phone_number_id
 
-      def initialize(code:, account:)
+      def initialize(code:, account:, waba_id: nil, phone_number_id: nil)
         @code = code
         @account = account
+        @provided_waba_id = waba_id.presence
+        @provided_phone_number_id = phone_number_id.presence
       end
 
       def call
         token = exchange_code_for_token
-        
-        # Meta returns all WABAs shared with this app for this user
         client = Koala::Facebook::API.new(token)
-        # Note: 'me/client_whatsapp_business_accounts' is the standard endpoint but some apps use 'me/whatsapp_business_accounts'
-        # We try the standard ones.
-        wabas = fetch_wabas(client)
-        raise("No WhatsApp Business Accounts found for this user.") if wabas.blank?
 
-        # For simplicity, we grab the first WABA and its first phone number.
-        # In a more complex integration, you'd present a selector UI like Facebook Pages.
-        waba = wabas.first
-        phone_numbers = fetch_phone_numbers(client, waba["id"])
-        
-        raise("No Phone Numbers found in the WhatsApp Business Account.") if phone_numbers.blank?
-        phone = phone_numbers.first
+        # 1. Resolve WABA ID (from session_info or Graph API)
+        waba_id = provided_waba_id.presence || discover_waba_id(client)
+        raise("No WhatsApp Business Accounts found for this user.") if waba_id.blank?
+
+        # 2. Subscribe our Tech Provider App to the client's WABA webhooks
+        subscribe_waba_webhooks(waba_id, token)
+
+        # 3. Resolve Phone Number ID (from session_info or Graph API)
+        phone_number_id = provided_phone_number_id.presence || discover_phone_number_id(client, waba_id)
+        raise("No Phone Numbers found in the WhatsApp Business Account.") if phone_number_id.blank?
+
+        # 4. Fetch phone number details (display number, verified name)
+        phone_details = fetch_phone_details(client, phone_number_id, waba_id)
+
+        # 5. Ensure phone number is registered for Cloud API messaging
+        register_phone_number_if_needed(phone_number_id, token)
 
         {
           access_token: token,
-          waba_id: waba["id"],
-          phone_number_id: phone["id"],
-          display_phone_number: phone["display_phone_number"]
+          waba_id: waba_id,
+          phone_number_id: phone_number_id,
+          display_phone_number: phone_details[:display_phone_number],
+          name: phone_details[:verified_name].presence || phone_details[:display_phone_number]
         }
       end
 
@@ -45,43 +51,37 @@ module Channels
       def exchange_code_for_token
         app_id = Rails.application.credentials.dig(:channels, :whatsapp, :app_id)
         app_secret = Rails.application.credentials.dig(:channels, :whatsapp, :app_secret)
-        
-        # Exchange JS SDK code for long lived token
-        oauth = Koala::Facebook::OAuth.new(app_id, app_secret)
-        
-        # Note: JS SDK 'code' exchange doesn't strictly need a redirect_uri but Koala might require one
-        # Koala's exchange_access_token_info handles short-lived tokens, but for 'code' we might need get_access_token
-        # However, FB.login with response_type: 'code' actually requires using a specific endpoint.
-        # But wait! If we just change JS to use response_type="token" (short-lived), we can just exchange it for long-lived.
-        # Since we used "code" in JS, we use oauth.get_access_token(code)
-        
-        # We need to manually build the URL for 'code' exchange because Koala expects a redirect_uri for get_access_token
-        # Actually, for Embedded Signup, the Facebook docs state:
+
         response = HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/oauth/access_token", query: {
           client_id: app_id,
           client_secret: app_secret,
           code: code
         })
 
-        if response.success? && response["access_token"]
+        if response.success? && response["access_token"].present?
           response["access_token"]
         else
           raise("Failed to exchange code for token: #{response.body}")
         end
       end
 
+      def discover_waba_id(client)
+        # Try me/client_whatsapp_business_accounts (Tech Provider standard)
+        wabas = fetch_wabas(client)
+        wabas.first&.[]("id")
+      end
+
       def fetch_wabas(client)
-        # For a tech provider, the user grants 'whatsapp_business_management'
-        # So we can list the accounts they shared with us:
-        response = client.get_connections("me", "accounts") # fallback maybe?
-        
-        # The correct endpoint for WABAs:
         begin
           client.get_object("me/client_whatsapp_business_accounts")
         rescue StandardError
-          # Fallback to standard graph api if client API fails
           HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/me/client_whatsapp_business_accounts", headers: { "Authorization" => "Bearer #{client.access_token}" }).parsed_response["data"] || []
         end
+      end
+
+      def discover_phone_number_id(client, waba_id)
+        phone_numbers = fetch_phone_numbers(client, waba_id)
+        phone_numbers.first&.[]("id")
       end
 
       def fetch_phone_numbers(client, waba_id)
@@ -90,6 +90,64 @@ module Channels
         rescue StandardError
           HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/#{waba_id}/phone_numbers", headers: { "Authorization" => "Bearer #{client.access_token}" }).parsed_response["data"] || []
         end
+      end
+
+      def fetch_phone_details(client, phone_number_id, waba_id)
+        # Attempt direct fetch for the specific phone number
+        response = HTTParty.get(
+          "https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/#{phone_number_id}",
+          headers: { "Authorization" => "Bearer #{client.access_token}" }
+        )
+
+        if response.success? && response.parsed_response.present?
+          parsed = response.parsed_response
+          {
+            display_phone_number: parsed["display_phone_number"],
+            verified_name: parsed["verified_name"]
+          }
+        else
+          # Fallback to searching the list of numbers in the WABA
+          numbers = fetch_phone_numbers(client, waba_id)
+          matched = numbers.find { |n| n["id"] == phone_number_id } || numbers.first
+          {
+            display_phone_number: matched&.[]("display_phone_number"),
+            verified_name: matched&.[]("verified_name")
+          }
+        end
+      end
+
+      # Subscribes our app to receive incoming messages & status webhooks for this client WABA
+      def subscribe_waba_webhooks(waba_id, token)
+        response = HTTParty.post(
+          "https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/#{waba_id}/subscribed_apps",
+          headers: {
+            "Authorization" => "Bearer #{token}",
+            "Content-Type" => "application/json"
+          }
+        )
+
+        unless response.success?
+          Rails.logger.warn("WhatsApp Tech Provider subscribed_apps warning for WABA #{waba_id}: #{response.body}")
+        end
+      rescue StandardError => e
+        Rails.logger.error("Failed to subscribe WABA #{waba_id} webhooks: #{e.message}")
+      end
+
+      # Registers the phone number for Cloud API messaging if not already active
+      def register_phone_number_if_needed(phone_number_id, token)
+        HTTParty.post(
+          "https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/#{phone_number_id}/register",
+          headers: {
+            "Authorization" => "Bearer #{token}",
+            "Content-Type" => "application/json"
+          },
+          body: {
+            messaging_product: "whatsapp",
+            pin: "123456"
+          }.to_json
+        )
+      rescue StandardError => e
+        Rails.logger.warn("WhatsApp phone number registration notice: #{e.message}")
       end
     end
   end
