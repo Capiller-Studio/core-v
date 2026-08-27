@@ -85,6 +85,9 @@ module Channels
             grant_type: "authorization_code",
             redirect_uri: redirect_uri,
             code: code
+          },
+          headers: {
+            "Content-Type" => "application/x-www-form-urlencoded"
           }
         )
 
