@@ -1,44 +1,28 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe EmailTemplates::Creator do
-  let(:account) { double('Account', locale: 'en') }
+  let(:account) { create(:account, locale: 'es') }
   let(:service) { described_class.new(account: account, name: 'Welcome', template_type: 'welcome_email') }
 
   describe '#call' do
-    let(:template) { double('EmailTemplate') }
-    let(:translations_assoc) { double('TranslationsAssoc') }
+    it 'creates the email template and draft translation for the account locale' do
+      account.with_shard do
+        template = service.call
 
-    before do
-      allow(account).to receive(:with_shard).and_yield
-      allow(ShardRecord).to receive(:transaction).and_yield
-    end
+        expect(template).to be_persisted
+        expect(template.name).to eq('Welcome')
+        expect(template.template_type).to eq('welcome_email')
+        expect(template.status).to eq('inactive')
 
-    it 'creates email template and translation' do
-      expect(EmailTemplate).to receive(:new).with(
-        account: account,
-        name: 'Welcome',
-        template_type: 'welcome_email',
-        status: :inactive,
-        email_template_layout: nil
-      ).and_return(template)
+        expect(template.translations.count).to eq(1)
+        expect(template.translations.first.locale).to eq('es')
 
-      allow(template).to receive(:save!)
-      allow(template).to receive(:translations).and_return(translations_assoc)
-
-      allow(I18n).to receive(:t).with(
-        "seeds.email_templates.welcome_email.subject",
-        locale: 'en',
-        default: 'Welcome Email'
-      ).and_return('Welcome Subject')
-
-      expect(translations_assoc).to receive(:create!).with(
-        hash_including(
-          locale: 'en',
-          draft_subject: 'Welcome Subject'
-        )
-      )
-
-      expect(service.call).to eq(template)
+        translation = template.translations.first
+        expect(translation.draft_subject).to be_present
+        expect(translation.draft_body).to be_present
+      end
     end
   end
 end
