@@ -15,6 +15,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
     before do
       allow(oauth_response).to receive(:[]).with("access_token").and_return("token123")
       allow(oauth_response).to receive(:present?).and_return(true)
+      allow(HTTParty).to receive(:get).and_return(double('Response', success?: true, parsed_response: { "data" => [] }))
       allow(HTTParty).to receive(:get).with(/oauth\/access_token/, anything).and_return(oauth_response)
       allow(HTTParty).to receive(:post).with(/subscribed_apps/, anything).and_return(subscribed_apps_response)
       allow(HTTParty).to receive(:post).with(/register/, anything).and_return(double('Response', success?: true))
@@ -127,6 +128,35 @@ RSpec.describe Channels::Whatsapp::SignupService do
       result = service.call
       expect(result[:display_phone_number]).to eq("+1 800-555-0199")
       expect(result[:name]).to eq("Fallback Name")
+    end
+
+    it 'discovers WABA ID and Phone Number ID from debug_token granular scopes' do
+      allow(Rails.application.credentials).to receive(:dig).and_call_original
+      allow(Rails.application.credentials).to receive(:dig).with(:channels, :whatsapp, :app_id).and_return("app_123")
+      allow(Rails.application.credentials).to receive(:dig).with(:channels, :whatsapp, :app_secret).and_return("secret_123")
+
+      debug_token_response = double('Response', success?: true, parsed_response: {
+        "data" => {
+          "granular_scopes" => [
+            { "scope" => "whatsapp_business_management", "target_ids" => ["debug_waba_789"] },
+            { "scope" => "whatsapp_business_messaging", "target_ids" => ["debug_phone_999"] }
+          ]
+        }
+      })
+      allow(HTTParty).to receive(:get).with(/debug_token/, anything).and_return(debug_token_response)
+      allow(api_mock).to receive(:access_token).and_return("token123")
+
+      phone_response = double('Response', success?: true, parsed_response: {
+        "display_phone_number" => "+1 555-999-0000",
+        "verified_name" => "Debug WABA Name"
+      })
+      allow(HTTParty).to receive(:get).with(/debug_phone_999$/, anything).and_return(phone_response)
+
+      result = service.call
+      expect(result[:waba_id]).to eq("debug_waba_789")
+      expect(result[:phone_number_id]).to eq("debug_phone_999")
+      expect(result[:display_phone_number]).to eq("+1 555-999-0000")
+      expect(result[:name]).to eq("Debug WABA Name")
     end
   end
 end
