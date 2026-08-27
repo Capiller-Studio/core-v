@@ -18,7 +18,7 @@ RSpec.describe Channels::Instagram::ConversationCreator do
       stub_const('Channels::Instagram::MessageCreator', double('MessageCreator'))
       
       allow(HTTParty).to receive(:get).with(
-        "https://graph.instagram.com/v26.0/sender_ig",
+        "https://graph.instagram.com/#{Channels::Instagram::OauthService::API_VERSION}/sender_ig",
         query: { fields: "id,username,name,profile_picture_url", access_token: "token" }
       ).and_return(mock_response)
 

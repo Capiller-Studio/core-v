@@ -49,13 +49,13 @@ module Channels
       private
 
       def exchange_code_for_token
-        app_id = Rails.application.credentials.dig(:channels, :whatsapp, :app_id)
-        app_secret = Rails.application.credentials.dig(:channels, :whatsapp, :app_secret)
+        app_id = Rails.application.credentials.dig(:channels, :whatsapp, :app_id)&.to_s&.strip
+        app_secret = Rails.application.credentials.dig(:channels, :whatsapp, :app_secret)&.to_s&.strip
 
         response = HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/oauth/access_token", query: {
           client_id: app_id,
           client_secret: app_secret,
-          code: code
+          code: code.to_s.strip
         })
 
         if response.success? && response["access_token"].present?
