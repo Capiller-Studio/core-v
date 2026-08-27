@@ -63,8 +63,8 @@ module Channel
 
     has_flags 1 => :provider_embedded_signup, column: "flags"
 
-    validates :full_phone_number, presence: true, uniqueness: { message: "is already connected" }
-    validates :phone_number_id, presence: true
+    validates :phone_number_id, presence: true, uniqueness: { message: "is already connected" }
+    validates :full_phone_number, uniqueness: { message: "is already connected" }, allow_nil: true
     validates :business_account_id, presence: true
     validates :api_key, presence: true
 
@@ -72,9 +72,10 @@ module Channel
     before_validation :calculate_full_phone_number
 
     # --- Routable overrides ---
+    # WhatsApp Cloud API routes all webhook events globally via phone_number_id
 
     def routing_identifier
-      full_phone_number
+      phone_number_id
     end
 
     def routing_type

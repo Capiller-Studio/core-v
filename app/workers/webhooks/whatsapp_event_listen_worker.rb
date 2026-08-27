@@ -28,19 +28,18 @@ module Webhooks
 
     private
 
-    # Preferred path: resolve channel via phone number from webhook payload using GlobalRouting
+    # Preferred path: resolve channel via phone_number_id from webhook payload using GlobalRouting
     def process_via_global_routing(params)
-      phone_number = "+#{params['entry'].first['changes'].first.dig('value', 'metadata', 'display_phone_number')}"
-      phone_number_id = params["entry"].first["changes"].first.dig("value", "metadata", "phone_number_id")
+      phone_number_id = params.dig("entry", 0, "changes", 0, "value", "metadata", "phone_number_id")&.to_s
+      return if phone_number_id.blank?
 
-      routing = GlobalRouting.find_account_for("whatsapp", phone_number)
+      routing = GlobalRouting.find_account_for("whatsapp", phone_number_id)
       return unless routing
 
       Current.set(account: routing.account) do
         routing.account.with_shard do
-          channel = Channel::Whatsapp.find_by(full_phone_number: phone_number, account_id: routing.account_id)
+          channel = Channel::Whatsapp.find_by(phone_number_id: phone_number_id, account_id: routing.account_id)
           return unless channel_active?(channel)
-          return unless channel.phone_number_id == phone_number_id
           return unless channel.cloud_api?
 
           Channels::Whatsapp::CloudApi::EventListener.call(
@@ -56,13 +55,13 @@ module Webhooks
     # Fallback: channel_id passed directly in URL (for manual webhook setup)
     def process_via_channel_id(webhook)
       params = webhook.payload.with_indifferent_access
-      
+
       route_params = webhook.route_params
       query_params = webhook.query_params
-      
+
       channel_id = query_params["channel_id"] || route_params[:channel_id]
       account_id = query_params["account_id"] || route_params[:account_id]
-      
+
       return unless channel_id && account_id
 
       account = Account.find_by(id: account_id)

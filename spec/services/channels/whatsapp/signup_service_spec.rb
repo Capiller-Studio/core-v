@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Channels::Whatsapp::SignupService do
@@ -44,6 +46,30 @@ RSpec.describe Channels::Whatsapp::SignupService do
         display_phone_number: "+15551234567",
         name: "Techbolic Support"
       })
+    end
+
+    it 'supports Display Name Only signup when display_phone_number is missing from Meta' do
+      wabas = [{ "id" => "waba_1" }]
+      phones = [{ "id" => "phone_display_only", "verified_name" => "Brand Display Name", "display_phone_number" => nil }]
+
+      allow(api_mock).to receive(:get_object).with("me/client_whatsapp_business_accounts").and_return(wabas)
+      allow(api_mock).to receive(:get_connections).with("waba_1", "phone_numbers", any_args).and_return(phones)
+      allow(api_mock).to receive(:access_token).and_return("token123")
+
+      display_only_resp = double('Response', success?: true, parsed_response: {
+        "id" => "phone_display_only",
+        "verified_name" => "Brand Display Name",
+        "display_phone_number" => nil
+      })
+      allow(HTTParty).to receive(:get).with(/phone_display_only$/, anything).and_return(display_only_resp)
+
+      result = service.call
+
+      expect(result[:access_token]).to eq("token123")
+      expect(result[:waba_id]).to eq("waba_1")
+      expect(result[:phone_number_id]).to eq("phone_display_only")
+      expect(result[:display_phone_number]).to eq("Brand Display Name")
+      expect(result[:name]).to eq("Brand Display Name")
     end
 
     it 'uses provided waba_id and phone_number_id when passed from session_info' do

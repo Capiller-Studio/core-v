@@ -28,6 +28,12 @@ module Channels
 
         private
 
+        def recipient_phone_number
+          raw = customer_inbox.customer.full_phone_number.presence || customer_inbox.external_id.presence || customer_inbox.customer.external_id
+          digits = raw.to_s.gsub(/\D/, "")
+          digits.present? ? digits : raw.to_s.strip
+        end
+
         def send_text_message
           response = HTTParty.post(
             "#{whatsapp_channel.phone_number_endpoint}/messages",
@@ -35,7 +41,7 @@ module Channels
             body: {
               messaging_product: "whatsapp",
               context: message_context,
-              to: customer_inbox.customer.full_phone_number,
+              to: recipient_phone_number,
               text: { body: Channels::MessageFormatter.format_for_whatsapp_and_facebook(message.content) },
               type: "text"
             }.to_json
@@ -58,7 +64,7 @@ module Channels
             body: {
               messaging_product: "whatsapp",
               context: message_context,
-              to: customer_inbox.customer.full_phone_number,
+              to: recipient_phone_number,
               type: attachment_type,
               attachment_type.to_s => attachment_content
             }.to_json
@@ -79,7 +85,7 @@ module Channels
 
         def log_exception(error)
           message.update!(status: :failed)
-          Rails.logger.error("WhatsApp MessageSender exception for #{whatsapp_channel.full_phone_number}: #{error.message}")
+          Rails.logger.error("WhatsApp MessageSender exception for #{whatsapp_channel.phone_number_id}: #{error.message}")
 
           if error.to_s.include?("OAuthException") || error.to_s.include?("Error validating access token")
             whatsapp_channel.authorization_error!
