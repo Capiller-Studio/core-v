@@ -9,7 +9,7 @@ class CreateIntegrations < ActiveRecord::Migration[8.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end
 
-    add_index :integrations, [:account_id, :provider], unique: true
+    add_index :integrations, [:account_id, :provider]
     add_index :integrations, :created_at
   end
 end

@@ -7,11 +7,12 @@
 module Channels
   module Whatsapp
     class SignupService < ApplicationService
-      attr_reader :code, :account, :provided_waba_id, :provided_phone_number_id
+      attr_reader :code, :account, :redirect_uri, :provided_waba_id, :provided_phone_number_id
 
-      def initialize(code:, account:, waba_id: nil, phone_number_id: nil)
+      def initialize(code:, account:, redirect_uri: nil, waba_id: nil, phone_number_id: nil)
         @code = code
         @account = account
+        @redirect_uri = redirect_uri.presence
         @provided_waba_id = waba_id.presence
         @provided_phone_number_id = phone_number_id.presence
       end
@@ -52,11 +53,14 @@ module Channels
         app_id = Rails.application.credentials.dig(:channels, :whatsapp, :app_id)&.to_s&.strip
         app_secret = Rails.application.credentials.dig(:channels, :whatsapp, :app_secret)&.to_s&.strip
 
-        response = HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/oauth/access_token", query: {
+        query_params = {
           client_id: app_id,
           client_secret: app_secret,
           code: code.to_s.strip
-        })
+        }
+        query_params[:redirect_uri] = redirect_uri if redirect_uri.present?
+
+        response = HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/oauth/access_token", query: query_params)
 
         if response.success? && response["access_token"].present?
           response["access_token"]
