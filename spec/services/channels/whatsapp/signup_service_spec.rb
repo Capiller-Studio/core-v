@@ -28,7 +28,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
       phones = [{ "id" => "phone_1", "display_phone_number" => "123456789" }]
 
       allow(api_mock).to receive(:get_object).with("me/client_whatsapp_business_accounts").and_return(wabas)
-      allow(api_mock).to receive(:get_connections).with("waba_1", "phone_numbers").and_return(phones)
+      allow(api_mock).to receive(:get_connections).with("waba_1", "phone_numbers", any_args).and_return(phones)
       allow(api_mock).to receive(:access_token).and_return("token123")
 
       expect(HTTParty).to receive(:post).with(/waba_1\/subscribed_apps/, hash_including(
@@ -41,7 +41,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
         access_token: "token123",
         waba_id: "waba_1",
         phone_number_id: "phone_1",
-        display_phone_number: "+1 555-123-4567",
+        display_phone_number: "+15551234567",
         name: "Techbolic Support"
       })
     end
@@ -66,7 +66,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
         access_token: "token123",
         waba_id: "session_waba_123",
         phone_number_id: "session_phone_456",
-        display_phone_number: "+44 7700 900077",
+        display_phone_number: "+447700900077",
         name: "Deskbolic UK"
       })
     end
@@ -89,7 +89,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
     it 'raises an error if no phone numbers are found in WABA' do
       wabas = [{ "id" => "waba_empty" }]
       allow(api_mock).to receive(:get_object).with("me/client_whatsapp_business_accounts").and_return(wabas)
-      allow(api_mock).to receive(:get_connections).with("waba_empty", "phone_numbers").and_return([])
+      allow(api_mock).to receive(:get_connections).with("waba_empty", "phone_numbers", any_args).and_return([])
       allow(api_mock).to receive(:access_token).and_return("token123")
       allow(HTTParty).to receive(:get).with(/waba_empty\/phone_numbers/, anything).and_return(double('Response', parsed_response: { "data" => [] }))
 
@@ -101,7 +101,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
       phones = [{ "id" => "phone_1", "display_phone_number" => "123456789" }]
 
       allow(api_mock).to receive(:get_object).with("me/client_whatsapp_business_accounts").and_return(wabas)
-      allow(api_mock).to receive(:get_connections).with("waba_1", "phone_numbers").and_return(phones)
+      allow(api_mock).to receive(:get_connections).with("waba_1", "phone_numbers", any_args).and_return(phones)
       allow(api_mock).to receive(:access_token).and_return("token123")
 
       warning_response = double('Response', success?: false, body: '{"error": "already_subscribed"}')
@@ -119,14 +119,14 @@ RSpec.describe Channels::Whatsapp::SignupService do
       phones = [{ "id" => "phone_1", "display_phone_number" => "+1 800-555-0199", "verified_name" => "Fallback Name" }]
 
       allow(api_mock).to receive(:get_object).with("me/client_whatsapp_business_accounts").and_return(wabas)
-      allow(api_mock).to receive(:get_connections).with("waba_1", "phone_numbers").and_return(phones)
+      allow(api_mock).to receive(:get_connections).with("waba_1", "phone_numbers", any_args).and_return(phones)
       allow(api_mock).to receive(:access_token).and_return("token123")
 
       failed_phone_get = double('Response', success?: false, parsed_response: nil)
       allow(HTTParty).to receive(:get).with(/phone_1$/, anything).and_return(failed_phone_get)
 
       result = service.call
-      expect(result[:display_phone_number]).to eq("+1 800-555-0199")
+      expect(result[:display_phone_number]).to eq("+18005550199")
       expect(result[:name]).to eq("Fallback Name")
     end
 
@@ -155,7 +155,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
       result = service.call
       expect(result[:waba_id]).to eq("debug_waba_789")
       expect(result[:phone_number_id]).to eq("debug_phone_999")
-      expect(result[:display_phone_number]).to eq("+1 555-999-0000")
+      expect(result[:display_phone_number]).to eq("+15559990000")
       expect(result[:name]).to eq("Debug WABA Name")
     end
   end
