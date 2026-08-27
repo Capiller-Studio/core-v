@@ -68,7 +68,7 @@ module Search
       end
 
       Conversation.search(@query, **search_opts)
-    rescue Searchkick::Error, Searchkick::MissingIndexError => e
+    rescue StandardError, Searchkick::Error, Searchkick::MissingIndexError => e
       Rails.logger.error("[Search] Conversation search failed: #{e.message}")
       []
     end
@@ -107,7 +107,7 @@ module Search
       end
 
       Message.search(@query, **search_opts)
-    rescue Searchkick::Error, Searchkick::MissingIndexError => e
+    rescue StandardError, Searchkick::Error, Searchkick::MissingIndexError => e
       Rails.logger.error("[Search] Message search failed: #{e.message}")
       []
     end
