@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Channel::Whatsapp, type: :model do
@@ -13,18 +15,31 @@ RSpec.describe Channel::Whatsapp, type: :model do
 
   describe 'Validations' do
     subject { create(:channel_whatsapp) }
-    
-    it { is_expected.to validate_presence_of(:full_phone_number) }
-    
-    it 'validates uniqueness of full_phone_number' do
-      existing = create(:channel_whatsapp)
-      duplicate = build(:channel_whatsapp, full_phone_number: existing.full_phone_number)
-      expect(duplicate).not_to be_valid
-      expect(duplicate.errors[:full_phone_number]).to include("is already connected")
-    end
+
     it { is_expected.to validate_presence_of(:phone_number_id) }
     it { is_expected.to validate_presence_of(:business_account_id) }
     it { is_expected.to validate_presence_of(:api_key) }
+
+    it 'validates uniqueness of phone_number_id' do
+      existing = create(:channel_whatsapp)
+      duplicate = build(:channel_whatsapp, phone_number_id: existing.phone_number_id)
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:phone_number_id]).to include('is already connected')
+    end
+
+    it 'validates uniqueness of full_phone_number when present' do
+      phone = "+1555#{SecureRandom.hex(4)}"
+      existing = create(:channel_whatsapp, full_phone_number: phone)
+      duplicate = build(:channel_whatsapp, full_phone_number: existing.full_phone_number)
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:full_phone_number]).to include('is already connected')
+    end
+
+    it 'allows multiple channels with nil full_phone_number (Display-Name-Only)' do
+      ch1 = create(:channel_whatsapp, full_phone_number: nil)
+      ch2 = build(:channel_whatsapp, full_phone_number: nil)
+      expect(ch2).to be_valid
+    end
   end
 
   describe 'Callbacks' do
@@ -32,6 +47,14 @@ RSpec.describe Channel::Whatsapp, type: :model do
       wa = build(:channel_whatsapp, webhook_secret: nil)
       wa.valid?
       expect(wa.webhook_secret).to be_present
+    end
+  end
+
+  describe 'Routing' do
+    it 'uses phone_number_id as routing_identifier' do
+      wa = build(:channel_whatsapp, phone_number_id: 'phone_12345')
+      expect(wa.routing_identifier).to eq('phone_12345')
+      expect(wa.routing_type).to eq('whatsapp')
     end
   end
 
@@ -43,7 +66,7 @@ RSpec.describe Channel::Whatsapp, type: :model do
 
     it '#phone_number_endpoint returns graph api url' do
       wa = build(:channel_whatsapp, phone_number_id: '1234')
-      expect(wa.phone_number_endpoint).to eq("https://graph.facebook.com/v26.0/1234")
+      expect(wa.phone_number_endpoint).to eq('https://graph.facebook.com/v26.0/1234')
     end
   end
 
@@ -51,5 +74,4 @@ RSpec.describe Channel::Whatsapp, type: :model do
     it { is_expected.to define_enum_for(:status).with_values(active: 0, disconnected: 1) }
     it { is_expected.to define_enum_for(:service).with_values(cloud_api: 0) }
   end
-
 end

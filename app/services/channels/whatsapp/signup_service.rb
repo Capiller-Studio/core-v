@@ -210,18 +210,18 @@ module Channels
           query: { fields: "id,display_phone_number,verified_name,quality_rating" }
         )
 
-        if response.success? && response.parsed_response.is_a?(Hash) && response.parsed_response["display_phone_number"].present?
+        if response.success? && response.parsed_response.is_a?(Hash)
           parsed = response.parsed_response
+          display = parsed["display_phone_number"].presence || parsed["verified_name"].presence || phone_number_id
           {
-            display_phone_number: format_phone_number(parsed["display_phone_number"]),
+            display_phone_number: format_phone_number(display),
             verified_name: parsed["verified_name"]
           }
         else
           # Fallback to searching the list of numbers in the WABA with explicit fields
           numbers = fetch_phone_numbers(client, waba_id)
           matched = numbers.find { |n| n["id"] == phone_number_id } || numbers.first
-          display = matched&.[]("display_phone_number")
-          raise("Could not retrieve a valid phone number from WhatsApp Business Account #{waba_id}") if display.blank?
+          display = matched&.[]("display_phone_number").presence || matched&.[]("verified_name").presence || phone_number_id
 
           {
             display_phone_number: format_phone_number(display),

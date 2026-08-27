@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Channels::Whatsapp::CloudApi::MessageSender do
-  let(:whatsapp_channel) { double('Channel::Whatsapp', phone_number_endpoint: 'https://api.whatsapp/123', api_headers: {}, full_phone_number: '+123') }
-  let(:customer) { double('Customer', full_phone_number: '+987') }
-  let(:customer_inbox) { double('CustomerInbox', customer: customer) }
+  let(:whatsapp_channel) { double('Channel::Whatsapp', phone_number_endpoint: 'https://api.whatsapp/123', api_headers: {}, phone_number_id: '123', full_phone_number: '+123') }
+  let(:customer) { double('Customer', full_phone_number: '+15551234567', external_id: '15551234567') }
+  let(:customer_inbox) { double('CustomerInbox', customer: customer, external_id: '15551234567') }
   let(:message) { double('Message', content: 'Hello', attachments: [], external_reply_to_id: nil) }
   let(:service) { described_class.new(whatsapp_channel: whatsapp_channel, customer_inbox: customer_inbox, message: message) }
 
@@ -12,13 +14,13 @@ RSpec.describe Channels::Whatsapp::CloudApi::MessageSender do
   end
 
   describe '#call' do
-    it 'sends text message via HTTParty' do
+    it 'sends text message via HTTParty with sanitized recipient digits' do
       response = double('Response', success?: true, parsed_response: { "messages" => [{ "id" => "wa_msg_1" }] })
-      
+
       expected_body = {
         messaging_product: "whatsapp",
         context: nil,
-        to: '+987',
+        to: '15551234567',
         text: { body: 'Hello Markdown' },
         type: "text"
       }.to_json
@@ -41,13 +43,13 @@ RSpec.describe Channels::Whatsapp::CloudApi::MessageSender do
 
       it 'sends attachment message' do
         response = double('Response', success?: true, parsed_response: { "messages" => [{ "id" => "wa_msg_2" }] })
-        
+
         allow(Channels::MessageFormatter).to receive(:format_for_whatsapp_and_facebook).with('Here is doc').and_return('Here is doc')
 
         expected_body = {
           messaging_product: "whatsapp",
           context: { message_id: 'wa_parent_1' },
-          to: '+987',
+          to: '15551234567',
           type: "document",
           "document" => { link: 'http://doc.url', "caption" => 'Here is doc', "filename" => 'doc.pdf' }
         }.to_json
