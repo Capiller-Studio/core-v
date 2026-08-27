@@ -191,38 +191,48 @@ module Channels
 
       def fetch_phone_numbers(client, waba_id)
         begin
-          client.get_connections(waba_id, "phone_numbers")
+          client.get_connections(waba_id, "phone_numbers", fields: "id,display_phone_number,verified_name,quality_rating")
         rescue StandardError
           response = HTTParty.get(
             "https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/#{waba_id}/phone_numbers",
-            headers: { "Authorization" => "Bearer #{client.access_token}" }
+            headers: { "Authorization" => "Bearer #{client.access_token}" },
+            query: { fields: "id,display_phone_number,verified_name,quality_rating" }
           )
           response.parsed_response["data"] || []
         end
       end
 
       def fetch_phone_details(client, phone_number_id, waba_id)
-        # Attempt direct fetch for the specific phone number
+        # Attempt direct fetch for the specific phone number with explicit fields
         response = HTTParty.get(
           "https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/#{phone_number_id}",
-          headers: { "Authorization" => "Bearer #{client.access_token}" }
+          headers: { "Authorization" => "Bearer #{client.access_token}" },
+          query: { fields: "id,display_phone_number,verified_name,quality_rating" }
         )
 
-        if response.success? && response.parsed_response.present?
+        if response.success? && response.parsed_response.is_a?(Hash) && response.parsed_response["display_phone_number"].present?
           parsed = response.parsed_response
           {
-            display_phone_number: parsed["display_phone_number"],
+            display_phone_number: format_phone_number(parsed["display_phone_number"]),
             verified_name: parsed["verified_name"]
           }
         else
-          # Fallback to searching the list of numbers in the WABA
+          # Fallback to searching the list of numbers in the WABA with explicit fields
           numbers = fetch_phone_numbers(client, waba_id)
           matched = numbers.find { |n| n["id"] == phone_number_id } || numbers.first
+          display = matched&.[]("display_phone_number")
+          raise("Could not retrieve a valid phone number from WhatsApp Business Account #{waba_id}") if display.blank?
+
           {
-            display_phone_number: matched&.[]("display_phone_number"),
+            display_phone_number: format_phone_number(display),
             verified_name: matched&.[]("verified_name")
           }
         end
+      end
+
+      def format_phone_number(number)
+        digits = number.to_s.gsub(/\D/, "")
+        digits.present? ? "+#{digits}" : number.to_s.strip
       end
 
       # Subscribes our app to receive incoming messages & status webhooks for this client WABA
