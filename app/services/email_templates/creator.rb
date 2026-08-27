@@ -16,8 +16,8 @@ module EmailTemplates
         ShardRecord.transaction do
           # Load the default MJML body for this template type
           mjml_body = default_mjml_for(template_type)
-          
-          locale = account.locale || I18n.default_locale.to_s
+
+          locale = account.locale.presence || I18n.default_locale.to_s
           subject = default_subject_for(template_type, locale)
 
           template = EmailTemplate.new(
@@ -27,10 +27,10 @@ module EmailTemplates
             status: :inactive, # Starts inactive
             email_template_layout: layout
           )
-          
+
           template.save!
 
-          # Create a draft translation for the account's locale
+          # Create a starter draft translation for the account's primary locale only
           template.translations.create!(
             locale: locale,
             draft_subject: subject,
