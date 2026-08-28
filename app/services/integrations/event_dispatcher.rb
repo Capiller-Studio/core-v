@@ -41,21 +41,31 @@ module Integrations
       return unless url
 
       delivery = Webhook::Delivery.create!(
-        integration: integration,
+        account: account,
+        resource: integration,
         event_name: event_name,
         endpoint_url: url,
         request_payload: payload,
         status: :pending
       )
 
-      Integrations::Webhooks::BroadcasterWorker.perform_async(delivery.id, 1)
+      Integrations::Webhooks::BroadcasterWorker.perform_async(account.id, delivery.id, 1)
     end
 
     def dispatch_to_slack(integration)
       url = integration.webhook_url
       return unless url
 
-      Integrations::Slack::NotifierWorker.perform_async(url, event_name, payload.to_json)
+      delivery = Webhook::Delivery.create!(
+        account: account,
+        resource: integration,
+        event_name: event_name,
+        endpoint_url: url,
+        request_payload: payload,
+        status: :pending
+      )
+
+      Integrations::Slack::NotifierWorker.perform_async(account.id, delivery.id, 1)
     end
   end
 end

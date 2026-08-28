@@ -40,7 +40,7 @@ RSpec.describe Billable, type: :model do
 
   describe '#default_payment_method' do
     it 'returns default payment method if present' do
-      pm = create(:payment_method, account: account, is_default: true)
+      pm = create(:payment_method, account: account, default_method: true)
       expect(account.default_payment_method).to eq(pm)
     end
   end

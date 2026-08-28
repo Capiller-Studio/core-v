@@ -1,5 +1,34 @@
 # frozen_string_literal: true
 
+# == Schema Information
+#
+# Table name: payment_methods
+#
+#  id             :uuid             not null, primary key
+#  brand          :string
+#  data           :jsonb            not null
+#  default_method :boolean          default(FALSE), not null
+#  expiry_month   :integer
+#  expiry_year    :integer
+#  last_four      :string
+#  payment_type   :integer          default("card"), not null
+#  provider       :integer          default("stripe"), not null
+#  status         :integer          default("active"), not null
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#  account_id     :uuid             not null
+#  external_id    :string
+#
+# Indexes
+#
+#  index_payment_methods_on_account_id                    (account_id)
+#  index_payment_methods_on_account_id_and_default_method (account_id,default_method)
+#  index_payment_methods_on_external_id                   (external_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (account_id => accounts.id) ON DELETE => cascade
+#
 class PaymentMethod < ApplicationRecord
   belongs_to :account
 
@@ -8,7 +37,7 @@ class PaymentMethod < ApplicationRecord
   enum :status, { active: 0, expired: 1, removed: 2 }
 
   scope :active_methods, -> { where(status: :active) }
-  scope :default_method, -> { where(is_default: true, status: :active) }
+  scope :default_method, -> { where(default_method: true, status: :active) }
 
   validates :external_id, presence: true
 
@@ -25,9 +54,9 @@ class PaymentMethod < ApplicationRecord
   def make_default!
     transaction do
       # rubocop:disable Rails/SkipsModelValidations
-      account.payment_methods.where(is_default: true).update_all(is_default: false)
+      account.payment_methods.where(default_method: true).update_all(default_method: false)
       # rubocop:enable Rails/SkipsModelValidations
-      update!(is_default: true)
+      update!(default_method: true)
     end
   end
 end

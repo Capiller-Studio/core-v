@@ -27,6 +27,7 @@ class CreateAiAgents < ActiveRecord::Migration[8.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
       
       t.index [:account_id, :status]
+      t.index [:account_id, :created_at]
     end
 
     add_reference :inboxes, :ai_agent, type: :uuid, null: true, foreign_key: { to_table: :ai_agents, on_delete: :nullify }

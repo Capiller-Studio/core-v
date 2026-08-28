@@ -4,7 +4,7 @@ class CreatePaymentMethods < ActiveRecord::Migration[7.1]
       t.integer :provider, null: false, default: 0
       t.integer :payment_type, null: false, default: 0
       t.integer :status, null: false, default: 0
-      t.boolean :is_default, null: false, default: false
+      t.boolean :default_method, null: false, default: false
       t.string  :last_four
       t.string  :brand
       t.integer :expiry_month
@@ -17,7 +17,7 @@ class CreatePaymentMethods < ActiveRecord::Migration[7.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
       t.index :external_id
-      t.index [:account_id, :is_default]
+      t.index [:account_id, :default_method]
     end
   end
 end

@@ -21,7 +21,8 @@ class CreateTransactions < ActiveRecord::Migration[7.1]
       t.index :status
       t.index :transaction_type
       t.index :external_id
-      t.index :created_at
+      t.index [:account_id, :created_at]
+      t.index [:account_id, :status]
     end
   end
 end

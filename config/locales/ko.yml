@@ -1,0 +1,17 @@
+ko:
+  notifications:
+    slack:
+      new_message_header: "%{icon} 새 고객 메시지"
+      new_conversation_header: "%{icon} 새 대화 시작됨"
+      from_field: "*보낸 사람:*\n%{sender}"
+      customer_field: "*고객:*\n%{customer}"
+      channel_field: "*채널:*\n%{channel}"
+      message_field: "*메시지:*\n%{message}"
+      initial_message_field: "*첫 메시지:*\n%{message}"
+      attachment_preview: "*(첨부 파일 / 미디어)*"
+      open_button: "Deskbolic에서 열기 ↗"
+      default_customer: "고객"
+      default_channel: "채널"
+      default_support: "지원"
+      default_conversation_preview: "새로운 고객 대화가 시작되었습니다."
+      event_triggered: "Deskbolic 이벤트 트리거됨: %{event_name}"

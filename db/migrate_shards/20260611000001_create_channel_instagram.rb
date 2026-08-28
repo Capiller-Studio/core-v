@@ -26,7 +26,7 @@ class CreateChannelInstagram < ActiveRecord::Migration[7.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
       # --- Indexes ---
-      t.index :status
+      t.index [:account_id, :status]
       t.index :instagram_id, unique: true
       t.index [:account_id, :instagram_id], unique: true
       t.index [:account_id, :created_at]

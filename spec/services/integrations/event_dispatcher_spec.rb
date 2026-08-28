@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Integrations::EventDispatcher do
-  let(:account) { double('Account') }
+  let(:account) { double('Account', id: 1, locale: 'en') }
   let(:payload) { { "inbox_id" => 5, "data" => "test" } }
   let(:service) { described_class.new(event_name: 'conversation.created', payload: payload, account: account) }
 
@@ -28,18 +28,19 @@ RSpec.describe Integrations::EventDispatcher do
         stub_const('Integrations::Webhooks::BroadcasterWorker', double('BroadcasterWorker'))
       end
 
-      it 'creates delivery and enqueues broadcaster' do
+      it 'creates delivery with resource: integration and enqueues broadcaster' do
         delivery = double('Webhook::Delivery', id: 10)
         
         expect(Webhook::Delivery).to receive(:create!).with(
-          integration: webhook_integration,
+          account: account,
+          resource: webhook_integration,
           event_name: 'conversation.created',
           endpoint_url: 'https://example.com/hook',
           request_payload: payload,
           status: :pending
         ).and_return(delivery)
 
-        expect(Integrations::Webhooks::BroadcasterWorker).to receive(:perform_async).with(10, 1)
+        expect(Integrations::Webhooks::BroadcasterWorker).to receive(:perform_async).with(account.id, 10, 1)
 
         service.call
       end
@@ -67,15 +68,23 @@ RSpec.describe Integrations::EventDispatcher do
 
       before do
         allow(integrations_scope).to receive(:active).and_return([slack_integration])
+        stub_const('Webhook::Delivery', double('WebhookDeliveryClass'))
         stub_const('Integrations::Slack::NotifierWorker', double('NotifierWorker'))
       end
 
-      it 'enqueues slack notifier worker' do
-        expect(Integrations::Slack::NotifierWorker).to receive(:perform_async).with(
-          'https://slack.com/hook',
-          'conversation.created',
-          payload.to_json
-        )
+      it 'creates delivery with resource: integration and enqueues slack notifier worker' do
+        delivery = double('Webhook::Delivery', id: 25)
+
+        expect(Webhook::Delivery).to receive(:create!).with(
+          account: account,
+          resource: slack_integration,
+          event_name: 'conversation.created',
+          endpoint_url: 'https://slack.com/hook',
+          request_payload: payload,
+          status: :pending
+        ).and_return(delivery)
+
+        expect(Integrations::Slack::NotifierWorker).to receive(:perform_async).with(account.id, 25, 1)
 
         service.call
       end

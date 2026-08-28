@@ -43,7 +43,7 @@ class CreateMacros < ActiveRecord::Migration[8.1]
       t.index [:account_id, :name]
       t.index [:account_id, :system_provided]
       t.index [:account_id, :status]
-      t.index :created_at
+      t.index [:account_id, :created_at]
     end
   end
 end

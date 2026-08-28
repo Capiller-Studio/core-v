@@ -15,6 +15,11 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
   end
 
   describe '#perform' do
+    it 'returns if account is not found' do
+      expect(HTTParty).not_to receive(:post)
+      described_class.new.perform('non-existent-account-id', delivery.id, 1)
+    end
+
     it 'posts payload with signature header and marks delivery successful' do
       expect(HTTParty).to receive(:post).with(
         'https://api.example.com/webhook',
@@ -28,7 +33,7 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
       ).and_return(double('Response', success?: true, code: 200, body: 'OK'))
 
       expect {
-        described_class.new.perform(delivery.id, 1)
+        described_class.new.perform(account.id, delivery.id, 1)
       }.to change(Webhook::DeliveryAttempt, :count).by(1)
 
       delivery.reload
@@ -37,9 +42,9 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
 
     it 're-enqueues on retryable failure if attempt_number < 3' do
       allow(HTTParty).to receive(:post).and_return(double('Response', success?: false, code: 500, body: 'Error'))
-      expect(described_class).to receive(:perform_in).with(10.minutes, delivery.id, 2)
+      expect(described_class).to receive(:perform_in).with(10.minutes, account.id, delivery.id, 2)
 
-      described_class.new.perform(delivery.id, 1)
+      described_class.new.perform(account.id, delivery.id, 1)
 
       delivery.reload
       expect(delivery.status).to eq('pending')
@@ -49,7 +54,7 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
       allow(HTTParty).to receive(:post).and_return(double('Response', success?: false, code: 500, body: 'Error'))
       expect(described_class).not_to receive(:perform_in)
 
-      described_class.new.perform(delivery.id, 3)
+      described_class.new.perform(account.id, delivery.id, 3)
 
       delivery.reload
       expect(delivery.status).to eq('failed')
@@ -59,7 +64,7 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
       delivery.update_columns(status: :successful)
       expect(HTTParty).not_to receive(:post)
 
-      described_class.new.perform(delivery.id, 1)
+      described_class.new.perform(account.id, delivery.id, 1)
     end
   end
 end

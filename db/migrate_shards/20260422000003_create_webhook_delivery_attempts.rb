@@ -10,6 +10,7 @@ class CreateWebhookDeliveryAttempts < ActiveRecord::Migration[8.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end
 
-    add_index :webhook_delivery_attempts, :created_at
+    add_index :webhook_delivery_attempts, [:webhook_delivery_id, :created_at]
+    add_index :webhook_delivery_attempts, [:webhook_delivery_id, :attempt_number]
   end
 end

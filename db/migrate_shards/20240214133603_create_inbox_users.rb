@@ -7,7 +7,7 @@ class CreateInboxUsers < ActiveRecord::Migration[7.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
       t.index [:inbox_id, :user_id], unique: true
-      t.index :created_at
+      t.index [:inbox_id, :created_at]
     end
   end
 end

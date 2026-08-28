@@ -26,7 +26,7 @@ module Billing
             provider: :stripe,
             payment_type: :card,
             status: :active,
-            is_default: is_first,
+            default_method: is_first,
             last_four: result[:last_four],
             brand: result[:brand],
             expiry_month: result[:expiry_month],
@@ -53,7 +53,7 @@ module Billing
             provider: :paddle,
             payment_type: resolve_paddle_type(payment_info["type"]),
             status: :active,
-            is_default: is_first,
+            default_method: is_first,
             last_four: payment_info.dig("card", "last4"),
             brand: payment_info.dig("card", "type"),
             expiry_month: payment_info.dig("card", "expiry_month"),
@@ -78,9 +78,9 @@ module Billing
           payment_method.update!(status: :removed)
 
           # Promote next method to default if this was default
-          if payment_method.is_default
+          if payment_method.default_method
             next_method = account.payment_methods.active_methods.first
-            next_method&.update!(is_default: true)
+            next_method&.update!(default_method: true)
           end
         end
       end

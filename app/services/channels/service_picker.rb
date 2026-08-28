@@ -112,6 +112,7 @@ module Channels
       }
 
       delivery = Webhook::Delivery.create!(
+        account_id: conversation.account_id,
         resource: channel,
         event_name: "message.created",
         endpoint_url: channel.webhook_url,
@@ -119,7 +120,7 @@ module Channels
         status: :pending
       )
 
-      Integrations::Webhooks::BroadcasterWorker.perform_async(delivery.id, 1)
+      Integrations::Webhooks::BroadcasterWorker.perform_async(conversation.account_id, delivery.id, 1)
     end
 
     def channel_contact_form_service

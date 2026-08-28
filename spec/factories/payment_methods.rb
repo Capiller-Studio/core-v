@@ -11,10 +11,10 @@ FactoryBot.define do
     last_four { '4242' }
     expiry_month { 12 }
     expiry_year { 2030 }
-    is_default { false }
+    default_method { false }
 
     trait :default do
-      is_default { true }
+      default_method { true }
     end
   end
 end

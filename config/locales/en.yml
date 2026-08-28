@@ -61,6 +61,21 @@ en:
       team_assigned:
         title: "Team Assignment"
         body: "Conversation #%{identifier} has been assigned to %{team_name}"
+    slack:
+      new_message_header: "%{icon} New Customer Message"
+      new_conversation_header: "%{icon} New Conversation Opened"
+      from_field: "*From:*\n%{sender}"
+      customer_field: "*Customer:*\n%{customer}"
+      channel_field: "*Channel:*\n%{channel}"
+      message_field: "*Message:*\n%{message}"
+      initial_message_field: "*Initial Message:*\n%{message}"
+      attachment_preview: "*(Attachment / Media)*"
+      open_button: "Open in Deskbolic ↗"
+      default_customer: "Customer"
+      default_channel: "Channel"
+      default_support: "Support"
+      default_conversation_preview: "A new customer conversation has been opened."
+      event_triggered: "Deskbolic Event Triggered: %{event_name}"
   mailers:
     conversation_reply:
       subject: "Re: %{subject}"

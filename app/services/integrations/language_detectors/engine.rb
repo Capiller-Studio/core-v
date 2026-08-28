@@ -28,10 +28,10 @@ module Integrations
 
       def process_detection
         # Prefer google APIs if integration exists
-        google_integration = account.integrations.find_by(provider: :google_translate, active: true)
+        google_integration = account.integrations.find_by(provider: :google_translate, status: :active)
 
         if google_integration
-          api_key = google_integration.settings["api_key"]
+          api_key = google_integration.credentials["api_key"]
           return perform_google_detection(api_key) if api_key.present?
         end
 

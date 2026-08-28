@@ -25,6 +25,6 @@ class CreateChannelCustoms < ActiveRecord::Migration[8.1]
 
     add_index :channel_customs, [:account_id, :identifier], unique: true
     add_index :channel_customs, [:account_id, :created_at]
-    add_index :channel_customs, :status
+    add_index :channel_customs, [:account_id, :status]
   end
 end

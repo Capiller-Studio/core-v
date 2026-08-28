@@ -34,6 +34,20 @@ RSpec.describe Team, type: :model do
     it { is_expected.to define_enum_for(:status).with_values(active: 0, inactive: 1, archived: 2) }
   end
 
+  describe '#auto_assign?' do
+    it 'defaults to false when flags is 0' do
+      team.flags = 0
+      expect(team.auto_assign?).to be false
+    end
+
+    it 'toggles auto_assign via bit flags' do
+      team.auto_assign = true
+      expect(team.auto_assign?).to be true
+      team.auto_assign = false
+      expect(team.auto_assign?).to be false
+    end
+  end
+
   describe 'Scopes' do
     let!(:account) { create(:account) }
     let!(:team_with_member) { create(:team, account: account) }

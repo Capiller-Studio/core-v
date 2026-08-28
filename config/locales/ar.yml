@@ -1,0 +1,17 @@
+ar:
+  notifications:
+    slack:
+      new_message_header: "%{icon} رسالة جديدة من العميل"
+      new_conversation_header: "%{icon} تم فتح محادثة جديدة"
+      from_field: "*من:*\n%{sender}"
+      customer_field: "*العميل:*\n%{customer}"
+      channel_field: "*القناة:*\n%{channel}"
+      message_field: "*الرسالة:*\n%{message}"
+      initial_message_field: "*الرسالة الأولى:*\n%{message}"
+      attachment_preview: "*(مرفق / وسائط)*"
+      open_button: "فتح في ديسكبوليك ↗"
+      default_customer: "عميل"
+      default_channel: "قناة"
+      default_support: "الدعم"
+      default_conversation_preview: "تم فتح محادثة عميل جديدة."
+      event_triggered: "تم تشغيل حدث ديسكبوليك: %{event_name}"

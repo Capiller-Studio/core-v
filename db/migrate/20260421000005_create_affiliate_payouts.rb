@@ -7,9 +7,9 @@ class CreateAffiliatePayouts < ActiveRecord::Migration[8.1]
       t.decimal :amount, precision: 10, scale: 2, null: false
       t.string :currency, null: false
       t.integer :provider, default: 0, null: false
-      t.integer :status, default: 0
+      t.integer :status, default: 0, null: false
       t.string :external_id
-      t.jsonb :data, default: {}
+      t.jsonb :data, default: {}, null: false
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end

@@ -3,14 +3,13 @@ class CreateTeams < ActiveRecord::Migration[7.1]
     create_table :teams, id: :uuid do |t|
       t.string  :name, null: false
       t.text    :description
-      t.string  :identifier,  null: false
-      t.boolean :auto_assign, null: false, default: true
+      t.string  :identifier, null: false
 
-      t.integer :status,            null: false, default: 0
-      t.integer :flags,             null: false, default: 0
-      t.jsonb   :configurations,    null: false, default: {}
+      t.integer :status,         null: false, default: 0
+      t.integer :flags,          null: false, default: 0
+      t.jsonb   :configurations, null: false, default: {}
 
-      t.references :account, null: false, foreign_key: false,  type: :uuid, index: true
+      t.references :account, null: false, foreign_key: false, type: :uuid, index: true
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
