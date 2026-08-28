@@ -8,7 +8,7 @@ class CreateAffiliatePayoutBatches < ActiveRecord::Migration[8.1]
       t.string :external_id
       t.decimal :total_amount, precision: 12, scale: 2, default: 0
       t.datetime :funded_at
-      t.jsonb :data, default: {}
+      t.jsonb :data, default: {}, null: false
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end

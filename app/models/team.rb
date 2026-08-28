@@ -5,7 +5,6 @@
 # Table name: teams
 #
 #  id              :uuid             not null, primary key
-#  auto_assign     :boolean          default(TRUE), not null
 #  configurations  :jsonb            not null
 #  description     :text
 #  flags           :integer          default(0), not null
@@ -26,9 +25,12 @@
 #  index_teams_on_account_id_and_status      (account_id,status)
 #
 class Team < ShardRecord
+  include FlagShihTzu
   include SlugGenerator.new(source: :name, column: :identifier, scope: :account_id)
   include Avatarable
   include UsageTrackable
+
+  has_flags 1 => :auto_assign, column: 'flags'
 
   belongs_to :account
 

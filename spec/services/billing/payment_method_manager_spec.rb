@@ -29,7 +29,7 @@ RSpec.describe Billing::PaymentMethodManager do
       pm = PaymentMethod.last
       expect(pm.provider).to eq('stripe')
       expect(pm.last_four).to eq('4242')
-      expect(pm.is_default).to be true
+      expect(pm.default_method).to be true
     end
   end
 
@@ -61,8 +61,8 @@ RSpec.describe Billing::PaymentMethodManager do
 
   describe '#remove_method' do
     let(:service) { described_class.new(account: account) }
-    let!(:pm1) { PaymentMethod.create!(account: account, is_default: true, provider: 'stripe', external_id: 'pm_1', status: :active, payment_type: :card) }
-    let!(:pm2) { PaymentMethod.create!(account: account, is_default: false, provider: 'paddle', external_id: 'pm_2', status: :active, payment_type: :card) }
+    let!(:pm1) { PaymentMethod.create!(account: account, default_method: true, provider: 'stripe', external_id: 'pm_1', status: :active, payment_type: :card) }
+    let!(:pm2) { PaymentMethod.create!(account: account, default_method: false, provider: 'paddle', external_id: 'pm_2', status: :active, payment_type: :card) }
     let(:gateway) { instance_double(PaymentGateway::Stripe) }
 
     before do
@@ -75,7 +75,7 @@ RSpec.describe Billing::PaymentMethodManager do
       service.remove_method(pm1)
       
       expect(pm1.reload.status).to eq('removed')
-      expect(pm2.reload.is_default).to be true
+      expect(pm2.reload.default_method).to be true
     end
   end
 end

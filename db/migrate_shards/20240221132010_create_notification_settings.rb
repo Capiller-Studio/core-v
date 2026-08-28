@@ -11,7 +11,7 @@ class CreateNotificationSettings < ActiveRecord::Migration[7.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
  
       t.index [:account_id, :user_id], unique: true
-      t.index [:user_id, :created_at]
+      t.index [:account_id, :created_at]
     end
   end
 end

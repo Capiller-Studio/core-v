@@ -9,8 +9,8 @@ class CreateAffiliateProfiles < ActiveRecord::Migration[8.1]
       t.integer :holding_days
       t.string :currency, default: "USD", null: false
       t.boolean :payouts_enabled, default: false, null: false
-      t.integer :payment_method_type, default: 0
-      t.jsonb :payment_details, default: {}
+      t.integer :payment_method_type, default: 0, null: false
+      t.jsonb :payment_details, default: {}, null: false
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end

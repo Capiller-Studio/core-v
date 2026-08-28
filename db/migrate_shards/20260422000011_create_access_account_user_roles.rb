@@ -9,6 +9,6 @@ class CreateAccessAccountUserRoles < ActiveRecord::Migration[8.1]
     end
 
     add_index :access_account_user_roles, [:account_user_id, :role_id], name: "idx_acc_user_role_composite"
-    add_index :access_account_user_roles, :created_at
+    add_index :access_account_user_roles, [:account_id, :created_at]
   end
 end

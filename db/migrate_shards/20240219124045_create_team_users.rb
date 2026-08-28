@@ -8,7 +8,7 @@ class CreateTeamUsers < ActiveRecord::Migration[7.1]
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
 
       t.index [:team_id, :user_id], unique: true
-      t.index :created_at
+      t.index [:team_id, :created_at]
     end
   end
 end

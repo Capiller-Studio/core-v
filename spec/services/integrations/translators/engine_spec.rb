@@ -17,11 +17,11 @@ RSpec.describe Integrations::Translators::Engine do
 
     context 'with google translate integration' do
       let(:integrations_scope) { double('IntegrationsScope') }
-      let(:google_integration) { double('Integration', settings: { "api_key" => "secret_key" }) }
+      let(:google_integration) { double('Integration', credentials: { "api_key" => "secret_key" }) }
 
       before do
         allow(account).to receive(:integrations).and_return(integrations_scope)
-        allow(integrations_scope).to receive(:find_by).with(provider: :google_translate, active: true).and_return(google_integration)
+        allow(integrations_scope).to receive(:find_by).with(provider: :google_translate, status: :active).and_return(google_integration)
       end
 
       it 'calls google API and updates message data' do
@@ -45,7 +45,7 @@ RSpec.describe Integrations::Translators::Engine do
 
       before do
         allow(account).to receive(:integrations).and_return(integrations_scope)
-        allow(integrations_scope).to receive(:find_by).with(provider: :google_translate, active: true).and_return(nil)
+        allow(integrations_scope).to receive(:find_by).with(provider: :google_translate, status: :active).and_return(nil)
         ENV['OS_TRANSLATOR_URL'] = 'http://localhost:5001/translate'
       end
 

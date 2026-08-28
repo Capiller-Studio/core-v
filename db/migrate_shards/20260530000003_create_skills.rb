@@ -16,6 +16,8 @@ class CreateSkills < ActiveRecord::Migration[8.1]
 
       t.index [:account_id, :name], unique: true
       t.index [:account_id, :skill_type]
+      t.index [:account_id, :status]
+      t.index [:account_id, :created_at]
     end
   end
 end

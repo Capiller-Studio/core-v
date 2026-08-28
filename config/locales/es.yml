@@ -1,0 +1,17 @@
+es:
+  notifications:
+    slack:
+      new_message_header: "%{icon} Nuevo mensaje del cliente"
+      new_conversation_header: "%{icon} Nueva conversación abierta"
+      from_field: "*De:*\n%{sender}"
+      customer_field: "*Cliente:*\n%{customer}"
+      channel_field: "*Canal:*\n%{channel}"
+      message_field: "*Mensaje:*\n%{message}"
+      initial_message_field: "*Mensaje inicial:*\n%{message}"
+      attachment_preview: "*(Archivo adjunto / Multimedia)*"
+      open_button: "Abrir en Deskbolic ↗"
+      default_customer: "Cliente"
+      default_channel: "Canal"
+      default_support: "Soporte"
+      default_conversation_preview: "Se ha abierto una nueva conversación con un cliente."
+      event_triggered: "Evento de Deskbolic activado: %{event_name}"

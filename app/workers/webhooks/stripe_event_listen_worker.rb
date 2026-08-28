@@ -43,7 +43,7 @@ module Webhooks
         provider: :stripe,
         payment_type: :card,
         status: :active,
-        is_default: account.payment_methods.active_methods.empty?,
+        default_method: account.payment_methods.active_methods.empty?,
         last_four: pm.card&.last4,
         brand: pm.card&.brand,
         expiry_month: pm.card&.exp_month,

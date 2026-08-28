@@ -39,7 +39,7 @@ RSpec.describe Ai::CreditTopup do
   end
 
   describe '#call with credit card payment method' do
-    let(:payment_method) { create(:payment_method, account: account, is_default: true) }
+    let(:payment_method) { create(:payment_method, account: account, default_method: true) }
     let(:gateway) { instance_double(PaymentGateway::Stripe) }
 
     before do

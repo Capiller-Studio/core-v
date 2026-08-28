@@ -14,8 +14,8 @@ class CreateAffiliateCommissions < ActiveRecord::Migration[8.1]
       t.decimal :amount, null: false, precision: 10, scale: 2
       t.string  :currency, null: false
       
-      t.integer :commission_type, default: 0
-      t.integer :status, default: 0
+      t.integer :commission_type, default: 0, null: false
+      t.integer :status, default: 0, null: false
 
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
     end
@@ -23,5 +23,7 @@ class CreateAffiliateCommissions < ActiveRecord::Migration[8.1]
     add_index :affiliate_commissions, :status
     add_index :affiliate_commissions, :commission_type
     add_index :affiliate_commissions, :created_at
+    add_index :affiliate_commissions, [:affiliate_profile_id, :status]
+    add_index :affiliate_commissions, [:affiliate_profile_id, :created_at]
   end
 end

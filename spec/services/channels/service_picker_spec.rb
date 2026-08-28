@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Channels::ServicePicker do
   let(:inbox) { double('Inbox', channel: default_channel, id: 1) }
   let(:customer_inbox) { double('CustomerInbox', inbox_id: 1) }
-  let(:conversation) { double('Conversation', inbox: inbox, outbound_channel: nil, customer_inboxes: [customer_inbox]) }
+  let(:conversation) { double('Conversation', inbox: inbox, outbound_channel: nil, customer_inboxes: [customer_inbox], account_id: 2) }
   let(:message) { double('Message', outgoing?: true, outbound_channel: nil, account_id: 2, id: 10) }
   
   before do
@@ -96,7 +96,7 @@ RSpec.describe Channels::ServicePicker do
           )
         ).and_return(delivery)
 
-        expect(Integrations::Webhooks::BroadcasterWorker).to receive(:perform_async).with(55, 1)
+        expect(Integrations::Webhooks::BroadcasterWorker).to receive(:perform_async).with(conversation.account_id, 55, 1)
         
         service.call
       end

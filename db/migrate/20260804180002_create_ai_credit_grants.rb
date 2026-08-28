@@ -7,10 +7,11 @@ class CreateAiCreditGrants < ActiveRecord::Migration[8.1]
       t.integer  :grant_type,  null: false, default: 0 # enum: monthly_free, purchased
       t.datetime :expires_at,  null: false
       t.string   :description
-      t.jsonb    :data, default: {}
+      t.jsonb    :data, default: {}, null: false
       t.timestamps default: -> { "CURRENT_TIMESTAMP" }
       
-      t.index :expires_at
+      t.index [:ai_wallet_id, :expires_at]
+      t.index [:ai_wallet_id, :created_at]
     end
   end
 end
