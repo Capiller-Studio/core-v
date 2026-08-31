@@ -75,4 +75,9 @@ Rails.application.reloader.to_prepare do
     webhook = Webhook::Incoming.create!(source: "facebook", event_type: "read", payload: JSON.parse(read.to_json), status: :pending)
     Webhooks::FacebookEventListenWorker.perform_async(webhook.id)
   end
+
+  Facebook::Messenger::Bot.on :reaction do |reaction|
+    webhook = Webhook::Incoming.create!(source: "facebook", event_type: "reaction", payload: JSON.parse(reaction.to_json), status: :pending)
+    Webhooks::FacebookEventListenWorker.perform_async(webhook.id)
+  end
 end

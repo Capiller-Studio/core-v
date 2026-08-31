@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
-  let(:whatsapp_channel) { double('Channel::Whatsapp', account: account, primary_inbox: inbox, phone_number_id: 'pn123') }
+  let(:whatsapp_channel) { double('Channel::Whatsapp', account: account, primary_inbox: inbox, inboxes: [inbox], phone_number_id: 'pn123') }
   let(:account) { double('Account', id: 1) }
   let(:inbox) { double('Inbox') }
   let(:parsed_params) do
@@ -15,7 +15,7 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
 
   before do
     allow(account).to receive(:with_shard).and_yield
-    allow(account).to receive_message_chain(:messages, :find_by).and_return(nil)
+    allow(account).to receive_message_chain(:messages, :where, :find_by).and_return(nil)
     
     stub_const('RedisUtilities::Helpers', double('RedisHelpers'))
     allow(RedisUtilities::Helpers).to receive(:get).and_return(false)
@@ -67,11 +67,78 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
       service.call
     end
 
+    context 'with reaction message type' do
+      let(:parsed_params) do
+        {
+          contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" } }],
+          messages: [{ type: "reaction", from: "987", id: "msg_wa_reaction_1", reaction: { message_id: "wamid_orig", emoji: "👍" } }]
+        }
+      end
+
+      it 'delegates to Channels::Whatsapp::CloudApi::ReactionHandler' do
+        expect(Channels::Whatsapp::CloudApi::ReactionHandler).to receive(:call).with(
+          whatsapp_channel: whatsapp_channel,
+          parsed_params: parsed_params
+        )
+
+        service.call
+      end
+    end
+
+    context 'with protocol edited_message type' do
+      let(:parsed_params) do
+        {
+          messages: [{
+            type: "protocol",
+            from: "987",
+            protocol_message: {
+              type: "edited_message",
+              message_id: "wamid_orig",
+              edited_message: { text: { body: "Edited" } }
+            }
+          }]
+        }
+      end
+
+      it 'delegates to Channels::Whatsapp::CloudApi::EditHandler' do
+        expect(Channels::Whatsapp::CloudApi::EditHandler).to receive(:call).with(
+          whatsapp_channel: whatsapp_channel,
+          parsed_params: parsed_params
+        )
+
+        service.call
+      end
+    end
+
+    context 'with protocol revocation type' do
+      let(:parsed_params) do
+        {
+          messages: [{
+            type: "protocol",
+            from: "987",
+            protocol_message: {
+              type: "revocation",
+              message_id: "wamid_orig"
+            }
+          }]
+        }
+      end
+
+      it 'delegates to Channels::Whatsapp::CloudApi::UnsendHandler' do
+        expect(Channels::Whatsapp::CloudApi::UnsendHandler).to receive(:call).with(
+          whatsapp_channel: whatsapp_channel,
+          parsed_params: parsed_params
+        )
+
+        service.call
+      end
+    end
+
     context 'with unsupported message type' do
       let(:parsed_params) do
         {
           contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" } }],
-          messages: [{ type: "reaction", from: "987", id: "msg_wa_1" }]
+          messages: [{ type: "ephemeral", from: "987", id: "msg_wa_1" }]
         }
       end
 

@@ -45,10 +45,13 @@ module Channels
       end
 
       def params
-        {
+        payload = {
           recipient: { id: customer_inbox.external_id },
           message: { text: message.content }
         }
+        reply_id = message.try(:external_reply_to_id)
+        payload[:recipient][:reply_to] = { mid: reply_id } if reply_id.present?
+        payload
       end
 
       def attachment_params(attachment)

@@ -65,7 +65,24 @@ module Customers
     end
 
     def find_customer
-      find_customer_by_external_id || find_customer_by_email || find_customer_by_phone_number
+      find_customer_by_identity || find_customer_by_external_id || find_customer_by_email || find_customer_by_phone_number
+    end
+
+    def find_customer_by_identity
+      return if external_id.blank? || channel_identity_type.blank?
+
+      identity = account.identities.find_by(identity_type: channel_identity_type, identifier: external_id.to_s)
+      self.customer = identity&.customer
+    end
+
+    def channel_identity_type
+      case inbox&.channel
+      when Channel::FacebookPage then :facebook
+      when Channel::Instagram    then :instagram
+      when Channel::Whatsapp     then :whatsapp
+      when Channel::WebWidget    then :web_widget
+      when Channel::Custom       then :custom_api
+      end
     end
 
     def find_customer_by_external_id

@@ -41,11 +41,14 @@ module Channels
       end
 
       def params
-        {
+        payload = {
           recipient: { id: customer_inbox.external_id },
           message: { text: Channels::MessageFormatter.format_for_whatsapp_and_facebook(message.content) },
           messaging_type: "RESPONSE"
         }
+        reply_id = message.try(:external_reply_to_id)
+        payload[:reply_to] = { mid: reply_id } if reply_id.present?
+        payload
       end
 
       def attachment_params(attachment)

@@ -28,6 +28,22 @@ RSpec.describe Customers::CustomerCreator do
       end
     end
 
+    context 'when customer has an existing identity matching the channel' do
+      let(:fb_channel) do
+        allow_any_instance_of(Channel::FacebookPage).to receive(:subscribe_to_webhooks)
+        create(:channel_facebook_page, account: account)
+      end
+      let(:fb_inbox) { create(:inbox, account: account, channel: fb_channel) }
+      let!(:existing_customer) { create(:customer, account: account, name: 'Identified User') }
+      let!(:identity) { create(:identity, customer: existing_customer, identity_type: :facebook, identifier: 'fb-user-999', account: account) }
+      let(:service) { described_class.new(account: account, inbox: fb_inbox, external_id: 'fb-user-999') }
+
+      it 'finds and returns the customer via identity' do
+        expect { service.call }.not_to change(Customer, :count)
+        expect(service.call).to eq(existing_customer)
+      end
+    end
+
     context 'when creating a new customer' do
       let(:params) do
         {
