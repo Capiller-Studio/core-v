@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 1.0.0
+# VERSION: 1.2.0
 # Website: https://techbolic.com/
 
 module Parser
@@ -9,17 +9,16 @@ module Parser
     attr_accessor :message
 
     def initialize(response:)
-      self.message = JSON.parse(response)
-      self.message = message["messaging"] || message["standby"]
+      parsed = response.is_a?(String) ? JSON.parse(response) : response
+      self.message = parsed["messaging"] || parsed["standby"] || parsed
     end
 
     def call
-      # TODO: Return a hash or maybe some object
       self
     end
 
     def mid
-      @mid ||= message.dig("message", "mid")
+      @mid ||= message.dig("message", "mid") || edit_mid || reaction_mid || unsend_mid
     end
 
     def sender_id
@@ -31,7 +30,7 @@ module Parser
     end
 
     def content
-      @content ||= message.dig("message", "text")
+      @content ||= message.dig("message_edit", "text") || message.dig("message", "text")
     end
 
     def attachments
@@ -68,6 +67,45 @@ module Parser
 
     def echo?
       @echo ||= message.dig("message", "is_echo")
+    end
+
+    # Reactions
+    def reaction
+      @reaction ||= message["reaction"]
+    end
+
+    def reaction_mid
+      @reaction_mid ||= reaction&.dig("mid")
+    end
+
+    def reaction_emoji
+      @reaction_emoji ||= reaction&.dig("emoji")
+    end
+
+    def reaction_action
+      @reaction_action ||= reaction&.dig("action") # "react" or "unreact"
+    end
+
+    def reaction_name
+      @reaction_name ||= reaction&.dig("reaction")
+    end
+
+    # Message Edits
+    def message_edit
+      @message_edit ||= message["message_edit"]
+    end
+
+    def edit_mid
+      @edit_mid ||= message_edit&.dig("mid")
+    end
+
+    # Message Unsends
+    def message_unsend
+      @message_unsend ||= message["message_unsend"] || message["message_delete"]
+    end
+
+    def unsend_mid
+      @unsend_mid ||= message_unsend&.dig("mid")
     end
   end
 end

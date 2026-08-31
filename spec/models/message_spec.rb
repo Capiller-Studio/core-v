@@ -8,7 +8,10 @@ RSpec.describe Message, type: :model do
     it { is_expected.to belong_to(:inbox) }
     it { is_expected.to belong_to(:account) }
     it { is_expected.to belong_to(:sender) }
+    it { is_expected.to belong_to(:reply_to_message).class_name('Message').optional }
     it { is_expected.to have_many(:attachments).dependent(:destroy) }
+    it { is_expected.to have_many(:reactions).class_name('MessageReaction').dependent(:destroy) }
+    it { is_expected.to have_many(:replies).class_name('Message').with_foreign_key(:reply_to_message_id).dependent(:nullify) }
   end
 
   describe 'Enums' do
@@ -62,6 +65,58 @@ RSpec.describe Message, type: :model do
       expect(payload[:content]).to eq(message.content)
       expect(payload[:status]).to eq(message.status)
       expect(payload[:source]).to eq(message.source)
+      expect(payload[:is_edited]).to eq(false)
+      expect(payload[:is_deleted]).to eq(false)
+      expect(payload[:reactions]).to eq([])
+    end
+  end
+
+  describe '#edit!' do
+    let(:account) { create(:account) }
+    let(:conversation) { create(:conversation, account: account) }
+    let(:message) { create(:message, account: account, conversation: conversation, content: 'Original content') }
+
+    it 'updates content, records edit history, and sets edited_at' do
+      expect(message.edited?).to be false
+      message.edit!('Updated content')
+      expect(message.content).to eq('Updated content')
+      expect(message.edited?).to be true
+      expect(message.edited_at).to be_present
+      expect(message.edit_history.first['content']).to eq('Original content')
+    end
+  end
+
+  describe '#unsend!' do
+    let(:account) { create(:account) }
+    let(:conversation) { create(:conversation, account: account) }
+    let(:message) { create(:message, account: account, conversation: conversation) }
+
+    it 'sets deleted_at' do
+      expect(message.deleted?).to be false
+      message.unsend!
+      expect(message.deleted?).to be true
+      expect(message.deleted_at).to be_present
+    end
+  end
+
+  describe 'Reply resolution and syncing' do
+    let(:account) { create(:account) }
+    let(:conversation) { create(:conversation, account: account) }
+    let(:parent_message) { create(:message, account: account, conversation: conversation, external_id: 'parent_mid_123', content: 'Parent question') }
+
+    it 'resolves reply_to_message from external_reply_to_id' do
+      account.with_shard do
+        parent_message
+        reply = create(:message, account: account, conversation: conversation, external_reply_to_id: 'parent_mid_123')
+        expect(reply.reply_to_message).to eq(parent_message)
+      end
+    end
+
+    it 'syncs external_reply_to_id from reply_to_message' do
+      account.with_shard do
+        reply = create(:message, account: account, conversation: conversation, reply_to_message: parent_message)
+        expect(reply.external_reply_to_id).to eq('parent_mid_123')
+      end
     end
   end
 

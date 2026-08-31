@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 1.0.0
+# VERSION: 1.3.0
 # Website: https://techbolic.com/
 
 module Channels
@@ -9,7 +9,7 @@ module Channels
     class EventListener < ApplicationService
       attr_accessor :instagram_channel, :payload, :entries
 
-      SUPPORTED_EVENTS = %i[message delivery read].freeze
+      SUPPORTED_EVENTS = %i[message delivery read reaction message_edit message_delete message_unsend].freeze
 
       def initialize(instagram_channel:, payload:)
         self.instagram_channel = instagram_channel
@@ -20,12 +20,14 @@ module Channels
       def call
         return if entries.blank?
 
-        entries.each do |entry|
-          (entry[:messaging].presence || entry[:standby] || []).each do |raw_message|
-            event = find_event(raw_message)
-            next if event.blank?
+        instagram_channel.account.with_shard do
+          entries.each do |entry|
+            (entry[:messaging].presence || entry[:standby] || []).each do |raw_message|
+              event = find_event(raw_message)
+              next if event.blank?
 
-            process_event(entry, raw_message, event)
+              process_event(entry, raw_message, event)
+            end
           end
         end
       rescue StandardError => e
@@ -42,15 +44,22 @@ module Channels
       def process_event(entry, raw_message, event)
         parsed_message = Parser::InstagramMessageParser.new(message: raw_message)
 
-        if event == :message
+        case event
+        when :message
           ::RedisUtilities::MutexHelpers.with_lock(lock_key(entry, parsed_message)) do
             ConversationCreator.call(
               channel: instagram_channel,
               parsed_message: parsed_message
             )
           end
-        elsif [ :read, :delivery ].include?(event)
+        when :read, :delivery
           process_statuses(parsed_message, event)
+        when :reaction
+          ReactionHandler.call(channel: instagram_channel, parsed_message: parsed_message)
+        when :message_edit
+          EditHandler.call(channel: instagram_channel, parsed_message: parsed_message)
+        when :message_delete, :message_unsend
+          UnsendHandler.call(channel: instagram_channel, parsed_message: parsed_message)
         end
       end
 

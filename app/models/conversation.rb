@@ -258,10 +258,12 @@ class Conversation < ShardRecord
   end
 
   def connection_tokens
-    (customer_inboxes.pluck(:connection_token) + account.users.pluck(:connection_token)).uniq
+    (customer_inboxes.pluck(:connection_token) + (account&.users&.pluck(:connection_token) || [])).uniq
   end
 
   def cleanup_unread_counts
+    return unless account
+
     account.users.find_each do |user|
       conv_key = RedisUtilities::Keys::UNREAD_CONVERSATION_COUNT % { account_id: account_id, member_id: user.id }
       set_key = RedisUtilities::Keys::UNREAD_CONVERSATION_SET % { account_id: account_id, member_id: user.id }

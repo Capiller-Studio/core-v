@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Company: TECHBOLIC SOLUTIONS (PRIVATE) LIMITED
-# VERSION: 2.0.0
+# VERSION: 2.3.0
 # Website: https://techbolic.com/
 
 module Channels
@@ -10,7 +10,7 @@ module Channels
       class ConversationCreator < ApplicationService
         include Channels::Concerns::ConversationFinder
 
-        INVALID_MESSAGE_TYPES = %w[reaction request_welcome ephemeral unsupported].freeze
+        INVALID_MESSAGE_TYPES = %w[request_welcome ephemeral unsupported].freeze
 
         attr_accessor :inbox, :message, :parsed_params,
                       :whatsapp_channel, :customer, :sender_id, :account,
@@ -28,6 +28,14 @@ module Channels
 
           account.with_shard do
             find_inbox
+
+            if message_type == "reaction"
+              ReactionHandler.call(whatsapp_channel: whatsapp_channel, parsed_params: parsed_params)
+              return
+            elsif message_type == "protocol"
+              process_protocol
+              return
+            end
 
             return if find_existing_message(parsed_params[:messages].first[:id]) || message_creation_locked?
 
@@ -59,14 +67,25 @@ module Channels
 
         private
 
+        def process_protocol
+          msg = parsed_params[:messages].first
+          protocol = msg[:protocol] || msg[:protocol_message] || {}
+
+          if protocol[:type] == "edited_message" || protocol[:edited_message].present?
+            EditHandler.call(whatsapp_channel: whatsapp_channel, parsed_params: parsed_params)
+          elsif protocol[:type] == "revocation"
+            UnsendHandler.call(whatsapp_channel: whatsapp_channel, parsed_params: parsed_params)
+          end
+        end
+
         def find_inbox
           self.inbox = whatsapp_channel.primary_inbox
         end
 
         def find_existing_message(external_id)
-          return unless external_id
+          return nil if external_id.blank?
 
-          account.messages.find_by(external_id: external_id)
+          account.messages.where(inbox: whatsapp_channel.inboxes).find_by(external_id: external_id)
         end
 
         def invalid_message_type?(message_type)
@@ -110,7 +129,7 @@ module Channels
           self.customer = Customers::CustomerCreator.call(
             account: account,
             inbox: inbox,
-            external_id: customer_data["wa_id"],
+            external_id: customer_data["wa_id"] || parsed_params[:messages].first[:from],
             full_phone_number: "+#{parsed_params[:messages].first[:from]}",
             params: {
               name: customer_data.dig(:profile, :name),
@@ -128,7 +147,7 @@ module Channels
           account.identities.create!(
             customer: customer,
             identity_type: :whatsapp,
-            identifier: customer_data["wa_id"],
+            identifier: customer_data["wa_id"] || parsed_params[:messages].first[:from],
             name: customer_data.dig(:profile, :name),
             raw_response: customer_data
           )

@@ -20,6 +20,12 @@ module Webhooks
           process_message(parsed_message, event_name.to_sym)
         when :delivery, :read
           process_status(parsed_message, event_name.to_sym)
+        when :reaction
+          process_reaction(parsed_message)
+        when :message_edit
+          process_edit(parsed_message)
+        when :message_unsend, :message_delete
+          process_unsend(parsed_message)
         end
 
         webhook.processed!
@@ -41,38 +47,74 @@ module Webhooks
       )
 
       RedisUtilities::MutexHelpers.with_lock(lock_key) do
-        GlobalRouting.where(route_type: "facebook_page", route_value: search_id).find_each do |routing|
-          Current.set(account: routing.account) do
-            routing.account.with_shard do
-              Channel::FacebookPage.where(page_identifier: search_id, account_id: routing.account_id).find_each do |channel|
-                Channels::FacebookPages::ConversationCreator.call(
-                  facebook_page_channel: channel,
-                  parsed_message: parsed_message
-                )
-              end
-            end
-          end
+        each_channel_for(search_id) do |channel|
+          Channels::FacebookPages::ConversationCreator.call(
+            facebook_page_channel: channel,
+            parsed_message: parsed_message
+          )
         end
       end
     end
 
+    def process_reaction(parsed_message)
+      each_channel_for(parsed_message.recipient_id) do |channel|
+        Channels::FacebookPages::ReactionHandler.call(
+          channel: channel,
+          parsed_message: parsed_message
+        )
+      end
+    end
+
+    def process_edit(parsed_message)
+      each_channel_for(parsed_message.recipient_id) do |channel|
+        Channels::FacebookPages::EditHandler.call(
+          channel: channel,
+          parsed_message: parsed_message
+        )
+      end
+    end
+
+    def process_unsend(parsed_message)
+      each_channel_for(parsed_message.recipient_id) do |channel|
+        Channels::FacebookPages::UnsendHandler.call(
+          channel: channel,
+          parsed_message: parsed_message
+        )
+      end
+    end
+
     def process_status(parsed_message, event_name)
-      watermark = event_name == :read ? parsed_message.read_watermark : parsed_message.delivery_watermark
-      return unless watermark
+      each_channel_for(parsed_message.recipient_id) do |channel|
+        watermark = event_name == :read ? parsed_message.read_watermark : parsed_message.delivery_watermark
+        message_external_ids = parsed_message.message&.dig(:mids) || []
 
-      status = event_name == :read ? :read : :delivered
+        if event_name == :read && parsed_message.read&.dig("mid").present?
+          message_external_ids << parsed_message.read["mid"]
+        end
 
-      GlobalRouting.where(route_type: "facebook_page", route_value: parsed_message.recipient_id).find_each do |routing|
+        next if watermark.blank? && message_external_ids.blank?
+
+        status = event_name == :read ? :read : :delivered
+        params = {
+          external_ids: message_external_ids,
+          watermark: watermark,
+          customer_external_id: parsed_message.sender_id,
+          channel_class: channel.class.name,
+          channel_id: channel.id
+        }
+
+        Messages::StatusUpdateWorker.perform_async(channel.account_id, status, params.as_json)
+      end
+    end
+
+    def each_channel_for(search_id, &block)
+      return if search_id.blank?
+
+      GlobalRouting.where(route_type: "facebook_page", route_value: search_id).find_each do |routing|
         Current.set(account: routing.account) do
           routing.account.with_shard do
-            Channel::FacebookPage.where(page_identifier: parsed_message.recipient_id, account_id: routing.account_id).find_each do |channel|
-              params = {
-                watermark: watermark,
-                customer_external_id: parsed_message.sender_id,
-                channel_class: channel.class.name,
-                channel_id: channel.id
-              }
-              Messages::StatusUpdateWorker.perform_async(channel.account_id, status.to_s, params.as_json)
+            Channel::FacebookPage.where(page_identifier: search_id, account_id: routing.account_id).find_each do |channel|
+              block.call(channel)
             end
           end
         end
