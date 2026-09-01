@@ -7,6 +7,7 @@ module Channel
   class Custom < ShardRecord
     include Channelable
     include Routable
+    include Trackable
     
     belongs_to :account
 

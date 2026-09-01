@@ -24,6 +24,7 @@
 #
 class Label < ShardRecord
   include SlugGenerator.new(source: :title, column: :identifier, scope: :account_id)
+  include Trackable
 
   belongs_to :account
   has_many :applied_labels, dependent: :destroy

@@ -4,6 +4,7 @@ module Access
   class Role < ShardRecord
     include SlugGenerator.new(source: :name, column: :identifier, scope: :account_id)
     include UsageTrackable
+    include Trackable
 
     belongs_to :account
     has_many :account_user_roles, class_name: "Access::AccountUserRole", dependent: :destroy

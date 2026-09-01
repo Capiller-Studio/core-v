@@ -63,6 +63,13 @@ module Channels
         rescue StandardError => e
           Rails.logger.error("WhatsApp ConversationCreator error: #{e.message}")
           Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
+          SystemLog.log_event(
+            SystemLogs::EventKeys::WEBHOOK_WHATSAPP_ERROR,
+            level: :error,
+            account: account,
+            message: e.message,
+            payload: { error_class: e.class.name, phone_number_id: whatsapp_channel.try(:phone_number_id) }
+          )
         end
 
         private

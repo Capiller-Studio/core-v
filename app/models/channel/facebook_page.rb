@@ -31,6 +31,7 @@ module Channel
     include Channelable
     include Routable
     include Reauthorizable
+    include Trackable
 
     SUBSCRIBE_FIELDS = %w[
       messages

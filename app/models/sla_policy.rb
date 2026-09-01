@@ -24,6 +24,7 @@
 #
 class SlaPolicy < ShardRecord
   include UsageTrackable
+  include Trackable
 
   belongs_to :account
   belongs_to :business_hour_group, optional: true

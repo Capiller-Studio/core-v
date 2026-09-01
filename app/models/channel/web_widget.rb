@@ -37,6 +37,7 @@ module Channel
     include Routable
     include FlagShihTzu
     include Translateable
+    include Trackable
 
     TRANSLATABLE_FIELDS = %i[launcher_text reply_time_text pre_chat_title pre_chat_subtitle welcome_title welcome_tagline].freeze
 

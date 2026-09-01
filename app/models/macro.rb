@@ -22,6 +22,7 @@ class Macro < ShardRecord
   include Actionable
   include FlagShihTzu
   include UsageTrackable
+  include Trackable
 
   belongs_to :account
   belongs_to :scopeable, polymorphic: true, optional: true

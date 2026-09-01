@@ -40,6 +40,7 @@ module Channel
     include Routable
     include Reauthorizable
     include FlagShihTzu
+    include Trackable
 
     # Graph API version — single source of truth for all WhatsApp Cloud API calls.
     GRAPH_API_VERSION = "v26.0"

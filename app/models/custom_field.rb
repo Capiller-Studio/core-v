@@ -31,6 +31,7 @@ class CustomField < ShardRecord
   include FlagShihTzu
   include Translateable
   include UsageTrackable
+  include Trackable
 
   TRANSLATABLE_FIELDS = %i[label placeholder description].freeze
 

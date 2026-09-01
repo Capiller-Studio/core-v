@@ -33,6 +33,7 @@ class Automation < ShardRecord
   include Actionable
   include FlagShihTzu
   include UsageTrackable
+  include Trackable
 
   belongs_to :account
 
