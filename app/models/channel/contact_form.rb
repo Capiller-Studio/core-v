@@ -28,6 +28,7 @@ module Channel
     include Routable
     include FlagShihTzu
     include Translateable
+    include Trackable
 
     TRANSLATABLE_FIELDS = %i[title subtitle success_message submit_button_text].freeze
 

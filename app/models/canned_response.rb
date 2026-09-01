@@ -23,6 +23,7 @@
 #
 class CannedResponse < ShardRecord
   include CodeGenerator.new(prefix: "CR")
+  include Trackable
   
   TEMPLATE_VARIABLES = {
     "customer"     => %w[name email full_phone_number],

@@ -29,6 +29,7 @@ class Team < ShardRecord
   include SlugGenerator.new(source: :name, column: :identifier, scope: :account_id)
   include Avatarable
   include UsageTrackable
+  include Trackable
 
   has_flags 1 => :auto_assign, column: 'flags'
 

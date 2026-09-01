@@ -33,6 +33,7 @@ module Channel
   class TwitterProfile < ShardRecord
     include Channelable
     include Routable
+    include Trackable
     belongs_to :account
 
     has_many :inboxes, as: :channel, dependent: :destroy

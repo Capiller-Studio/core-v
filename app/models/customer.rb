@@ -65,6 +65,7 @@ class Customer < ShardRecord
   include Addressable
   include Avatarable
   include UsageTrackable
+  include Trackable
 
   belongs_to :account
 

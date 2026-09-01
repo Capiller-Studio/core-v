@@ -14,7 +14,14 @@ module Platform
       return false unless @staff&.active?
       return true if super_admin?
 
-      merged_permissions.dig(resource.to_s, action.to_s) == true
+      res = resource.to_s
+      act = action.to_s
+
+      # 'manage' permission implies all actions including 'read'
+      return true if merged_permissions.dig(res, "manage") == true
+      return true if merged_permissions.dig(res, act) == true
+
+      false
     end
 
     private
@@ -27,10 +34,16 @@ module Platform
       @merged_permissions ||= begin
         result = {}
         @staff.roles.each do |role|
+          next unless role.permissions.is_a?(Hash)
+
           role.permissions.each do |res, actions|
-            result[res] ||= {}
-            actions.each do |act, allowed|
-              result[res][act] = true if allowed == true
+            result[res.to_s] ||= {}
+            if actions.is_a?(Array)
+              actions.each { |a| result[res.to_s][a.to_s] = true }
+            elsif actions.is_a?(Hash)
+              actions.each do |a, allowed|
+                result[res.to_s][a.to_s] = true if allowed == true || allowed == "true"
+              end
             end
           end
         end

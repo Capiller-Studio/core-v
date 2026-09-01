@@ -34,6 +34,7 @@
 #
 class Inbox < ShardRecord
   include FlagShihTzu
+  include Trackable
 
   belongs_to :channel, polymorphic: true
   belongs_to :account

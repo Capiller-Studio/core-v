@@ -35,6 +35,7 @@ module Channel
     include Channelable
     include Routable
     include FlagShihTzu
+    include Trackable
 
     belongs_to :account
 
