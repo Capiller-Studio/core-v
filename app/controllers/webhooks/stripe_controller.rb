@@ -21,7 +21,9 @@ module Webhooks
     def verify_stripe_signature
       payload = request.body.read
       sig_header = request.env["HTTP_STRIPE_SIGNATURE"]
-      endpoint_secret = Rails.application.credentials.dig(Rails.env.to_sym, :stripe, :webhook_secret)
+      endpoint_secret = Rails.application.credentials.dig(Rails.env.to_sym, :stripe, :webhook_secret).presence ||
+                        Rails.application.credentials.dig(:stripe, :webhook_secret).presence ||
+                        ENV["STRIPE_WEBHOOK_SECRET"]
 
       begin
         @event = ::Stripe::Webhook.construct_event(payload, sig_header, endpoint_secret)
