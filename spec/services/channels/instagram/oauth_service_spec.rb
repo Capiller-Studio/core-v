@@ -7,7 +7,7 @@ RSpec.describe Channels::Instagram::OauthService do
   describe '#authorization_url' do
     it 'generates auth url' do
       url = service.authorization_url(redirect_uri: 'http://redirect', state: 'abc')
-      expect(url).to include("https://api.instagram.com/oauth/authorize?")
+      expect(url).to include("https://www.instagram.com/oauth/authorize?")
       expect(url).to include("redirect_uri=http%3A%2F%2Fredirect")
       expect(url).to include("state=abc")
     end

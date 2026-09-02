@@ -54,6 +54,8 @@ module Channel
     validates :access_token, presence: true
     validates :expires_at, presence: true
 
+    before_destroy :unsubscribe_from_webhooks
+
     # --- Routable overrides ---
 
     def routing_identifier
@@ -99,6 +101,19 @@ module Channel
         Rails.logger.error("Instagram token refresh failed for #{instagram_id}: #{result['error']}")
         authorization_error!
       end
+    end
+
+    private
+
+    def unsubscribe_from_webhooks
+      return if instagram_id.blank? || access_token.blank?
+
+      HTTParty.delete(
+        "https://graph.facebook.com/v26.0/#{instagram_id}/subscribed_apps",
+        query: { access_token: access_token }
+      ) rescue nil
+    rescue StandardError => e
+      Rails.logger.warn("Instagram unsubscribe_from_webhooks warning for #{instagram_id}: #{e.message}")
     end
   end
 end
