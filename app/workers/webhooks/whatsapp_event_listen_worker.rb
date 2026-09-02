@@ -13,11 +13,12 @@ module Webhooks
       begin
         params = webhook.payload.with_indifferent_access
 
+        processed = false
         if params["object"] == "whatsapp_business_account"
-          process_via_global_routing(params)
-        else
-          process_via_channel_id(webhook)
+          processed = process_via_global_routing(params)
         end
+
+        process_via_channel_id(webhook) unless processed
 
         webhook.processed!
       rescue => e
@@ -31,16 +32,19 @@ module Webhooks
     # Preferred path: resolve channel via phone_number_id from webhook payload using GlobalRouting
     def process_via_global_routing(params)
       phone_number_id = params.dig("entry", 0, "changes", 0, "value", "metadata", "phone_number_id")&.to_s
-      return if phone_number_id.blank?
+      return false if phone_number_id.blank?
 
       routing = GlobalRouting.find_account_for("whatsapp", phone_number_id)
-      return unless routing
+      return false unless routing
 
-      Current.set(account: routing.account) do
-        routing.account.with_shard do
-          channel = Channel::Whatsapp.find_by(phone_number_id: phone_number_id, account_id: routing.account_id)
-          return unless channel_active?(channel)
-          return unless channel.cloud_api?
+      account = routing.account
+      return false unless account
+
+      Current.set(account: account) do
+        account.with_shard do
+          channel = Channel::Whatsapp.find_by(phone_number_id: phone_number_id, account_id: account.id)
+          return false unless channel_active?(channel)
+          return false unless channel.cloud_api?
 
           Channels::Whatsapp::CloudApi::EventListener.call(
             whatsapp_channel: channel,
@@ -48,8 +52,10 @@ module Webhooks
           )
         end
       end
+      true
     rescue StandardError => e
       Rails.logger.error("WhatsappEventListenWorker routing error: #{e.message}")
+      false
     end
 
     # Fallback: channel_id passed directly in URL (for manual webhook setup)

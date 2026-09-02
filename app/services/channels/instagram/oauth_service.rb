@@ -35,7 +35,7 @@ module Channels
           state: state
         }
 
-        "https://api.instagram.com/oauth/authorize?#{params.to_query}"
+        "https://www.instagram.com/oauth/authorize?#{params.to_query}"
       end
 
       # Exchange the authorization code for a short-lived access token,

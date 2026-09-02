@@ -68,9 +68,9 @@ module Channel
     validates :full_phone_number, uniqueness: { message: "is already connected" }, allow_nil: true
     validates :business_account_id, presence: true
     validates :api_key, presence: true
-
     before_validation :generate_webhook_secret, on: :create
     before_validation :calculate_full_phone_number
+    before_destroy :unsubscribe_from_webhooks
 
     # --- Routable overrides ---
     # WhatsApp Cloud API routes all webhook events globally via phone_number_id
@@ -123,6 +123,35 @@ module Channel
 
     def generate_webhook_secret
       self.webhook_secret ||= SecureRandom.hex(24)
+    end
+
+    def unsubscribe_from_webhooks
+      return if business_account_id.blank?
+
+      # 1. Try with channel access token
+      response = HTTParty.delete(
+        "#{GRAPH_API_BASE}/#{GRAPH_API_VERSION}/#{business_account_id}/subscribed_apps",
+        headers: api_headers
+      ) rescue nil
+
+      # 2. Fallback to App Access Token if channel token is invalid/expired
+      if (!response || !response.success?)
+        app_id = (Rails.application.credentials.dig(:channels, :whatsapp, :app_id).presence ||
+                  Rails.application.credentials.dig(:channels, :facebook, :app_id))&.to_s&.strip
+        app_secret = (Rails.application.credentials.dig(:channels, :whatsapp, :app_secret).presence ||
+                      Rails.application.credentials.dig(:channels, :facebook, :app_secret))&.to_s&.strip
+        if app_id.present? && app_secret.present?
+          HTTParty.delete(
+            "#{GRAPH_API_BASE}/#{GRAPH_API_VERSION}/#{business_account_id}/subscribed_apps",
+            headers: {
+              "Authorization" => "Bearer #{app_id}|#{app_secret}",
+              "Content-Type" => "application/json"
+            }
+          ) rescue nil
+        end
+      end
+    rescue StandardError => e
+      Rails.logger.warn("WhatsApp unsubscribe_from_webhooks warning for WABA #{business_account_id}: #{e.message}")
     end
   end
 end
