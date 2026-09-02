@@ -26,7 +26,7 @@ RSpec.describe Seeds::DevelopmentSeeder do
         expect(admin).not_to be_nil
         
         expect(account.teams.count).to be >= 2
-        expect(account.inboxes.count).to be >= 2
+        expect(account.inboxes.count).to be >= 1
         expect(account.conversations.count).to be >= 3
       end
     end

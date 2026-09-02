@@ -1,522 +1,230 @@
 # frozen_string_literal: true
 
+require_relative "data/api_docs/getting_started"
+require_relative "data/api_docs/authentication"
+require_relative "data/api_docs/identity_and_profiles"
+require_relative "data/api_docs/devices"
+require_relative "data/api_docs/inboxes"
+require_relative "data/api_docs/customers"
+require_relative "data/api_docs/conversations"
+require_relative "data/api_docs/messages"
+require_relative "data/api_docs/attachments"
+require_relative "data/api_docs/agents_and_teams"
+require_relative "data/api_docs/labels"
+require_relative "data/api_docs/canned_responses"
+require_relative "data/api_docs/notifications"
+require_relative "data/api_docs/custom_attributes"
+require_relative "data/api_docs/searches"
+require_relative "data/api_docs/system"
+require_relative "data/api_docs/user_guide_link"
+
 module Seeds
   class ApiDocumentationSeeder
-    def self.seed(domain:)
-      puts "Seeding API Documentation on domain: #{domain}..."
-      
-      account = Account.first
-      unless account
-        puts "Skipping API documentation seed: No account found in DB."
+    DATA_MODULES = [
+      Data::ApiDocs::GettingStarted,
+      Data::ApiDocs::Authentication,
+      Data::ApiDocs::IdentityAndProfiles,
+      Data::ApiDocs::Devices,
+      Data::ApiDocs::Inboxes,
+      Data::ApiDocs::Customers,
+      Data::ApiDocs::Conversations,
+      Data::ApiDocs::Messages,
+      Data::ApiDocs::Attachments,
+      Data::ApiDocs::AgentsAndTeams,
+      Data::ApiDocs::Labels,
+      Data::ApiDocs::CannedResponses,
+      Data::ApiDocs::Notifications,
+      Data::ApiDocs::CustomAttributes,
+      Data::ApiDocs::Searches,
+      Data::ApiDocs::System,
+      Data::ApiDocs::UserGuideLink
+    ].freeze
+
+    PORTAL_TRANSLATIONS = {
+      en: {
+        hero_title: "Deskbolic API Reference",
+        hero_subtitle: "Comprehensive REST API documentation, guides, and integration reference for Deskbolic.",
+        header_tagline: "Developer Platform & API Reference",
+        search_placeholder: "Search API endpoints, parameters, and guides...",
+        footer_text: "© #{Time.current.year} Deskbolic Inc. All rights reserved."
+      },
+      de: {
+        hero_title: "Deskbolic API-Referenz",
+        hero_subtitle: "Vollständige REST-API-Dokumentation, Anleitungen und Referenz für Deskbolic.",
+        header_tagline: "Entwicklerplattform & API-Referenz",
+        search_placeholder: "API-Endpunkte, Parameter und Anleitungen durchsuchen...",
+        footer_text: "© #{Time.current.year} Deskbolic Inc. Alle Rechte vorbehalten."
+      },
+      es: {
+        hero_title: "Referencia de la API de Deskbolic",
+        hero_subtitle: "Documentación completa de la API REST, guías y referencia de integración.",
+        header_tagline: "Plataforma para Desarrolladores y Referencia de API",
+        search_placeholder: "Buscar puntos finales de API, parámetros y guías...",
+        footer_text: "© #{Time.current.year} Deskbolic Inc. Todos los derechos reservados."
+      },
+      fr: {
+        hero_title: "Référence de l'API Deskbolic",
+        hero_subtitle: "Documentation complète de l'API REST, guides et intégrations pour Deskbolic.",
+        header_tagline: "Plateforme Développeurs & Référence API",
+        search_placeholder: "Rechercher des points de terminaison, paramètres et guides...",
+        footer_text: "© #{Time.current.year} Deskbolic Inc. Tous droits réservés."
+      },
+      "pt-BR": {
+        hero_title: "Referência da API Deskbolic",
+        hero_subtitle: "Documentação completa da API REST, guias e integrações para Deskbolic.",
+        header_tagline: "Plataforma de Desenvolvedores e Referência de API",
+        search_placeholder: "Pesquisar endpoints da API, parâmetros e guias...",
+        footer_text: "© #{Time.current.year} Deskbolic Inc. Todos os direitos reservados."
+      },
+      ar: {
+        hero_title: "مرجع واجهة برمجة تطبيقات Deskbolic",
+        hero_subtitle: "وثائق REST API الشاملة والأدلة والتكامل لمنصة Deskbolic.",
+        header_tagline: "منصة المطورين ومرجع واجهة برمجة التطبيقات",
+        search_placeholder: "البحث في نقاط نهاية واجهة برمجة التطبيقات والمعلمات...",
+        footer_text: "© #{Time.current.year} Deskbolic Inc. جميع الحقوق محفوظة."
+      },
+      ko: {
+        hero_title: "Deskbolic API 레퍼런스",
+        hero_subtitle: "Deskbolic의 종합적인 REST API 설명서, 연동 가이드 및 레퍼런스 문서입니다.",
+        header_tagline: "개발자 플랫폼 및 API 레퍼런스",
+        search_placeholder: "API 엔드포인트, 파라미터 및 가이드 검색...",
+        footer_text: "© #{Time.current.year} Deskbolic Inc. All rights reserved."
+      }
+    }.freeze
+
+    attr_reader :account, :domain, :help_center_domain
+
+    def self.seed(account: nil, domain: "developers.deskbolic.com", help_center_domain: "help.deskbolic.com")
+      target_account = account || Account.find_by(identifier: "deskbolic") || Account.first
+      unless target_account
+        puts "Skipping API documentation seed: No account available."
         return
       end
-      
+
+      new(account: target_account, domain: domain, help_center_domain: help_center_domain).seed
+    end
+
+    def initialize(account:, domain: "developers.deskbolic.com", help_center_domain: "help.deskbolic.com")
+      @account = account
+      @domain = domain
+      @help_center_domain = help_center_domain
+    end
+
+    def seed
+      puts "Seeding Production API Documentation for account: #{account.name} on domain: #{domain}..."
+
       account.with_shard do
-        domain_record = Domain.find_or_create_by!(value: domain, account: account) do |d|
-          d.domain_type = :custom
+        domain_record = find_or_create_domain
+        portal = find_or_create_portal(domain_record)
+        seed_portal_translations(portal)
+
+        # Clean purge of portal content to ensure zero leftover dummy/Lorem Ipsum data
+        purge_portal_content!(portal)
+
+        DATA_MODULES.each do |mod|
+          seed_category_and_articles(portal, mod)
         end
-        domain_record.update!(
-          status: :active, 
-          dns_status: :dns_verified, 
-          ssl_status: :ssl_active, 
-          dns_verified_at: Time.current, 
-          domain_type: :custom
-        )
-        
-        portal = HelpCenter::Portal.find_or_initialize_by(domain_id: domain_record.id)
-        portal.account = account
-        portal.name = "Deskbolic API Reference"
-        portal.default_locale = "en"
-        portal.locales = ["en", "fr", "es"]
-        portal.status = :active
-        portal.footer_text = "&copy; #{Time.current.year} Deskbolic. All rights reserved."
-        portal.ui_configurations = (portal.ui_configurations || {}).merge("primary_color" => "#4f46e5")
-        portal.save!
 
-        # Categories
-        cat_intro = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: 'en', name: 'Getting Started' }) || portal.categories.new(account: account, portal: portal)
-        cat_intro.update!(status: :active, visibility: :everyone, featured: true, position: 1)
-
-        cat_inbox = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: 'en', name: 'Inboxes' }) || portal.categories.new(account: account, portal: portal)
-        cat_inbox.update!(api_reference: true, status: :active, visibility: :everyone, featured: true, position: 2)
-
-        cat_cust = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: 'en', name: 'Customers' }) || portal.categories.new(account: account, portal: portal)
-        cat_cust.update!(api_reference: true, status: :active, visibility: :everyone, featured: true, position: 3)
-
-        cat_conv = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: 'en', name: 'Conversations' }) || portal.categories.new(account: account, portal: portal)
-        cat_conv.update!(api_reference: true, status: :active, visibility: :everyone, featured: true, position: 4)
-
-        cat_msgs = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: 'en', name: 'Messages' }) || portal.categories.new(account: account, portal: portal)
-        cat_msgs.update!(api_reference: true, status: :active, visibility: :everyone, featured: true, position: 5)
-
-        # Articles
-        
-        # Introduction -> Authentication
-        art_auth = cat_intro.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'Authentication' }) || cat_intro.articles.new(portal: portal)
-        art_auth.update!(
-          account: account,
-          article_type: :standard,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_intro.id,
-          configurations: {}
-        )
-        art_auth.categories << cat_intro unless art_auth.categories.include?(cat_intro)
-
-        art_inbox_list = cat_inbox.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'List Inboxes' }) || cat_inbox.articles.new(portal: portal)
-        art_inbox_list.update!(
-          account: account,
-          article_type: :api_endpoint,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_inbox.id,
-          configurations: {
-            "api_method" => "GET",
-            "api_endpoint" => "/v1/inboxes",
-            "api_parameters" => [
-              { "name" => "page", "type" => "integer", "description" => "Page number", "required" => false },
-              { "name" => "per_page", "type" => "integer", "description" => "Items per page", "required" => false }
-            ],
-            "api_responses" => [
-              { 
-                "status" => 200, 
-                "description" => "Success", 
-                "body" => "{\n  \"data\": [\n    {\n      \"id\": \"inbox_123\",\n      \"name\": \"Support Team\",\n      \"created_at\": \"2026-07-03T10:00:00Z\"\n    }\n  ],\n  \"meta\": {\n    \"current_page\": 1,\n    \"total_pages\": 1,\n    \"total_count\": 1\n  }\n}" 
-              }
-            ]
-          }
-        )
-        art_inbox_list.categories << cat_inbox unless art_inbox_list.categories.include?(cat_inbox)
-
-        art_cust_list = cat_cust.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'List Customers' }) || cat_cust.articles.new(portal: portal)
-        art_cust_list.update!(
-          account: account,
-          article_type: :api_endpoint,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_cust.id,
-          configurations: {
-            "api_method" => "GET",
-            "api_endpoint" => "/v1/customers",
-            "api_parameters" => [
-              { "name" => "page", "type" => "integer", "description" => "Page number", "required" => false },
-              { "name" => "per_page", "type" => "integer", "description" => "Items per page", "required" => false }
-            ],
-            "api_responses" => [
-              { 
-                "status" => 200, 
-                "description" => "Success", 
-                "body" => "{\n  \"data\": [\n    {\n      \"id\": \"cust_987\",\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"created_at\": \"2026-07-03T10:00:00Z\"\n    }\n  ],\n  \"meta\": {\n    \"current_page\": 1,\n    \"total_pages\": 2,\n    \"total_count\": 20\n  }\n}" 
-              }
-            ]
-          }
-        )
-        art_cust_list.categories << cat_cust unless art_cust_list.categories.include?(cat_cust)
-
-        art_cust_create = cat_cust.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'Create Customer' }) || cat_cust.articles.new(portal: portal)
-        art_cust_create.update!(
-          account: account,
-          article_type: :api_endpoint,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_cust.id,
-          configurations: {
-            "api_method" => "POST",
-            "api_endpoint" => "/v1/customers",
-            "api_parameters" => [
-              { "name" => "name", "type" => "string", "description" => "Name of the customer", "required" => true },
-              { "name" => "email", "type" => "string", "description" => "Email address of the customer", "required" => true }
-            ],
-            "api_responses" => [
-              { 
-                "status" => 200, 
-                "description" => "Success", 
-                "body" => "{\n  \"data\": {\n    \"id\": \"cust_987\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"created_at\": \"2026-07-03T10:00:00Z\"\n  }\n}" 
-              }
-            ]
-          }
-        )
-        art_cust_create.categories << cat_cust unless art_cust_create.categories.include?(cat_cust)
-        
-        # Conversations List
-        art_conv_list = cat_conv.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'List Conversations' }) || cat_conv.articles.new(portal: portal)
-        art_conv_list.update!(
-          account: account,
-          article_type: :api_endpoint,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_conv.id,
-          configurations: {
-            "api_method" => "GET",
-            "api_endpoint" => "/v1/conversations",
-            "api_parameters" => [
-              { "name" => "status", "type" => "string", "description" => "Filter by status (open, resolved, etc.)", "required" => false },
-              { "name" => "inbox_id", "type" => "string", "description" => "Filter by inbox UUID", "required" => false },
-              { "name" => "page", "type" => "integer", "description" => "Page number", "required" => false },
-              { "name" => "per_page", "type" => "integer", "description" => "Items per page", "required" => false }
-            ],
-            "api_responses" => [
-              { 
-                "status" => 200, 
-                "description" => "Success", 
-                "body" => "{\n  \"data\": [\n    {\n      \"id\": \"conv_12345\",\n      \"status\": \"open\",\n      \"customer_id\": \"cust_987\",\n      \"inbox_id\": \"inbox_1\",\n      \"created_at\": \"2026-07-03T10:00:00Z\"\n    }\n  ],\n  \"meta\": {\n    \"current_page\": 1,\n    \"total_pages\": 5,\n    \"total_count\": 50\n  }\n}" 
-              },
-              {
-                "status" => 401,
-                "description" => "Unauthorized",
-                "body" => "{\n  \"error\": \"Unauthorized\",\n  \"message\": \"Invalid or missing API key\"\n}"
-              }
-            ]
-          }
-        )
-        art_conv_list.categories << cat_conv unless art_conv_list.categories.include?(cat_conv)
-
-        # Create Conversation
-        art_conv_create = cat_conv.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'Create Conversation' }) || cat_conv.articles.new(portal: portal)
-        art_conv_create.update!(
-          account: account,
-          article_type: :api_endpoint,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_conv.id,
-          configurations: {
-            "api_method" => "POST",
-            "api_endpoint" => "/v1/conversations",
-            "api_parameters" => [
-              { "name" => "inbox_id", "type" => "string", "description" => "ID of the inbox", "required" => true },
-              { "name" => "customer_id", "type" => "string", "description" => "ID of the customer", "required" => true },
-              { "name" => "status", "type" => "string", "description" => "Status of the conversation", "required" => false }
-            ],
-            "api_responses" => [
-              { 
-                "status" => 200, 
-                "description" => "Success", 
-                "body" => "{\n  \"data\": {\n    \"id\": \"conv_12345\",\n    \"status\": \"open\",\n    \"customer_id\": \"cust_987\",\n    \"inbox_id\": \"inbox_1\",\n    \"created_at\": \"2026-07-03T10:00:00Z\"\n  }\n}" 
-              },
-              {
-                "status" => 422,
-                "description" => "Unprocessable Entity",
-                "body" => "{\n  \"error\": \"Validation Failed\",\n  \"details\": {\n    \"inbox_id\": [\"can't be blank\"]\n  }\n}"
-              }
-            ]
-          }
-        )
-        art_conv_create.categories << cat_conv unless art_conv_create.categories.include?(cat_conv)
-
-        # Messages List
-        art_msg_list = cat_msgs.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'List Messages' }) || cat_msgs.articles.new(portal: portal)
-        art_msg_list.update!(
-          account: account,
-          article_type: :api_endpoint,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_msgs.id,
-          configurations: {
-            "api_method" => "GET",
-            "api_endpoint" => "/v1/conversations/:conversation_id/messages",
-            "api_parameters" => [
-              { "name" => "page", "type" => "integer", "description" => "Page number", "required" => false },
-              { "name" => "per_page", "type" => "integer", "description" => "Items per page", "required" => false }
-            ],
-            "api_responses" => [
-              { 
-                "status" => 200, 
-                "description" => "Success", 
-                "body" => "{\n  \"data\": [\n    {\n      \"id\": \"msg_111\",\n      \"content\": \"Hello, I need help!\",\n      \"message_type\": \"incoming\",\n      \"created_at\": \"2026-07-03T10:05:00Z\"\n    }\n  ],\n  \"meta\": {\n    \"current_page\": 1,\n    \"total_pages\": 1,\n    \"total_count\": 1\n  }\n}" 
-              },
-              {
-                "status" => 404,
-                "description" => "Not Found",
-                "body" => "{\n  \"error\": \"Not Found\",\n  \"message\": \"Conversation not found\"\n}"
-              }
-            ]
-          }
-        )
-        art_msg_list.categories << cat_msgs unless art_msg_list.categories.include?(cat_msgs)
-
-        # Send Message
-        art_msg_send = cat_msgs.articles.joins(:translations).find_by(help_center_article_translations: { locale: 'en', title: 'Send Message' }) || cat_msgs.articles.new(portal: portal)
-        art_msg_send.update!(
-          account: account,
-          article_type: :api_endpoint,
-          status: :published,
-          visibility: :everyone,
-          primary_category_id: cat_msgs.id,
-          configurations: {
-            "api_method" => "POST",
-            "api_endpoint" => "/v1/conversations/:conversation_id/messages",
-            "api_parameters" => [
-              { "name" => "content", "type" => "string", "description" => "The message content", "required" => true },
-              { "name" => "message_type", "type" => "string", "description" => "Type of message (incoming, outgoing)", "required" => false }
-            ],
-            "api_responses" => [
-              { 
-                "status" => 200, 
-                "description" => "Success", 
-                "body" => "{\n  \"data\": {\n    \"id\": \"msg_222\",\n    \"content\": \"We will look into this right away.\",\n    \"message_type\": \"outgoing\",\n    \"created_at\": \"2026-07-03T10:10:00Z\"\n  }\n}" 
-              },
-              {
-                "status" => 422,
-                "description" => "Unprocessable Entity",
-                "body" => "{\n  \"error\": \"Validation Failed\",\n  \"details\": {\n    \"content\": [\"can't be blank\"]\n  }\n}"
-              }
-            ]
-          }
-        )
-        art_msg_send.categories << cat_msgs unless art_msg_send.categories.include?(cat_msgs)
-
-        # Setup Translations for Categories and Articles
-        locales = {
-          en: {
-            intro: { name: "Getting Started", desc: "Start building with the Deskbolic API." },
-            inbox: { name: "Inboxes", desc: "Manage your team inboxes." },
-            cust: { name: "Customers", desc: "Manage your customers." },
-            conv: { name: "Conversations", desc: "Manage conversations programmatically." },
-            msgs: { name: "Messages", desc: "Manage and send messages." },
-            auth: { 
-              title: "Authentication", 
-              content: <<~'HTML'
-                <p>The Deskbolic API uses API keys to authenticate requests. You can view and manage your API keys in the Deskbolic Dashboard under <strong>Settings -&gt; Developer API Keys</strong>.</p>
-                <p>Your API requests must include the <code>X-Api-Key</code> HTTP header.</p>
-                <p>If you wish to receive localized responses, you can also send the <code>X-Locale</code> header or <code>Accept-Language</code> header (e.g., <code>es</code> for Spanish).</p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" \
-     -H "X-Locale: en" \
-     https://api.deskbolic.com/v1/conversations</code></pre>
-              HTML
-            },
-            inbox_list: {
-              title: "List Inboxes",
-              content: <<~'HTML'
-                <p>Returns a paginated list of inboxes in your account.</p>
-                <h3>Examples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/inboxes</code></pre>
-              HTML
-            },
-            cust_list: {
-              title: "List Customers",
-              content: <<~'HTML'
-                <p>Returns a paginated list of customers in your account.</p>
-                <h3>Examples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/customers</code></pre>
-              HTML
-            },
-            cust_create: {
-              title: "Create Customer",
-              content: <<~'HTML'
-                <p>Creates a new customer in your account.</p>
-                <h3>Examples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -X POST https://api.deskbolic.com/v1/customers \
-     -H "X-Api-Key: YOUR_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{"name": "John Doe", "email": "john@example.com"}'</code></pre>
-              HTML
-            },
-            conv_list: { 
-              title: "List Conversations", 
-              content: <<~'HTML'
-                <p>Returns a paginated list of conversations in your account. Use this to sync conversation histories or build custom dashboards.</p>
-                <p><strong>Pagination Note</strong>: This endpoint supports pagination via the <code>page</code> and <code>per_page</code> query parameters. The response will include a <code>meta</code> block containing <code>current_page</code>, <code>total_pages</code>, and <code>total_count</code>.</p>
-                <h3>Examples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/conversations?status=open&amp;page=1</code></pre>
-                <p><strong>Ruby</strong></p>
-                <pre><code>require 'httparty'
-response = HTTParty.get("https://api.deskbolic.com/v1/conversations", headers: { "X-Api-Key" => "YOUR_API_KEY" })
-puts response.body</code></pre>
-                <p><strong>JavaScript (Node.js)</strong></p>
-                <pre><code>fetch('https://api.deskbolic.com/v1/conversations', {
-  headers: { 'X-Api-Key': 'YOUR_API_KEY' }
-})
-.then(res => res.json())
-.then(data => console.log(data));</code></pre>
-              HTML
-            },
-            conv_create: { 
-              title: "Create Conversation", 
-              content: <<~'HTML'
-                <p>Creates a new conversation in a specific inbox for a customer.</p>
-                <h3>Examples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -X POST https://api.deskbolic.com/v1/conversations \
-     -H "X-Api-Key: YOUR_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{"inbox_id": "INBOX_UUID", "customer_id": "CUSTOMER_UUID", "status": "open"}'</code></pre>
-              HTML
-            },
-            msg_list: { 
-              title: "List Messages", 
-              content: <<~'HTML'
-                <p>Returns a paginated list of messages for a specific conversation.</p>
-                <h3>Examples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/conversations/CONV_UUID/messages</code></pre>
-              HTML
-            },
-            msg_send: { 
-              title: "Send Message", 
-              content: <<~'HTML'
-                <p>Sends a new message in a specific conversation.</p>
-                <h3>Examples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -X POST https://api.deskbolic.com/v1/conversations/CONV_UUID/messages \
-     -H "X-Api-Key: YOUR_API_KEY" \
-     -H "Content-Type: application/json" \
-     -d '{"content": "Hello world!"}'</code></pre>
-              HTML
-            }
-          },
-          es: {
-            intro: { name: "Empezando", desc: "Comience a construir con la API de Deskbolic." },
-            inbox: { name: "Bandejas de entrada", desc: "Gestiona las bandejas de entrada." },
-            cust: { name: "Clientes", desc: "Gestiona los clientes." },
-            conv: { name: "Conversaciones", desc: "Gestione conversaciones de forma programática." },
-            msgs: { name: "Mensajes", desc: "Gestione y envíe mensajes." },
-            auth: { 
-              title: "Autenticación", 
-              content: <<~'HTML'
-                <p>La API de Deskbolic usa claves API para autenticar solicitudes. Puede gestionar sus claves API en el panel de Deskbolic bajo <strong>Ajustes -&gt; Claves API</strong>.</p>
-                <p>Sus peticiones deben incluir el encabezado HTTP <code>X-Api-Key</code>.</p>
-                <p>Si desea respuestas localizadas, envíe el encabezado <code>X-Locale</code> o <code>Accept-Language</code> (por ejemplo, <code>es</code>).</p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" \
-     -H "X-Locale: es" \
-     https://api.deskbolic.com/v1/conversations</code></pre>
-              HTML
-            },
-            inbox_list: {
-              title: "Listar Bandejas de entrada",
-              content: <<~'HTML'
-                <p>Devuelve una lista paginada de bandejas de entrada.</p>
-                <h3>Ejemplos</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/inboxes</code></pre>
-              HTML
-            },
-            cust_list: {
-              title: "Listar Clientes",
-              content: <<~'HTML'
-                <p>Devuelve una lista paginada de clientes.</p>
-                <h3>Ejemplos</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/customers</code></pre>
-              HTML
-            },
-            cust_create: {
-              title: "Crear Cliente",
-              content: <<~'HTML'
-                <p>Crea un nuevo cliente.</p>
-              HTML
-            },
-            conv_list: { 
-              title: "Listar Conversaciones", 
-              content: <<~'HTML'
-                <p>Devuelve una lista paginada de conversaciones. Útil para sincronizar historiales o crear paneles personalizados.</p>
-                <h3>Ejemplos</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/conversations?status=open&amp;page=1</code></pre>
-              HTML
-            },
-            conv_create: { 
-              title: "Crear Conversación", 
-              content: "<p>Crea una nueva conversación. Envíe los parámetros necesarios en el cuerpo de la solicitud (JSON).</p>" 
-            },
-            msg_list: { 
-              title: "Listar Mensajes", 
-              content: "<p>Devuelve una lista paginada de mensajes para una conversación.</p>" 
-            },
-            msg_send: { 
-              title: "Enviar Mensaje", 
-              content: "<p>Envía un nuevo mensaje en una conversación específica.</p>" 
-            }
-          },
-          fr: {
-            intro: { name: "Pour Commencer", desc: "Commencez à construire avec l'API Deskbolic." },
-            inbox: { name: "Boîtes de réception", desc: "Gérez vos boîtes de réception." },
-            cust: { name: "Clients", desc: "Gérez vos clients." },
-            conv: { name: "Conversations", desc: "Gérez les conversations de manière programmatique." },
-            msgs: { name: "Messages", desc: "Gérez et envoyez des messages." },
-            auth: { 
-              title: "Authentification", 
-              content: <<~'HTML'
-                <p>L'API Deskbolic utilise des clés API pour l'authentification. Vous pouvez gérer vos clés API dans le tableau de bord Deskbolic sous <strong>Paramètres -&gt; Clés API</strong>.</p>
-                <p>Vos requêtes doivent inclure l'en-tête HTTP <code>X-Api-Key</code>.</p>
-                <p>Si vous souhaitez des réponses localisées, envoyez l'en-tête <code>X-Locale</code> ou <code>Accept-Language</code> (par exemple, <code>fr</code>).</p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" \
-     -H "X-Locale: fr" \
-     https://api.deskbolic.com/v1/conversations</code></pre>
-              HTML
-            },
-            inbox_list: {
-              title: "Lister les boîtes de réception",
-              content: <<~'HTML'
-                <p>Retourne une liste paginée de boîtes de réception.</p>
-                <h3>Exemples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/inboxes</code></pre>
-              HTML
-            },
-            cust_list: {
-              title: "Lister les clients",
-              content: <<~'HTML'
-                <p>Retourne une liste paginée de clients.</p>
-                <h3>Exemples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/customers</code></pre>
-              HTML
-            },
-            cust_create: {
-              title: "Créer un client",
-              content: <<~'HTML'
-                <p>Crée un nouveau client.</p>
-              HTML
-            },
-            conv_list: { 
-              title: "Lister les conversations", 
-              content: <<~'HTML'
-                <p>Retourne une liste paginée de conversations. Utile pour synchroniser les historiques ou créer des tableaux de bord personnalisés.</p>
-                <h3>Exemples</h3>
-                <p><strong>cURL</strong></p>
-                <pre><code>curl -H "X-Api-Key: YOUR_API_KEY" https://api.deskbolic.com/v1/conversations?status=open&amp;page=1</code></pre>
-              HTML
-            },
-            conv_create: { 
-              title: "Créer une conversation", 
-              content: "<p>Crée une nouvelle conversation.</p>" 
-            },
-            msg_list: { 
-              title: "Lister les messages", 
-              content: "<p>Retourne une liste paginée de messages pour une conversation.</p>" 
-            },
-            msg_send: { 
-              title: "Envoyer un message", 
-              content: "<p>Envoie un nouveau message dans une conversation spécifique.</p>" 
-            }
-          }
-        }
-
-        locales.each do |locale, trans|
-          I18n.with_locale(locale) do
-            cat_intro.update!(name: trans[:intro][:name], description: trans[:intro][:desc])
-            cat_inbox.update!(name: trans[:inbox][:name], description: trans[:inbox][:desc])
-            cat_cust.update!(name: trans[:cust][:name], description: trans[:cust][:desc])
-            cat_conv.update!(name: trans[:conv][:name], description: trans[:conv][:desc])
-            cat_msgs.update!(name: trans[:msgs][:name], description: trans[:msgs][:desc])
-
-            art_auth.update!(title: trans[:auth][:title], content: trans[:auth][:content])
-            art_inbox_list.update!(title: trans[:inbox_list][:title], content: trans[:inbox_list][:content])
-            art_cust_list.update!(title: trans[:cust_list][:title], content: trans[:cust_list][:content])
-            art_cust_create.update!(title: trans[:cust_create][:title], content: trans[:cust_create][:content])
-            art_conv_list.update!(title: trans[:conv_list][:title], content: trans[:conv_list][:content])
-            art_conv_create.update!(title: trans[:conv_create][:title], content: trans[:conv_create][:content])
-            art_msg_list.update!(title: trans[:msg_list][:title], content: trans[:msg_list][:content])
-            art_msg_send.update!(title: trans[:msg_send][:title], content: trans[:msg_send][:content])
-          end
-        end
+        puts "✓ Successfully seeded #{DATA_MODULES.size} API categories with 7-locale translations."
       end
-      
-      puts "API Documentation seeded successfully!"
+    end
+
+    private
+
+    def find_or_create_domain
+      domain_record = Domain.find_or_initialize_by(value: domain)
+      domain_record.account = account
+      domain_record.domain_type = :custom
+      domain_record.status = :active
+      domain_record.dns_status = :dns_verified
+      domain_record.ssl_status = :ssl_active
+      domain_record.dns_verified_at = Time.current
+      domain_record.save!
+      domain_record
+    end
+
+    def find_or_create_portal(domain_record)
+      portal = HelpCenter::Portal.find_or_initialize_by(domain_id: domain_record.id)
+      portal.account = account
+      portal.name = "Deskbolic API Reference"
+      portal.default_locale = "en"
+      portal.locales = Core::SUPPORTED_LOCALES.map(&:to_s)
+      portal.status = :active
+      portal.indexing_enabled = true
+      portal.ui_configurations = {
+        "theme_mode" => "system",
+        "primary_color" => "#4f46e5",
+        "secondary_color" => "#3730a3",
+        "font_family" => "Inter",
+        "hero_style" => "plain",
+        "category_layout" => "grid"
+      }
+      portal.configurations = { "custom_css" => "" }
+      portal.save!
+      portal
+    end
+
+    def seed_portal_translations(portal)
+      PORTAL_TRANSLATIONS.each do |loc, trans_data|
+        t = portal.translations.find_or_initialize_by(locale: loc.to_s)
+        t.hero_title = trans_data[:hero_title]
+        t.hero_subtitle = trans_data[:hero_subtitle]
+        t.header_tagline = trans_data[:header_tagline]
+        t.search_placeholder = trans_data[:search_placeholder]
+        t.footer_text = trans_data[:footer_text]
+        t.save!
+      end
+    end
+
+    def purge_portal_content!(portal)
+      portal.articles.destroy_all
+      portal.categories.destroy_all
+    end
+
+    def seed_category_and_articles(portal, mod)
+      cat_def = mod.category
+      articles_def = mod.respond_to?(:articles) ? (mod.method(:articles).arity != 0 ? mod.articles(help_center_domain: help_center_domain) : mod.articles) : []
+
+      category = portal.categories.build(account: account, portal: portal)
+      category.icon_key = cat_def[:icon_key]
+      category.position = cat_def[:position]
+      category.status = :active
+      category.visibility = :everyone
+      category.featured = true
+      category.show_in_navbar = (cat_def[:show_in_navbar] == true || cat_def[:position].to_i <= 4)
+      category.api_reference = cat_def[:api_reference] != false
+      category.save!
+
+      cat_def[:translations].each do |loc, trans|
+        ct = category.translations.find_or_initialize_by(locale: loc.to_s)
+        ct.name = trans[:name]
+        ct.description = trans[:description]
+        ct.save!
+      end
+
+      articles_def.each_with_index do |art_def, idx|
+        seed_article(portal, category, art_def, idx + 1)
+      end
+    end
+
+    def seed_article(portal, category, art_def, position)
+      article = HelpCenter::Article.new(portal: portal, account: account)
+      article.primary_category = category
+      article.article_type = art_def[:article_type] || :api_endpoint
+      article.status = :published
+      article.visibility = :everyone
+      article.position = art_def[:position] || position
+      article.configurations = art_def[:configurations] || {}
+      article.save!
+
+      article.categories << category unless article.categories.exists?(id: category.id)
+
+      art_def[:translations].each do |loc, trans|
+        at = article.translations.find_or_initialize_by(locale: loc.to_s)
+        at.title = trans[:title]
+        at.content = trans[:content]
+        at.save!
+      end
     end
   end
 end

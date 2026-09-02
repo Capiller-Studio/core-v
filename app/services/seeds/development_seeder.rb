@@ -25,8 +25,6 @@ module Seeds
       create_sample_automation(account)
       create_sample_macro(account)
       create_team_macro(account, teams)
-      
-      Seeds::HelpCenterSeeder.new(account: account).seed
 
       print_summary(account, owner, admin, agents, teams, inbox, email_inbox, labels, customers)
     end
