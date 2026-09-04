@@ -7,6 +7,8 @@ class CreateChannelWhatsapps < ActiveRecord::Migration[7.1]
       t.string  :phone_code
       t.string  :phone_number
       t.string  :full_phone_number
+      t.jsonb   :message_templates, default: [], null: false
+      t.datetime :templates_synced_at
       t.jsonb   :configurations, default: {}, null: false
       t.jsonb   :data, default: {}, null: false
       t.integer :service, null: false, default: Channel::Whatsapp.services[:cloud_api]
@@ -25,6 +27,7 @@ class CreateChannelWhatsapps < ActiveRecord::Migration[7.1]
       t.index [:account_id, :name]
       t.index :full_phone_number, unique: true
       t.index :phone_number_id, unique: true
+      t.index :business_account_id
       t.index :service
       t.index [:account_id, :created_at]
     end

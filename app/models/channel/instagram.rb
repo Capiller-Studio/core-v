@@ -89,12 +89,19 @@ module Channel
         }
       )
 
-      result = JSON.parse(response.body)
+      result = begin
+        JSON.parse(response.body)
+      rescue StandardError
+        {}
+      end
 
       if response.success? && result["access_token"].present?
+        expires_in = result["expires_in"].to_i
+        expires_in = 60.days.to_i if expires_in <= 0
+
         update!(
           access_token: result["access_token"],
-          expires_at: Time.current + result["expires_in"].to_i.seconds
+          expires_at: Time.current + expires_in.seconds
         )
         reauthorized!
       else
@@ -111,7 +118,7 @@ module Channel
       HTTParty.delete(
         "https://graph.facebook.com/v26.0/#{instagram_id}/subscribed_apps",
         query: { access_token: access_token }
-      ) rescue nil
+      )
     rescue StandardError => e
       Rails.logger.warn("Instagram unsubscribe_from_webhooks warning for #{instagram_id}: #{e.message}")
     end

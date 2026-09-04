@@ -71,7 +71,14 @@ module Channel
       if page
         update!(access_token: page["access_token"])
         reauthorized!
+      else
+        authorization_error!
       end
+    rescue Koala::Facebook::AuthenticationError => e
+      Rails.logger.error("Facebook token refresh auth error for page #{page_identifier}: #{e.message}")
+      authorization_error!
+    rescue StandardError => e
+      Rails.logger.error("Facebook token refresh error for page #{page_identifier}: #{e.message}")
     end
 
     private

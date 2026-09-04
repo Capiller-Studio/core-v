@@ -52,7 +52,7 @@ module Channels
 
       def find_or_create_conversation
         find_conversation || create_conversation
-        find_or_create_conversation_memeber
+        find_or_create_conversation_member
       end
 
       def find_conversation
@@ -116,7 +116,7 @@ module Channels
         Rails.logger.error("Failed to create native facebook identity: #{e.message}")
       end
 
-      def find_or_create_conversation_memeber
+      def find_or_create_conversation_member
         conversation.conversation_members.find_or_create_by!(conversation:, member: customer, account:)
       end
 
@@ -134,12 +134,16 @@ module Channels
       def fetch_customer_details
         client = Koala::Facebook::API.new(facebook_page_channel.access_token)
         client.get_object(sender_id)
-      rescue Koala::Facebook::AuthenticationError => _e
-        # TODO: Error Handling
-      rescue Koala::Facebook::ClientError => _e
-        # TODO: Error Handling
-      rescue StandardError => _e
-        # TODO: Error Handling
+      rescue Koala::Facebook::AuthenticationError => e
+        facebook_page_channel.authorization_error!
+        Rails.logger.error("[FacebookPages::ConversationCreator] Auth error fetching customer #{sender_id}: #{e.message}")
+        nil
+      rescue Koala::Facebook::ClientError => e
+        Rails.logger.warn("[FacebookPages::ConversationCreator] Client error fetching customer #{sender_id}: #{e.message}")
+        nil
+      rescue StandardError => e
+        Rails.logger.error("[FacebookPages::ConversationCreator] Unexpected error fetching customer #{sender_id}: #{e.message}")
+        nil
       end
     end
   end

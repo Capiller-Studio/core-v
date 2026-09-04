@@ -86,22 +86,22 @@ module Channels
       end
 
       def process_file_attachment(attachment, attachment_type)
-        url = attachment["payload"]["url"]
+        url = attachment.dig("payload", "url")
         tempfile = download_file(url)
         file_attachment = message.attachments.create!(
           remote_url: url,
           account:,
           attachment_type: parse_attachment_type(attachment_type, tempfile)
         )
-        attach_file(file_attachment, tempfile)
+        attach_file(file_attachment, tempfile) if tempfile
         process_story_attachment(file_attachment) if file_attachment.attachment_type == "story_mention"
       end
 
-      def process_location_attachment(attachment)
+      def process_location_attachment(attachment, attachment_type)
         location_attachment = message.attachments.create!(
           remote_url: attachment["url"],
-          latitude: attachment["payload"]["coordinates"]["lat"],
-          longitude: attachment["payload"]["coordinates"]["long"],
+          latitude: attachment.dig("payload", "coordinates", "lat"),
+          longitude: attachment.dig("payload", "coordinates", "long"),
           alt_title: attachment["title"],
           account:,
           attachment_type:
@@ -109,7 +109,7 @@ module Channels
         attach_file(location_attachment)
       end
 
-      def process_fallback_attachment(attachment)
+      def process_fallback_attachment(attachment, attachment_type)
         fallback_attachment = message.attachments.create!(
           remote_url: attachment["url"],
           alt_title: attachment["title"],
@@ -122,18 +122,25 @@ module Channels
       def attach_file(attachment, tempfile = nil)
         return if attachment.remote_url.blank?
 
-        tempfile ||= Down.download(attachment.remote_url)
+        tempfile ||= download_file(attachment.remote_url)
+        return unless tempfile
+
         attachment.file.attach(
           io: tempfile,
-          filename: tempfile.original_filename,
-          content_type: tempfile.content_type
+          filename: tempfile.respond_to?(:original_filename) ? tempfile.original_filename : File.basename(tempfile.path),
+          content_type: tempfile.respond_to?(:content_type) ? tempfile.content_type : "application/octet-stream"
         )
+      rescue StandardError => e
+        Rails.logger.error("[FacebookPages::MessageCreator] Failed to attach file: #{e.message}")
       end
 
       def download_file(url)
         return if url.blank?
 
         Down.download(url)
+      rescue StandardError => e
+        Rails.logger.error("[FacebookPages::MessageCreator] Failed to download file from #{url}: #{e.message}")
+        nil
       end
 
       def parse_attachment_type(attachment_type, tempfile)
@@ -143,15 +150,19 @@ module Channels
         ::Utilities::AttachmentTypeHelpers.attachment_type(tempfile.content_type)
       end
 
-      def fetch_story(_external_id)
+      def fetch_story(external_id)
         client = Koala::Facebook::API.new(facebook_page_channel.access_token)
-        client.get_object(source_id, fields: %w[story from])
-      rescue Koala::Facebook::AuthenticationError
-        # TODO: Exception handling
-      rescue Koala::Facebook::ClientError => _e
-        # TODO: Exception handling
-      rescue StandardError => _e
-        # TODO: Exception handling
+        client.get_object(external_id, fields: %w[story from])
+      rescue Koala::Facebook::AuthenticationError => e
+        facebook_page_channel.authorization_error!
+        Rails.logger.error("[FacebookPages::MessageCreator] Auth error fetching story #{external_id}: #{e.message}")
+        nil
+      rescue Koala::Facebook::ClientError => e
+        Rails.logger.warn("[FacebookPages::MessageCreator] Client error fetching story #{external_id}: #{e.message}")
+        nil
+      rescue StandardError => e
+        Rails.logger.error("[FacebookPages::MessageCreator] Unexpected error fetching story #{external_id}: #{e.message}")
+        nil
       end
 
       def process_story_attachment(_attachment)
@@ -159,8 +170,8 @@ module Channels
 
         return if story.blank?
 
-        story["story"]["mention"]["id"]
-        story["from"]["username"]
+        story.dig("story", "mention", "id")
+        story.dig("from", "username")
 
         # TODO: Handle stories
       end

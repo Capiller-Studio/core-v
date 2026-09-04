@@ -21,6 +21,23 @@ RSpec.describe Messages::DeliveryWorker, type: :worker do
       described_class.new.perform(account.id, outgoing_message.id)
     end
 
+    it 'delivers multiple outgoing messages sequentially in the exact specified order' do
+      second_outgoing = create(:message, account: account, conversation: conversation, sender: user)
+
+      # Ensure strict ordering of deliveries
+      expect(Channels::ServicePicker).to receive(:call).with(
+        conversation: conversation,
+        message: outgoing_message
+      ).ordered
+
+      expect(Channels::ServicePicker).to receive(:call).with(
+        conversation: conversation,
+        message: second_outgoing
+      ).ordered
+
+      described_class.new.perform(account.id, [outgoing_message.id, second_outgoing.id])
+    end
+
     it 'does not call Channels::ServicePicker for incoming messages' do
       expect(Channels::ServicePicker).not_to receive(:call)
 

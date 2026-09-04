@@ -64,6 +64,8 @@ module Channel
 
     has_flags 1 => :provider_embedded_signup, column: "flags"
 
+    store_accessor :configurations, :template_name, :template_language
+
     validates :phone_number_id, presence: true, uniqueness: { message: "is already connected" }
     validates :full_phone_number, uniqueness: { message: "is already connected" }, allow_nil: true
     validates :business_account_id, presence: true
@@ -111,6 +113,18 @@ module Channel
       "#{host}/webhooks/whatsapp/#{account_id}/#{id}"
     end
 
+    def template_language
+      super.presence || "en_US"
+    end
+
+    def sync_templates
+      Channels::Whatsapp::CloudApi::TemplateFetcher.call(whatsapp_channel: self)
+    end
+
+    def approved_templates
+      message_templates || []
+    end
+
     private
 
     def calculate_full_phone_number
@@ -118,6 +132,9 @@ module Channel
         sanitized_code = phone_code.to_s.delete('+').gsub(/\D/, '')
         sanitized_number = phone_number.to_s.gsub(/\D/, '')
         self.full_phone_number = "+#{sanitized_code}#{sanitized_number}"
+      elsif full_phone_number.present?
+        digits = full_phone_number.to_s.gsub(/\D/, '')
+        self.full_phone_number = "+#{digits}" if digits.present?
       end
     end
 
@@ -129,29 +146,36 @@ module Channel
       return if business_account_id.blank?
 
       # 1. Try with channel access token
-      response = HTTParty.delete(
-        "#{GRAPH_API_BASE}/#{GRAPH_API_VERSION}/#{business_account_id}/subscribed_apps",
-        headers: api_headers
-      ) rescue nil
+      response = begin
+        HTTParty.delete(
+          "#{GRAPH_API_BASE}/#{GRAPH_API_VERSION}/#{business_account_id}/subscribed_apps",
+          headers: api_headers
+        )
+      rescue StandardError => e
+        Rails.logger.warn("WhatsApp unsubscribe_from_webhooks warning for WABA #{business_account_id}: #{e.message}")
+        nil
+      end
 
       # 2. Fallback to App Access Token if channel token is invalid/expired
-      if (!response || !response.success?)
+      if !response || !response.success?
         app_id = (Rails.application.credentials.dig(:channels, :whatsapp, :app_id).presence ||
                   Rails.application.credentials.dig(:channels, :facebook, :app_id))&.to_s&.strip
         app_secret = (Rails.application.credentials.dig(:channels, :whatsapp, :app_secret).presence ||
                       Rails.application.credentials.dig(:channels, :facebook, :app_secret))&.to_s&.strip
         if app_id.present? && app_secret.present?
-          HTTParty.delete(
-            "#{GRAPH_API_BASE}/#{GRAPH_API_VERSION}/#{business_account_id}/subscribed_apps",
-            headers: {
-              "Authorization" => "Bearer #{app_id}|#{app_secret}",
-              "Content-Type" => "application/json"
-            }
-          ) rescue nil
+          begin
+            HTTParty.delete(
+              "#{GRAPH_API_BASE}/#{GRAPH_API_VERSION}/#{business_account_id}/subscribed_apps",
+              headers: {
+                "Authorization" => "Bearer #{app_id}|#{app_secret}",
+                "Content-Type" => "application/json"
+              }
+            )
+          rescue StandardError => e
+            Rails.logger.warn("WhatsApp unsubscribe app token warning for WABA #{business_account_id}: #{e.message}")
+          end
         end
       end
-    rescue StandardError => e
-      Rails.logger.warn("WhatsApp unsubscribe_from_webhooks warning for WABA #{business_account_id}: #{e.message}")
     end
   end
 end

@@ -33,6 +33,7 @@ class CreateMessages < ActiveRecord::Migration[7.1]
       t.index [:conversation_id, :content_type]
       t.index [:conversation_id, :created_at]
       t.index [:conversation_id, :deleted_at]
+      t.index [:conversation_id, :sender_type, :created_at], name: "index_messages_on_conv_and_sender_and_created_at"
       t.index :ai_metadata, using: :gin
     end
   end

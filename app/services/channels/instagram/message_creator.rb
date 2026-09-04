@@ -47,8 +47,7 @@ module Channels
       def all_unsupported_files?
         return false if parsed_message.attachments.blank?
 
-        attachments_type = parsed_message.attachments.first.dig("type")
-        !supported_attachment?(attachments_type)
+        parsed_message.attachments.none? { |attachment| supported_attachment?(attachment["type"]) }
       end
 
       def create_message
@@ -100,7 +99,7 @@ module Channels
           account:,
           attachment_type: parse_attachment_type(attachment_type, tempfile)
         )
-        attach_file(file_attachment, tempfile)
+        attach_file(file_attachment, tempfile) if tempfile
         process_story_attachment(file_attachment) if file_attachment.attachment_type == "story_mention"
       end
 
@@ -129,7 +128,7 @@ module Channels
       def attach_file(attachment, tempfile = nil)
         return if attachment.remote_url.blank?
 
-        tempfile ||= Down.download(attachment.remote_url)
+        tempfile ||= download_file(attachment.remote_url)
         return unless tempfile
 
         attachment.file.attach(

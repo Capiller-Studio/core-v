@@ -30,7 +30,7 @@ module Channels
             sender = find_sender
             return unless sender
 
-            action = parsed_message.reaction_action.to_s.downcase == "unreact" ? :unreact : :react
+            action = parsed_message.reaction_action.to_s.casecmp("unreact").zero? ? :unreact : :react
 
             Messages::ReactionManager.call(
               message: message,
