@@ -9,13 +9,16 @@ module Messages
     include Sidekiq::Worker
     sidekiq_options queue: :mailers, retry: 3
 
-    def perform(account_id, message_id)
+    def perform(account_id, message_ids)
       # 1. Resolve the account from the primary database
       account = Account.find_by(id: account_id)
       return unless account
 
       # 2. Switch to the correct shard for this account
       account.with_shard do
+        ids = Array(message_ids).compact_blank
+        return if ids.empty?
+
         # 3. Comprehensive eager loading to cover all delivery paths:
         # - attachments: used by all senders
         # - inbox: used to derive default channels
@@ -23,18 +26,22 @@ module Messages
         # - conversation.outbound_channel: prioritized delivery mechanism (polymorphic)
         # - conversation.conversation_members: used to identify the customer
         # - conversation.customer_inboxes: used to get customer's channel-specific ID
-        message = account.messages.includes(
+        messages_by_id = account.messages.includes(
           :attachments,
           :inbox,
           { inbox: :channel },
           { conversation: [
-            :outbound_channel, 
+            :outbound_channel,
             :conversation_members,
             { customer_inboxes: :customer }
-          ]}
-        ).find_by(id: message_id)
-        
-        if message && message.outgoing?
+          ] }
+        ).where(id: ids).index_by(&:id)
+
+        # 4. Deliver messages sequentially in the exact specified order
+        ids.each do |message_id|
+          message = messages_by_id[message_id]
+          next unless message && message.outgoing?
+
           Channels::ServicePicker.call(
             conversation: message.conversation,
             message: message

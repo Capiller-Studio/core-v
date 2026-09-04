@@ -77,7 +77,8 @@ RSpec.describe Channels::FacebookPages::ConversationCreator do
 
     it 'proceeds when Koala fails' do
       allow(api_mock).to receive(:get_object).and_raise(Koala::Facebook::AuthenticationError.new(401, 'Auth fail'))
-      
+      expect(facebook_page_channel).to receive(:authorization_error!)
+
       expect(Customers::CustomerCreator).to receive(:call).with(
         hash_including(external_id: 'sender_fb', email: nil)
       ).and_return(customer)

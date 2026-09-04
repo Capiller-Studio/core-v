@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
@@ -16,7 +18,7 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
   before do
     allow(account).to receive(:with_shard).and_yield
     allow(account).to receive_message_chain(:messages, :where, :find_by).and_return(nil)
-    
+
     stub_const('RedisUtilities::Helpers', double('RedisHelpers'))
     allow(RedisUtilities::Helpers).to receive(:get).and_return(false)
     allow(RedisUtilities::Helpers).to receive(:set)
@@ -65,6 +67,45 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
       )
 
       service.call
+    end
+
+    context 'when messages array is empty or nil' do
+      let(:parsed_params) { { messages: [] } }
+
+      it 'aborts early without error and without creating customer or message' do
+        expect(Customers::CustomerCreator).not_to receive(:call)
+        expect(Channels::Whatsapp::CloudApi::MessageCreator).not_to receive(:call)
+
+        expect { service.call }.not_to raise_error
+      end
+    end
+
+    context 'when message has already been processed (duplicate external_id)' do
+      let(:existing_msg) { double('Message', id: 'msg_existing') }
+
+      before do
+        allow(account).to receive_message_chain(:messages, :where, :find_by).and_return(existing_msg)
+      end
+
+      it 'returns early without creating duplicate records' do
+        expect(Customers::CustomerCreator).not_to receive(:call)
+        expect(Channels::Whatsapp::CloudApi::MessageCreator).not_to receive(:call)
+
+        service.call
+      end
+    end
+
+    context 'when message creation is currently locked in Redis' do
+      before do
+        allow(RedisUtilities::Helpers).to receive(:get).and_return(true)
+      end
+
+      it 'returns early to prevent concurrency race conditions' do
+        expect(Customers::CustomerCreator).not_to receive(:call)
+        expect(Channels::Whatsapp::CloudApi::MessageCreator).not_to receive(:call)
+
+        service.call
+      end
     end
 
     context 'with reaction message type' do
@@ -134,17 +175,17 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
       end
     end
 
-    context 'with unsupported message type' do
-      let(:parsed_params) do
-        {
-          contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" } }],
-          messages: [{ type: "ephemeral", from: "987", id: "msg_wa_1" }]
-        }
-      end
-
-      it 'does nothing if message type is unsupported' do
-        expect(service).not_to receive(:find_inbox)
-        service.call
+    context 'with unsupported message types' do
+      %w[request_welcome ephemeral unsupported].each do |unsupported_type|
+        it "does nothing for #{unsupported_type} message type" do
+          params = {
+            contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" } }],
+            messages: [{ type: unsupported_type, from: "987", id: "msg_wa_1" }]
+          }
+          srv = described_class.new(whatsapp_channel: whatsapp_channel, parsed_params: params, account: account)
+          expect(srv).not_to receive(:find_inbox)
+          srv.call
+        end
       end
     end
   end

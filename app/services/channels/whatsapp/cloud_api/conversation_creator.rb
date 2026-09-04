@@ -24,7 +24,7 @@ module Channels
         end
 
         def call
-          return if invalid_message_type?(message_type)
+          return if invalid_message_type?(message_type) || parsed_params[:messages].blank?
 
           account.with_shard do
             find_inbox
@@ -68,7 +68,7 @@ module Channels
             level: :error,
             account: account,
             message: e.message,
-            payload: { error_class: e.class.name, phone_number_id: whatsapp_channel.try(:phone_number_id) }
+            payload: { error_class: e.class.name, phone_number_id: whatsapp_channel&.phone_number_id }
           )
         end
 
@@ -96,7 +96,7 @@ module Channels
         end
 
         def invalid_message_type?(message_type)
-          INVALID_MESSAGE_TYPES.include?(message_type)
+          message_type.blank? || INVALID_MESSAGE_TYPES.include?(message_type)
         end
 
         def message_creation_locked?
@@ -104,7 +104,7 @@ module Channels
         end
 
         def lock_message_creation
-          return if parsed_params.try(:[], :messages).blank?
+          return if parsed_params[:messages].blank?
 
           ::RedisUtilities::Helpers.set(message_creation_lock_key, 1, expiry: 10.minutes)
         end
@@ -123,7 +123,7 @@ module Channels
         end
 
         def find_message_type
-          self.message_type ||= parsed_params[:messages].first[:type]
+          self.message_type ||= parsed_params[:messages]&.first&.[](:type)
         end
 
         def find_or_create_customer

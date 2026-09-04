@@ -94,7 +94,7 @@ module Webhooks
 
         next if watermark.blank? && message_external_ids.blank?
 
-        status = event_name == :read ? :read : :delivered
+        status = event_name == :read ? "read" : "delivered"
         params = {
           external_ids: message_external_ids,
           watermark: watermark,
@@ -103,18 +103,18 @@ module Webhooks
           channel_id: channel.id
         }
 
-        Messages::StatusUpdateWorker.perform_async(channel.account_id, status, params.as_json)
+        Messages::StatusUpdateWorker.perform_async(channel.account_id, status.to_s, params.as_json)
       end
     end
 
-    def each_channel_for(search_id, &block)
+    def each_channel_for(search_id)
       return if search_id.blank?
 
       GlobalRouting.where(route_type: "facebook_page", route_value: search_id).find_each do |routing|
         Current.set(account: routing.account) do
           routing.account.with_shard do
             Channel::FacebookPage.where(page_identifier: search_id, account_id: routing.account_id).find_each do |channel|
-              block.call(channel)
+              yield(channel)
             end
           end
         end

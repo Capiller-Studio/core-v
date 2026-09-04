@@ -73,7 +73,7 @@ module Channels
 
         return if watermark.blank? && message_external_ids.blank?
 
-        status = event == :read ? :read : :delivered
+        status = event == :read ? "read" : "delivered"
 
         params = {
           external_ids: message_external_ids,
@@ -83,7 +83,7 @@ module Channels
           channel_id: instagram_channel.id
         }
 
-        Messages::StatusUpdateWorker.perform_async(instagram_channel.account_id, status, params.as_json)
+        Messages::StatusUpdateWorker.perform_async(instagram_channel.account_id, status.to_s, params.as_json)
       end
 
       def lock_key(entry, parsed_message)

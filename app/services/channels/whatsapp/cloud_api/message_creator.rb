@@ -86,7 +86,10 @@ module Channels
         def attach_files
           return if MESSAGE_TYPES_WITHOUT_ATTACHMENTS.include?(message_type)
 
-          attachment_payload = parsed_message[:messages].first[message_type.to_sym]
+          msg = parsed_message[:messages].first
+          attachment_payload = msg[message_type] || msg[message_type.to_sym] || msg[message_type.to_s]
+          return unless attachment_payload.is_a?(Hash)
+
           message.content ||= attachment_payload[:caption]
 
           attachment_file = download_attachment_file(attachment_payload)
@@ -143,7 +146,10 @@ module Channels
             headers: whatsapp_channel.api_headers
           )
 
-          whatsapp_channel.authorization_error! && return if response.unauthorized?
+          if response.unauthorized?
+            whatsapp_channel.authorization_error!
+            return nil
+          end
 
           return unless response.success?
 

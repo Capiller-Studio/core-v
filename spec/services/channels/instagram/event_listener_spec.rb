@@ -56,7 +56,7 @@ RSpec.describe Channels::Instagram::EventListener do
       it 'enqueues status update worker' do
         expect(Messages::StatusUpdateWorker).to receive(:perform_async).with(
           account.id,
-          :read,
+          "read",
           hash_including("watermark" => 12345, "external_ids" => ["mid1"])
         )
 
