@@ -156,7 +156,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
       expect(result[:name]).to eq("Fallback Name")
     end
 
-    it 'discovers WABA ID and Phone Number ID from debug_token granular scopes' do
+    it 'discovers WABA ID from debug_token granular scopes and discovers phone number ID' do
       allow(Rails.application.credentials).to receive(:dig).and_call_original
       allow(Rails.application.credentials).to receive(:dig).with(:channels, :whatsapp, :app_id).and_return("app_123")
       allow(Rails.application.credentials).to receive(:dig).with(:channels, :whatsapp, :app_secret).and_return("secret_123")
@@ -164,13 +164,15 @@ RSpec.describe Channels::Whatsapp::SignupService do
       debug_token_response = double('Response', success?: true, parsed_response: {
         "data" => {
           "granular_scopes" => [
-            { "scope" => "whatsapp_business_management", "target_ids" => ["debug_waba_789"] },
-            { "scope" => "whatsapp_business_messaging", "target_ids" => ["debug_phone_999"] }
+            { "scope" => "whatsapp_business_management", "target_ids" => ["debug_waba_789"] }
           ]
         }
       })
       allow(HTTParty).to receive(:get).with(/debug_token/, anything).and_return(debug_token_response)
       allow(api_mock).to receive(:access_token).and_return("token123")
+      allow(api_mock).to receive(:get_connections).with("debug_waba_789", "phone_numbers", any_args).and_return(
+        [{ "id" => "debug_phone_999", "display_phone_number" => "+1 555-999-0000" }]
+      )
 
       phone_response = double('Response', success?: true, parsed_response: {
         "display_phone_number" => "+1 555-999-0000",
