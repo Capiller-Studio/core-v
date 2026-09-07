@@ -85,7 +85,7 @@ RSpec.describe Channel::Instagram, type: :model do
     describe '#unsubscribe_from_webhooks' do
       it 'calls Meta Graph API to unsubscribe on before_destroy' do
         expect(HTTParty).to receive(:delete).with(
-          "https://graph.facebook.com/v26.0/ig_user_1/subscribed_apps",
+          "https://graph.instagram.com/v26.0/ig_user_1/subscribed_apps",
           query: { access_token: 'valid_token' }
         )
 
