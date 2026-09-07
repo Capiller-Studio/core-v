@@ -44,7 +44,7 @@ class SlugGenerator < Module
   end
 
   def generate_slug(instance)
-    base = instance.send(source).parameterize
+    base = instance.send(source).to_s.parameterize.tr('_', '-')
     candidate = base
     counter = 1
 
