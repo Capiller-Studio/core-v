@@ -87,7 +87,7 @@ module Channels
       def params
         payload = {
           recipient: { id: customer_inbox.external_id },
-          message: { text: message.content }
+          message: { text: Channels::MessageFormatter.format_for_whatsapp_and_facebook(message.content) }
         }.merge(tag_params)
         reply_id = message.external_reply_to_id
         payload[:recipient][:reply_to] = { mid: reply_id } if reply_id.present?

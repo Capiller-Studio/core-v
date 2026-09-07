@@ -32,7 +32,7 @@ module Channels
         subscribe_waba_webhooks(waba_id, token)
 
         # 3. Resolve Phone Number ID (from session_info, token inspection, or Graph API discovery)
-        phone_number_id = provided_phone_number_id.presence || inspected_info[:phone_number_id].presence || discover_phone_number_id(client, waba_id)
+        phone_number_id = provided_phone_number_id.presence || discover_phone_number_id(client, waba_id)
         raise("No Phone Numbers found in the WhatsApp Business Account.") if phone_number_id.blank?
 
         # 4. Fetch phone number details (display number, verified name)
@@ -68,7 +68,7 @@ module Channels
           client_secret: whatsapp_app_secret,
           code: code.to_s.strip
         }
-        query_params[:redirect_uri] = redirect_uri if redirect_uri.present?
+        query_params[:redirect_uri] = redirect_uri if redirect_uri.present? && !embedded_signup?
 
         response = HTTParty.get("https://graph.facebook.com/#{Channel::Whatsapp::GRAPH_API_VERSION}/oauth/access_token", query: query_params)
 
@@ -77,6 +77,10 @@ module Channels
         else
           raise("Failed to exchange code for token: #{response.body}")
         end
+      end
+
+      def embedded_signup?
+        provided_waba_id.present? || provided_phone_number_id.present?
       end
 
       # Inspects the OAuth access token to extract WABA ID and Phone Number ID from granular_scopes
@@ -93,11 +97,12 @@ module Channels
 
         return {} unless response.success?
 
-        data = response.parsed_response["data"] || {}
+        data = response.parsed_response["data"]
+        return {} unless data.is_a?(Hash)
+
         granular_scopes = data["granular_scopes"] || []
 
         discovered_waba_id = nil
-        discovered_phone_id = nil
 
         granular_scopes.each do |scope_info|
           scope = scope_info["scope"]
@@ -105,12 +110,10 @@ module Channels
 
           if scope == "whatsapp_business_management"
             discovered_waba_id ||= target_ids.first
-          elsif scope == "whatsapp_business_messaging"
-            discovered_phone_id ||= target_ids.first
           end
         end
 
-        { waba_id: discovered_waba_id, phone_number_id: discovered_phone_id }
+        { waba_id: discovered_waba_id }
       rescue StandardError => e
         Rails.logger.warn("WhatsApp debug_token inspection error: #{e.message}")
         {}
@@ -210,7 +213,8 @@ module Channels
           query: { fields: "id,display_phone_number,verified_name,quality_rating" }
         )
 
-        if response.success? && response.parsed_response.is_a?(Hash)
+        if response.success? && response.parsed_response.is_a?(Hash) &&
+           (response.parsed_response["display_phone_number"].present? || response.parsed_response["verified_name"].present?)
           parsed = response.parsed_response
           display = parsed["display_phone_number"].presence || parsed["verified_name"].presence || phone_number_id
           {

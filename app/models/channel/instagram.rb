@@ -116,7 +116,7 @@ module Channel
       return if instagram_id.blank? || access_token.blank?
 
       HTTParty.delete(
-        "https://graph.facebook.com/v26.0/#{instagram_id}/subscribed_apps",
+        "https://graph.instagram.com/v26.0/#{instagram_id}/subscribed_apps",
         query: { access_token: access_token }
       )
     rescue StandardError => e

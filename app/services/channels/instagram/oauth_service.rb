@@ -14,6 +14,15 @@ module Channels
         instagram_business_manage_messages
       ].freeze
 
+      SUBSCRIBED_FIELDS = %w[
+        messages
+        message_reactions
+        message_edit
+        messaging_postbacks
+        messaging_seen
+        standby
+      ].freeze
+
       API_VERSION = "v26.0"
 
       attr_reader :account
@@ -52,12 +61,15 @@ module Channels
         short_lived = exchange_code_for_token(code, redirect_uri)
         long_lived = exchange_for_long_lived_token(short_lived["access_token"])
         user_details = fetch_user_details(long_lived["access_token"])
+        instagram_id = (user_details["user_id"].presence || user_details["id"]).to_s
+
+        subscribe_to_webhooks(instagram_id, long_lived["access_token"])
 
         {
           access_token: long_lived["access_token"],
           expires_at: Time.current + long_lived["expires_in"].to_i.seconds,
           user: {
-            id: user_details["id"].to_s,
+            id: instagram_id,
             username: user_details["username"],
             name: user_details["name"],
             avatar_url: user_details["profile_picture_url"]
@@ -119,6 +131,18 @@ module Channels
         )
 
         handle_response(response, "Failed to fetch Instagram user details")
+      end
+
+      def subscribe_to_webhooks(instagram_id, access_token)
+        response = self.class.post(
+          "https://graph.instagram.com/#{API_VERSION}/#{instagram_id}/subscribed_apps",
+          query: {
+            subscribed_fields: SUBSCRIBED_FIELDS.join(","),
+            access_token: access_token
+          }
+        )
+
+        handle_response(response, "Failed to subscribe Instagram webhooks")
       end
 
       def handle_response(response, error_prefix)
