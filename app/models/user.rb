@@ -68,7 +68,12 @@ class User < ApplicationRecord
   belongs_to :address
 
   include Avatarable
+  include Deletable
+  include Trackable
 
+  identifying_columns :email, :username
+
+  has_many :access_tokens, as: :owner, dependent: :destroy
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
   has_one :affiliate_profile, class_name: "Affiliate::Profile", dependent: :destroy, inverse_of: :user
@@ -85,10 +90,55 @@ class User < ApplicationRecord
 
   before_save :configure_display_name
 
-  enum :status, { active: 0 }
+  enum :status, { active: 0, pending_deletion: 1, deleted: 2 }
   enum :gender, { male: 0, female: 1 }
 
+  validates :email, presence: true, format: { with: Devise.email_regexp }, unless: :deleted?
+  validates :username, presence: true, allow_nil: true, unless: :deleted?
+
   has_secure_token :connection_token
+
+  def email_required?
+    !deleted?
+  end
+
+  def password_required?
+    !deleted? && super
+  end
+
+  def active_for_authentication?
+    super && active?
+  end
+
+  def inactive_message
+    pending_deletion? ? :deletion_requested : (deleted? ? :deleted : super)
+  end
+
+  def can_be_deleted?
+    !account_users.joins(:account).exists?(owner: true, accounts: { status: %i[active suspended] })
+  end
+
+  # --- Deletable Lifecycle Hooks ---
+
+  def after_deactivate_for_deletion
+    access_tokens.delete_all
+    account_users.update_all(status: AccountUser.statuses[:pending_deletion])
+    ShardRecord.connected_to(shard: :de, role: :writing) do
+      NotificationSubscription.where(user_id: id).delete_all
+    end
+  end
+
+  def after_mark_as_deleted
+    account_users.update_all(status: AccountUser.statuses[:deleted])
+  end
+
+  def before_restore_active
+    skip_reconfirmation! if respond_to?(:skip_reconfirmation!)
+  end
+
+  def after_restore_active
+    account_users.joins(:account).where(accounts: { status: :active }).update_all(status: AccountUser.statuses[:active])
+  end
 
   # TODO: Fix avator URL
   def event_payload

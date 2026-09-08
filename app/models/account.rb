@@ -49,6 +49,10 @@ class Account < ApplicationRecord
   include Billable
   include LimitEnforceable
   include ShardResolvable
+  include Deletable
+  include Trackable
+
+  identifying_columns :identifier, :referral_code
 
   def users_count
     current_usage(:users)
@@ -58,7 +62,7 @@ class Account < ApplicationRecord
     current_plan&.feature_enabled?(base_feature) == true
   end
 
-  enum :status, { active: 0, suspended: 1 }
+  enum :status, { active: 0, suspended: 1, pending_deletion: 2, deleted: 3 }
   enum :referral_commission_type, { fixed: 0 }
 
   RESERVED_IDENTIFIERS = %w[
@@ -68,8 +72,10 @@ class Account < ApplicationRecord
   ].freeze
 
   # rubocop:disable Rails/I18nLocaleTexts
-  validates :identifier, exclusion: { in: RESERVED_IDENTIFIERS, message: "is a reserved word and cannot be used" }
-  validates :identifier, format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and hyphens" }, length: { minimum: 3, maximum: 63 }
+  validates :identifier, presence: true, unless: :deleted?
+  validates :referral_code, presence: true, unless: :deleted?
+  validates :identifier, exclusion: { in: RESERVED_IDENTIFIERS, message: "is a reserved word and cannot be used" }, if: -> { identifier.present? }
+  validates :identifier, format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and hyphens" }, length: { minimum: 3, maximum: 63 }, if: -> { identifier.present? }
   # rubocop:enable Rails/I18nLocaleTexts
   validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
 
@@ -117,7 +123,6 @@ class Account < ApplicationRecord
   has_many :attachments, dependent: :destroy
   has_many :sla_policies, dependent: :destroy
   has_many :conversation_slas, dependent: :destroy
-  has_many :notification_subscriptions, dependent: :destroy
   has_many :business_hour_groups, dependent: :destroy
   has_many :business_hours, dependent: :destroy
   has_many :assignment_policies, dependent: :destroy
@@ -138,6 +143,41 @@ class Account < ApplicationRecord
       name: name,
       type: "Account"
     }
+  end
+
+  # --- Deletable Lifecycle Hooks ---
+
+  def after_deactivate_for_deletion
+    access_tokens.delete_all
+    domains.update_all(status: :inactive)
+    active_subscription&.cancel!(immediate: true)
+    account_users.update_all(status: AccountUser.statuses[:pending_deletion])
+  end
+
+  CHANNEL_CLASSES = [
+    Channel::Email,
+    Channel::WebWidget,
+    Channel::ContactForm,
+    Channel::FacebookPage,
+    Channel::Instagram,
+    Channel::Whatsapp,
+    Channel::Custom,
+    Channel::ShortMessage
+  ].freeze
+
+  def after_mark_as_deleted
+    account_users.update_all(status: AccountUser.statuses[:deleted])
+    with_shard do
+      CHANNEL_CLASSES.each do |channel_class|
+        channel_class.where(account_id: id).destroy_all if channel_class.table_exists?
+      end
+      inboxes.destroy_all
+    end
+  end
+
+  def after_restore_active
+    domains.update_all(status: :active)
+    account_users.update_all(status: AccountUser.statuses[:active])
   end
 
   private

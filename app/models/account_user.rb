@@ -37,13 +37,14 @@
 class AccountUser < ApplicationRecord
   include AccessControl
   include UsageTrackable
+  include Trackable
 
   belongs_to :account
   belongs_to :user
   belongs_to :invited_by, class_name: "User", optional: true
 
   enum :availability, { online: 0, offline: 1 }
-  enum :status, { active: 0 }
+  enum :status, { active: 0, pending_deletion: 1, deleted: 2 }
 
   tracks_usage :users
   after_create_commit :track_agent_count

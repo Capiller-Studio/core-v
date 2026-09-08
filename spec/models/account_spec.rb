@@ -31,7 +31,7 @@ RSpec.describe Account, type: :model do
   end
 
   describe 'Enums' do
-    it { is_expected.to define_enum_for(:status).with_values(active: 0, suspended: 1) }
+    it { is_expected.to define_enum_for(:status).with_values(active: 0, suspended: 1, pending_deletion: 2, deleted: 3) }
     it { is_expected.to define_enum_for(:referral_commission_type).with_values(fixed: 0) }
   end
 
@@ -155,6 +155,105 @@ RSpec.describe Account, type: :model do
       expect {
         account.decrement_usage!(:users)
       }.to change { account.current_usage(:users) }.by(-1)
+    end
+  end
+
+  describe 'Soft Deletion & Restoration' do
+    let(:account) { create(:account) }
+
+    it 'deactivates account and sets status to pending_deletion' do
+      domain = create(:domain, account: account, status: :active)
+
+      account.deactivate_for_deletion!
+
+      expect(account.reload).to be_pending_deletion
+      expect(account.data['deletion']['requested_at']).to be_present
+      expect(domain.reload).to be_inactive
+    end
+
+    it 'cancels active subscription upon deactivation' do
+      plan = create(:plan)
+      subscription = create(:subscription, account: account, plan: plan, status: :active)
+
+      account.deactivate_for_deletion!
+
+      expect(subscription.reload).to be_cancelled
+    end
+
+    it 'revokes access tokens and cascades pending_deletion to account_users' do
+      create(:access_token, owner: account)
+      account_user = create(:account_user, account: account, user: create(:user))
+
+      account.deactivate_for_deletion!
+
+      expect(account.access_tokens.count).to eq(0)
+      expect(account_user.reload).to be_pending_deletion
+    end
+
+    it 'marks account as deleted, vaults identity and nullifies unique fields' do
+      orig_id = account.identifier
+      orig_ref = account.referral_code
+      account_user = create(:account_user, account: account, user: create(:user))
+
+      account.deactivate_for_deletion!
+      account.mark_as_deleted!
+
+      expect(account.reload).to be_deleted
+      expect(account.identifier).to be_nil
+      expect(account.referral_code).to be_nil
+      expect(account.data['archived_identity']['identifier']).to eq(orig_id)
+      expect(account.data['archived_identity']['referral_code']).to eq(orig_ref)
+      expect(account_user.reload).to be_deleted
+    end
+
+    it 'cleans up inboxes and channels on shard upon mark_as_deleted!' do
+      account.with_shard do
+        create(:inbox, account: account, name: 'Support Inbox')
+      end
+
+      expect(account.with_shard { account.inboxes.count }).to be >= 1
+
+      account.deactivate_for_deletion!
+      account.mark_as_deleted!
+
+      expect(account.with_shard { account.inboxes.count }).to eq(0)
+    end
+
+    it 'restores account back to active status, reactivates domains and account_users' do
+      orig_id = account.identifier
+      domain = create(:domain, account: account, status: :active)
+      account_user = create(:account_user, account: account, user: create(:user))
+
+      account.deactivate_for_deletion!
+      account.mark_as_deleted!
+
+      expect(domain.reload).to be_inactive
+      expect(account_user.reload).to be_deleted
+
+      account.restore_active!
+
+      expect(account.reload).to be_active
+      expect(account.identifier).to eq(orig_id)
+      expect(domain.reload).to be_active
+      expect(account_user.reload).to be_active
+    end
+
+    it 'prevents double-deactivation when already deleted' do
+      account.deactivate_for_deletion!
+      account.mark_as_deleted!
+
+      expect { account.deactivate_for_deletion! }.to raise_error(ActiveRecord::RecordInvalid)
+    end
+
+    it 'raises validation error on restoration if identifier is claimed by another account' do
+      orig_id = account.identifier
+      account.deactivate_for_deletion!
+      account.mark_as_deleted!
+
+      create(:account, identifier: orig_id)
+
+      expect { account.restore_active! }.to raise_error(ActiveRecord::RecordInvalid)
+      expect(account.reload).to be_deleted
     end
   end
 end

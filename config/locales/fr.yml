@@ -15,3 +15,19 @@ fr:
       default_support: "Support"
       default_conversation_preview: "Une nouvelle conversation client a été ouverte."
       event_triggered: "Événement Deskbolic déclenché : %{event_name}"
+
+  activities:
+    account:
+      update: "Les détails du compte ont été mis à jour"
+      deletion_requested: "La suppression du compte a été demandée"
+      deleted: "Le compte a été marqué comme supprimé"
+      restored: "Le compte a été restauré au statut actif"
+    account_user:
+      create: "Un membre a été ajouté au compte"
+      update: "Les détails du membre du compte ont été mis à jour"
+      destroy: "Un membre a été retiré du compte"
+    user:
+      update: "Le profil utilisateur a été mis à jour"
+      deletion_requested: "La suppression du compte utilisateur a été demandée"
+      deleted: "L'utilisateur a été marqué comme supprimé"
+      restored: "L'utilisateur a été restauré au statut actif"

@@ -28,5 +28,13 @@ module Platform
     def permissions_count
       permissions.keys.size
     end
+
+    def super_admin?
+      identifier == "super_admin"
+    end
+
+    def admin?
+      super_admin? || identifier == "admin"
+    end
   end
 end

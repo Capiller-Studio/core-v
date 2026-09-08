@@ -275,3 +275,18 @@ en:
         already_accepted: "Invitation has already been accepted"
         expired: "Invitation has expired"
         no_valid_roles: "The roles for this invitation no longer exist. Please ask your administrator to re-invite you."
+  activities:
+    account:
+      update: "Account details were updated"
+      deletion_requested: "Account deletion was requested"
+      deleted: "Account was marked as deleted"
+      restored: "Account was restored to active status"
+    account_user:
+      create: "Member was added to the account"
+      update: "Account member details were updated"
+      destroy: "Member was removed from the account"
+    user:
+      update: "User profile was updated"
+      deletion_requested: "User account deletion was requested"
+      deleted: "User was marked as deleted"
+      restored: "User was restored to active status"
