@@ -11,7 +11,7 @@ RSpec.describe AccountUser, type: :model do
 
   describe 'Enums' do
     it { is_expected.to define_enum_for(:availability).with_values(online: 0, offline: 1) }
-    it { is_expected.to define_enum_for(:status).with_values(active: 0) }
+    it { is_expected.to define_enum_for(:status).with_values(active: 0, pending_deletion: 1, deleted: 2) }
   end
 
   describe 'Validations' do

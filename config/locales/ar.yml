@@ -15,3 +15,19 @@ ar:
       default_support: "الدعم"
       default_conversation_preview: "تم فتح محادثة عميل جديدة."
       event_triggered: "تم تشغيل حدث ديسكبوليك: %{event_name}"
+
+  activities:
+    account:
+      update: "تم تحديث تفاصيل الحساب"
+      deletion_requested: "تم طلب حذف الحساب"
+      deleted: "تم وضع علامة على الحساب كمحذوف"
+      restored: "تمت استعادة الحساب إلى الحالة النشطة"
+    account_user:
+      create: "تمت إضافة عضو إلى الحساب"
+      update: "تم تحديث تفاصيل عضو الحساب"
+      destroy: "تمت إزالة العضو من الحساب"
+    user:
+      update: "تم تحديث الملف الشخصي للمستخدم"
+      deletion_requested: "تم طلب حذف حساب المستخدم"
+      deleted: "تم وضع علامة على المستخدم كمحذوف"
+      restored: "تمت استعادة المستخدم إلى الحالة النشطة"

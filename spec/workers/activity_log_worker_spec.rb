@@ -3,9 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe ActivityLogWorker, type: :worker do
-  let(:account) { create(:account) }
-  let(:user) { create(:user) }
-  let(:conversation) { create(:conversation, account: account) }
+  let!(:account) { create(:account) }
+  let!(:user) { create(:user) }
+  let!(:conversation) { create(:conversation, account: account) }
 
   describe '#perform' do
     let(:params) do
@@ -26,7 +26,8 @@ RSpec.describe ActivityLogWorker, type: :worker do
         described_class.new.perform(account.id, params)
       }.to change { Activity.where(account_id: account.id).count }.by(1)
 
-      activity = Activity.where(account_id: account.id).last
+      activity = Activity.where(account_id: account.id, event_key: 'conversation.assigned').first
+      expect(activity).to be_present
       expect(activity.account_id).to eq(account.id)
       expect(activity.trackable_type).to eq('Conversation')
       expect(activity.trackable_id).to eq(conversation.id)

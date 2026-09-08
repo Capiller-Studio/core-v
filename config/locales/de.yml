@@ -15,3 +15,19 @@ de:
       default_support: "Support"
       default_conversation_preview: "Eine neue Kundenkonversation wurde eröffnet."
       event_triggered: "Deskbolic-Ereignis ausgelöst: %{event_name}"
+
+  activities:
+    account:
+      update: "Kontodetails wurden aktualisiert"
+      deletion_requested: "Kontolöschung wurde angefordert"
+      deleted: "Konto wurde als gelöscht markiert"
+      restored: "Konto wurde wieder aktiviert"
+    account_user:
+      create: "Mitglied wurde dem Konto hinzugefügt"
+      update: "Kontomitgliedsdaten wurden aktualisiert"
+      destroy: "Mitglied wurde aus dem Konto entfernt"
+    user:
+      update: "Benutzerprofil wurde aktualisiert"
+      deletion_requested: "Benutzerkontolöschung wurde angefordert"
+      deleted: "Benutzer wurde als gelöscht markiert"
+      restored: "Benutzer wurde wieder aktiviert"

@@ -58,17 +58,28 @@ module Trackable
     diff
   end
 
+  IGNORED_TRACKING_ATTRIBUTES = %w[
+    updated_at created_at last_activity_at availability_changed_at status_changed_at
+    sign_in_count current_sign_in_at last_sign_in_at current_sign_in_ip last_sign_in_ip
+    remember_created_at reset_password_sent_at encrypted_password reset_password_token
+    confirmation_token unlock_token connection_token authentication_token
+  ].freeze
+
+  def trackable_changes
+    changes_payload.except(*IGNORED_TRACKING_ATTRIBUTES)
+  end
+
   private
 
   def should_track_changes?
-    persisted? && (saved_changes.any? || translations_changed_in_memory?)
+    persisted? && (trackable_changes.any? || translations_changed_in_memory?)
   end
 
   def track_changes
     Activities::Recorder.call(
       trackable:  self,
       event_type: :update,
-      changes:    changes_payload
+      changes:    trackable_changes
     )
   end
 

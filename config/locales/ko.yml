@@ -15,3 +15,19 @@ ko:
       default_support: "지원"
       default_conversation_preview: "새로운 고객 대화가 시작되었습니다."
       event_triggered: "Deskbolic 이벤트 트리거됨: %{event_name}"
+
+  activities:
+    account:
+      update: "계정 세부 정보가 업데이트되었습니다"
+      deletion_requested: "계정 삭제가 요청되었습니다"
+      deleted: "계정이 삭제됨으로 표시되었습니다"
+      restored: "계정이 활성 상태로 복원되었습니다"
+    account_user:
+      create: "멤버가 계정에 추가되었습니다"
+      update: "계정 멤버 세부 정보가 업데이트되었습니다"
+      destroy: "멤버가 계정에서 제거되었습니다"
+    user:
+      update: "사용자 프로필이 업데이트되었습니다"
+      deletion_requested: "사용자 계정 삭제가 요청되었습니다"
+      deleted: "사용자가 삭제됨으로 표시되었습니다"
+      restored: "사용자가 활성 상태로 복원되었습니다"

@@ -17,7 +17,11 @@ module Platform
     validates :name, presence: true
 
     def super_admin?
-      roles.exists?(identifier: "super_admin")
+      active? && roles.exists?(identifier: "super_admin")
+    end
+
+    def admin?
+      active? && (super_admin? || roles.exists?(identifier: "admin"))
     end
 
     def can?(resource, action)
