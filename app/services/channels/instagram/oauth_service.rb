@@ -34,9 +34,10 @@ module Channels
       # Generate the Instagram OAuth authorization URL.
       # The user will be redirected to Instagram to grant permissions.
       def authorization_url(redirect_uri:, state:)
+        clean_redirect_uri = redirect_uri.to_s.strip.chomp("/")
         params = {
-          client_id: instagram_app_id,
-          redirect_uri: redirect_uri,
+          client_id: instagram_app_id.to_s.strip,
+          redirect_uri: clean_redirect_uri,
           scope: REQUIRED_SCOPES.join(","),
           response_type: "code",
           enable_fb_login: "0",
@@ -58,7 +59,10 @@ module Channels
       #     user: { id: "...", username: "...", name: "...", avatar_url: "..." }
       #   }
       def exchange_code(code:, redirect_uri:)
-        short_lived = exchange_code_for_token(code, redirect_uri)
+        clean_code = code.to_s.split("#").first.gsub(/%23.*/, "").strip
+        clean_redirect_uri = redirect_uri.to_s.strip.chomp("/")
+
+        short_lived = exchange_code_for_token(clean_code, clean_redirect_uri)
         long_lived = exchange_for_long_lived_token(short_lived["access_token"])
         user_details = fetch_user_details(long_lived["access_token"])
         instagram_id = (user_details["user_id"].presence || user_details["id"]).to_s
@@ -89,14 +93,17 @@ module Channels
 
       # Step 1: Exchange authorization code for short-lived token
       def exchange_code_for_token(code, redirect_uri)
+        clean_code = code.to_s.split("#").first.gsub(/%23.*/, "").strip
+        clean_redirect_uri = redirect_uri.to_s.strip.chomp("/")
+
         response = self.class.post(
           "https://api.instagram.com/oauth/access_token",
           body: {
-            client_id: instagram_app_id,
-            client_secret: instagram_app_secret,
+            client_id: instagram_app_id.to_s.strip,
+            client_secret: instagram_app_secret.to_s.strip,
             grant_type: "authorization_code",
-            redirect_uri: redirect_uri,
-            code: code
+            redirect_uri: clean_redirect_uri,
+            code: clean_code
           },
           headers: {
             "Content-Type" => "application/x-www-form-urlencoded"
@@ -112,7 +119,7 @@ module Channels
           "https://graph.instagram.com/access_token",
           query: {
             grant_type: "ig_exchange_token",
-            client_secret: instagram_app_secret,
+            client_secret: instagram_app_secret.to_s.strip,
             access_token: short_lived_token
           }
         )
@@ -142,18 +149,22 @@ module Channels
           }
         )
 
-        handle_response(response, "Failed to subscribe Instagram webhooks")
+        unless response.success?
+          Rails.logger.warn("[Instagram Webhooks] subscribed_apps warning for #{instagram_id}: #{response.code} #{response.body}")
+        end
+      rescue StandardError => e
+        Rails.logger.warn("[Instagram Webhooks] Failed to subscribe webhooks for #{instagram_id}: #{e.message}")
       end
 
       def handle_response(response, error_prefix)
         unless response.success?
-          Rails.logger.error("#{error_prefix}. Status: #{response.code}, Body: #{response.body}")
+          Rails.logger.error("[Instagram API Error] #{error_prefix}. Status: #{response.code}, Body: #{response.body}")
           raise("#{error_prefix}: #{response.body}")
         end
 
         JSON.parse(response.body)
       rescue JSON::ParserError => e
-        Rails.logger.error("Invalid JSON response from Instagram: #{response.body}")
+        Rails.logger.error("[Instagram API Error] Invalid JSON response: #{response.body}")
         raise(e)
       end
     end

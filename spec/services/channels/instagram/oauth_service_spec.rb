@@ -5,10 +5,10 @@ RSpec.describe Channels::Instagram::OauthService do
   let(:service) { described_class.new(account: account) }
 
   describe '#authorization_url' do
-    it 'generates auth url' do
-      url = service.authorization_url(redirect_uri: 'http://redirect', state: 'abc')
+    it 'generates auth url and strips trailing slash from redirect_uri' do
+      url = service.authorization_url(redirect_uri: 'https://deskbolic.app/channels/instagram/callback/', state: 'abc')
       expect(url).to include("https://www.instagram.com/oauth/authorize?")
-      expect(url).to include("redirect_uri=http%3A%2F%2Fredirect")
+      expect(url).to include("redirect_uri=https%3A%2F%2Fdeskbolic.app%2Fchannels%2Finstagram%2Fcallback")
       expect(url).to include("state=abc")
     end
   end
@@ -29,6 +29,25 @@ RSpec.describe Channels::Instagram::OauthService do
       
       expect(result[:access_token]).to eq("long")
       expect(result[:user][:username]).to eq("iguser")
+    end
+
+    it 'sanitizes code and redirect_uri when exchanging token' do
+      expect(described_class).to receive(:post).with(
+        "https://api.instagram.com/oauth/access_token",
+        hash_including(
+          body: hash_including(
+            code: "clean_code",
+            redirect_uri: "https://deskbolic.app/channels/instagram/callback"
+          )
+        )
+      ).and_return(short_lived)
+
+      result = service.exchange_code(
+        code: "clean_code#_ ",
+        redirect_uri: "https://deskbolic.app/channels/instagram/callback/ "
+      )
+
+      expect(result[:access_token]).to eq("long")
     end
   end
 end
