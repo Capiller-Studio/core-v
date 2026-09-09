@@ -11,7 +11,7 @@ RSpec.describe Channels::Instagram::ConversationCreator do
   let(:conversation) { double('Conversation', conversation_members: double(find_or_create_by!: true)) }
 
   describe '#call' do
-    let(:mock_response) { instance_double(HTTParty::Response, success?: true, body: { "id" => "sender_ig", "first_name" => "John", "last_name" => "Doe", "username" => "john_ig", "profile_picture_url" => "avatar.url", "locale" => "spanish" }.to_json) }
+    let(:mock_response) { instance_double(HTTParty::Response, success?: true, body: { "id" => "sender_ig", "first_name" => "John", "last_name" => "Doe", "username" => "john_ig", "profile_pic" => "avatar.url", "locale" => "spanish" }.to_json) }
 
     before do
       stub_const('Customers::CustomerCreator', double('CustomerCreator'))
@@ -19,7 +19,7 @@ RSpec.describe Channels::Instagram::ConversationCreator do
       
       allow(HTTParty).to receive(:get).with(
         "https://graph.instagram.com/#{Channels::Instagram::OauthService::API_VERSION}/sender_ig",
-        query: { fields: "id,username,name,profile_picture_url", access_token: "token" }
+        query: { fields: "id,username,name,profile_pic", access_token: "token" }
       ).and_return(mock_response)
 
       allow(service).to receive(:find_or_reopen_conversation).and_return(nil)
