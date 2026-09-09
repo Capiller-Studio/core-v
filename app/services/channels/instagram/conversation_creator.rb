@@ -87,7 +87,6 @@ module Channels
             locale: ::Utilities::LocaleParser.parse(customer_data["locale"])
           }
         )
-        
         create_identity(customer_data) if customer.present?
       end
 
@@ -125,7 +124,7 @@ module Channels
         response = HTTParty.get(
           "https://graph.instagram.com/#{Channels::Instagram::OauthService::API_VERSION}/#{sender_id}",
           query: {
-            fields: "id,username,name,profile_picture_url",
+            fields: "id,username,name,profile_pic",
             access_token: channel.access_token
           }
         )
