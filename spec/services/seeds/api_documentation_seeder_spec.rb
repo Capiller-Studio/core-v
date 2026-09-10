@@ -8,9 +8,11 @@ RSpec.describe Seeds::ApiDocumentationSeeder do
 
   describe ".seed" do
     it "creates API documentation portal, categories, endpoints, and all 7 locale translations" do
-      expect {
-        described_class.seed(account: account, domain: domain_name)
-      }.not_to raise_error
+      Searchkick.callbacks(false) do
+        expect {
+          described_class.seed(account: account, domain: domain_name)
+        }.not_to raise_error
+      end
 
       account.with_shard do
         domain_record = Domain.find_by(value: domain_name)

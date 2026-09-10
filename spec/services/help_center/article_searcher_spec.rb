@@ -10,7 +10,7 @@ RSpec.describe HelpCenter::ArticleSearcher, search: true do
   end
 
   after(:all) do
-    Searchkick.enable_callbacks
+    Searchkick.disable_callbacks
   end
 
   before do
