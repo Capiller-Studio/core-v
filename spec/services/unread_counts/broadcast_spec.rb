@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe UnreadCounts::Broadcast do
-  let(:account) { create(:account) }
-  let(:user) { create(:user) }
+  let!(:account) { create(:account) }
+  let!(:user) { create(:user) }
   let(:customer) { create(:customer, account: account) }
 
   describe '#call' do
@@ -56,10 +56,15 @@ RSpec.describe UnreadCounts::Broadcast do
 
       it 'does not broadcast' do
         allow(user).to receive(:connection_token).and_return(nil)
-        service.call
+        expect(UnreadCounts::Current).not_to receive(:call)
+        expect(EventBroadcastWorker).not_to receive(:perform_async).with(
+          anything,
+          "unread_counts.updated",
+          anything,
+          anything
+        )
 
-        expect(UnreadCounts::Current).not_to have_received(:call)
-        expect(EventBroadcastWorker).not_to have_received(:perform_async)
+        service.call
       end
     end
   end

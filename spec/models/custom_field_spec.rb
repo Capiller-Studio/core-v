@@ -92,7 +92,7 @@ RSpec.describe CustomField, type: :model do
       let!(:translation_en) { create(:custom_field_translation, custom_field: cf, locale: 'en', options: [{ 'value' => 'val1', 'label' => 'Value 1 EN' }]) }
 
       it 'returns exact locale translation options if present' do
-        expect(cf.localized_options('en')).to eq([{ 'value' => 'val1', 'label' => 'Value 1 EN' }])
+        expect(cf.reload.localized_options('en')).to eq([{ 'value' => 'val1', 'label' => 'Value 1 EN' }])
       end
 
       it 'falls back to validations allowed_values if no options present' do
