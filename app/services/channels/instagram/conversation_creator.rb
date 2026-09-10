@@ -16,9 +16,12 @@ module Channels
       def initialize(channel:, parsed_message:, account: nil)
         self.parsed_message = parsed_message
         self.channel        = channel
-        # TODO: Ignore system sent messages
-        self.sender_id = parsed_message.echo? ? parsed_message.recipient_id : parsed_message.sender_id
-        self.account   = account || channel.account
+        self.account        = account || channel.account
+        self.sender_id      = echo? ? parsed_message.recipient_id : parsed_message.sender_id
+      end
+
+      def echo?
+        parsed_message.echo? || (channel.instagram_id.present? && parsed_message.sender_id.to_s == channel.instagram_id.to_s)
       end
 
       def call
@@ -115,7 +118,7 @@ module Channels
           inbox:,
           conversation:,
           parsed_message:,
-          sender: customer,
+          sender: echo? ? account : customer,
           instagram_channel: channel
         )
       end

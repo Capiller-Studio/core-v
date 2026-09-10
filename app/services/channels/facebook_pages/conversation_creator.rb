@@ -16,10 +16,13 @@ module Channels
       def initialize(facebook_page_channel:, parsed_message:, event: :message, account: nil)
         self.parsed_message        = parsed_message
         self.facebook_page_channel = facebook_page_channel
-        # TODO: Ignore system sent messages
-        self.sender_id = parsed_message.echo? ? parsed_message.recipient_id : parsed_message.sender_id
-        self.event   = event
-        self.account = account || facebook_page_channel.account
+        self.event                 = event
+        self.account               = account || facebook_page_channel.account
+        self.sender_id             = echo? ? parsed_message.recipient_id : parsed_message.sender_id
+      end
+
+      def echo?
+        parsed_message.echo? || (facebook_page_channel.page_identifier.present? && parsed_message.sender_id.to_s == facebook_page_channel.page_identifier.to_s)
       end
 
       def call
@@ -126,7 +129,7 @@ module Channels
           inbox:,
           conversation:,
           parsed_message:,
-          sender: customer,
+          sender: echo? ? account : customer,
           facebook_page_channel:
         )
       end

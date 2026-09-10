@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Channels::ShortMessage::Twilio::ConversationCreator do
-  let(:channel) { double('Channel::ShortMessage', account: account, primary_inbox: inbox) }
+  let(:channel) { double('Channel::ShortMessage', account: account, primary_inbox: inbox, phone_number: '+199999', full_phone_number: '+199999') }
   let(:account) { double('Account', id: 1) }
   let(:inbox) { double('Inbox') }
   let(:parsed_params) do
@@ -44,10 +44,34 @@ RSpec.describe Channels::ShortMessage::Twilio::ConversationCreator do
       )
 
       expect(Channels::ShortMessage::Twilio::MessageCreator).to receive(:call).with(
-        hash_including(short_message_channel: channel, parsed_message: parsed_params)
+        hash_including(short_message_channel: channel, parsed_message: parsed_params, sender: customer)
       )
 
       service.call
+    end
+
+    context 'when SMS is an echo (sent from channel phone number)' do
+      let(:parsed_params) do
+        { "From" => "+199999", "To" => "+12345", "MessageSid" => "SM_echo" }
+      end
+
+      it 'creates customer for recipient and message with sender as account' do
+        expect(Customers::CustomerCreator).to receive(:call).with(
+          hash_including(external_id: "+12345", full_phone_number: "+12345")
+        ).and_return(customer)
+
+        expect(Channels::ShortMessage::Twilio::MessageCreator).to receive(:call).with(
+          hash_including(
+            account: account,
+            inbox: inbox,
+            conversation: conversation,
+            sender: account,
+            short_message_channel: channel
+          )
+        )
+
+        service.call
+      end
     end
   end
 end

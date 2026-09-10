@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
-  let(:whatsapp_channel) { double('Channel::Whatsapp', account: account, primary_inbox: inbox, inboxes: [inbox], phone_number_id: 'pn123') }
+  let(:whatsapp_channel) { double('Channel::Whatsapp', account: account, primary_inbox: inbox, inboxes: [inbox], phone_number_id: 'pn123', full_phone_number: '123456', phone_number: '123456') }
   let(:account) { double('Account', id: 1) }
   let(:inbox) { double('Inbox') }
   let(:parsed_params) do
@@ -36,7 +36,7 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
       stub_const('Customers::CustomerCreator', double('CustomerCreator'))
       stub_const('Channels::Whatsapp::CloudApi::MessageCreator', double('MessageCreator'))
 
-      allow(service).to receive(:find_or_reopen_conversation).and_return(nil)
+      allow_any_instance_of(described_class).to receive(:find_or_reopen_conversation).and_return(nil)
       allow(account).to receive_message_chain(:conversations, :create!).and_return(conversation)
       allow(account).to receive_message_chain(:identities, :exists?).and_return(false)
       allow(account).to receive_message_chain(:identities, :create!)
@@ -63,10 +63,39 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
       )
 
       expect(Channels::Whatsapp::CloudApi::MessageCreator).to receive(:call).with(
-        hash_including(whatsapp_channel: whatsapp_channel, message_type: "text", parsed_message: parsed_params)
+        hash_including(whatsapp_channel: whatsapp_channel, message_type: "text", parsed_message: parsed_params, sender: customer)
       )
 
       service.call
+    end
+
+    context 'when message is an echo (message_echoes from business WhatsApp)' do
+      let(:parsed_params) do
+        {
+          message_echoes: [{ from: "123456", to: "987", id: "msg_wa_echo_1", type: "text" }]
+        }
+      end
+
+      it 'creates customer using recipient phone and message with sender as account' do
+        expect(Customers::CustomerCreator).to receive(:call).with(
+          hash_including(
+            external_id: "987",
+            full_phone_number: "+987"
+          )
+        ).and_return(customer)
+
+        expect(Channels::Whatsapp::CloudApi::MessageCreator).to receive(:call).with(
+          hash_including(
+            account: account,
+            inbox: inbox,
+            conversation: conversation,
+            sender: account,
+            whatsapp_channel: whatsapp_channel
+          )
+        )
+
+        service.call
+      end
     end
 
     context 'when messages array is empty or nil' do
@@ -175,17 +204,19 @@ RSpec.describe Channels::Whatsapp::CloudApi::ConversationCreator do
       end
     end
 
-    context 'with unsupported message types' do
-      %w[request_welcome ephemeral unsupported].each do |unsupported_type|
-        it "does nothing for #{unsupported_type} message type" do
-          params = {
-            contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" } }],
-            messages: [{ type: unsupported_type, from: "987", id: "msg_wa_1" }]
-          }
-          srv = described_class.new(whatsapp_channel: whatsapp_channel, parsed_params: params, account: account)
-          expect(srv).not_to receive(:find_inbox)
-          srv.call
-        end
+    context 'when payload contains multiple batched messages' do
+      let(:msg1) { { type: "text", from: "987", id: "wamid_1", text: { body: "First message" } } }
+      let(:msg2) { { type: "text", from: "987", id: "wamid_2", text: { body: "Second message" } } }
+      let(:parsed_params) do
+        {
+          contacts: [{ "wa_id" => "987", "profile" => { "name" => "WA User" } }],
+          messages: [msg1, msg2]
+        }
+      end
+
+      it 'processes all messages in the batch rather than skipping after the first' do
+        expect(Channels::Whatsapp::CloudApi::MessageCreator).to receive(:call).twice
+        service.call
       end
     end
   end

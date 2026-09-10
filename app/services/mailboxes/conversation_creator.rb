@@ -107,7 +107,12 @@ module Mailboxes
     end
 
     def find_or_create_sender
-      find_user || find_customer || create_customer
+      find_account || find_user || find_customer || create_customer
+    end
+
+    def find_account
+      return unless email_channel&.email.present?
+      self.sender = account if parsed_mail.original_sender.downcase == email_channel.email.downcase
     end
 
     def find_user
@@ -150,6 +155,32 @@ module Mailboxes
 
     def find_or_create_conversation_memeber
       conversation.conversation_members.find_or_create_by!(conversation:, member: sender, account:)
+      ensure_customer_member
+    end
+
+    def ensure_customer_member
+      return if conversation.customers.exists?
+
+      customer_email = Array(parsed_mail.receiver).first.presence || Array(parsed_mail.from).first
+      return if customer_email.blank?
+
+      customer = inbox.customers.find_by(email: customer_email.downcase) ||
+                 Customers::CustomerCreator.call(
+                   account: account,
+                   inbox: inbox,
+                   external_id: customer_email,
+                   email: customer_email,
+                   params: {
+                     name: customer_email.split("@").first,
+                     avatar_url: generate_gravatar_url(customer_email)
+                   }
+                 )
+
+      conversation.conversation_members.find_or_create_by!(
+        conversation: conversation,
+        member: customer,
+        account: account
+      ) if customer.present?
     end
 
     def create_message

@@ -48,8 +48,16 @@ module Channels
 
         private
 
+        def raw_messages
+          parsed_message[:messages].presence || parsed_message[:message_echoes].presence || []
+        end
+
+        def first_message
+          raw_messages.first
+        end
+
         def find_message
-          external_id = parsed_message.dig(:messages, 0, :id)
+          external_id = first_message&.[](:id) || first_message&.[]("id")
           return unless external_id
 
           self.message = conversation.messages.find_by(external_id: external_id.to_s)
@@ -60,7 +68,8 @@ module Channels
         end
 
         def create_messages
-          message_params = parsed_message[:messages].first
+          message_params = first_message
+          return if message_params.blank?
 
           # Skip messages with errors
           return if message_params.key?("errors")
@@ -86,7 +95,9 @@ module Channels
         def attach_files
           return if MESSAGE_TYPES_WITHOUT_ATTACHMENTS.include?(message_type)
 
-          msg = parsed_message[:messages].first
+          msg = first_message
+          return unless msg
+
           attachment_payload = msg[message_type] || msg[message_type.to_sym] || msg[message_type.to_s]
           return unless attachment_payload.is_a?(Hash)
 
@@ -107,7 +118,7 @@ module Channels
         end
 
         def attach_location
-          location = parsed_message[:messages].first["location"]
+          location = first_message["location"]
           location_name = location["name"] ? "#{location['name']}, #{location['address']}" : ""
           message.attachments.new(
             account: account,
@@ -130,13 +141,14 @@ module Channels
         end
 
         def create_message(message_params)
+          context_id = (message_params["context"] || message_params[:context])&.[]("id") || (message_params["context"] || message_params[:context])&.[](:id)
           self.message = conversation.messages.build(
             content: message_content(message_params),
             account: account,
             inbox: inbox,
             sender: sender,
-            external_id: message_params[:id].to_s,
-            external_reply_to_id: message_params["context"]&.[]("id")
+            external_id: (message_params[:id] || message_params["id"]).to_s,
+            external_reply_to_id: context_id
           )
         end
 

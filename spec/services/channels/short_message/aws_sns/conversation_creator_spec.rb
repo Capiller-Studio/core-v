@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Channels::ShortMessage::AwsSns::ConversationCreator do
-  let(:channel) { double('Channel::ShortMessage', account: account, primary_inbox: inbox) }
+  let(:channel) { double('Channel::ShortMessage', account: account, primary_inbox: inbox, phone_number: '+98765', full_phone_number: '+98765') }
   let(:account) { double('Account', id: 1) }
   let(:inbox) { double('Inbox') }
   
@@ -49,10 +49,28 @@ RSpec.describe Channels::ShortMessage::AwsSns::ConversationCreator do
       )
 
       expect(Channels::ShortMessage::AwsSns::MessageCreator).to receive(:call).with(
-        hash_including(short_message_channel: channel, parsed_message: parsed_params)
+        hash_including(short_message_channel: channel, parsed_message: parsed_params, sender: customer)
       )
 
       service.call
+    end
+
+    context 'when message is an echo (originationNumber matches channel number)' do
+      let(:sns_message) do
+        { "originationNumber" => "+98765", "destinationNumber" => "+12345", "messageBody" => "Outbound AWS" }.to_json
+      end
+
+      it 'assigns account as sender and customer with destinationNumber' do
+        expect(Customers::CustomerCreator).to receive(:call).with(
+          hash_including(external_id: "+12345", full_phone_number: "+12345")
+        )
+
+        expect(Channels::ShortMessage::AwsSns::MessageCreator).to receive(:call).with(
+          hash_including(short_message_channel: channel, parsed_message: parsed_params, sender: account)
+        )
+
+        service.call
+      end
     end
 
     context 'with blank sender' do

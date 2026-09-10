@@ -256,4 +256,11 @@ RSpec.describe Account, type: :model do
       expect(account.reload).to be_deleted
     end
   end
+
+  describe '#display_name' do
+    it 'returns the name of the account' do
+      account = build(:account, name: 'Acme Corp')
+      expect(account.display_name).to eq('Acme Corp')
+    end
+  end
 end

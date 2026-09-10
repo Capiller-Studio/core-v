@@ -44,6 +44,16 @@ RSpec.describe Message, type: :model do
       expect(message.outgoing?).to be true
     end
 
+    it 'returns true when sender is an Account' do
+      message = build(:message, sender: build(:account))
+      expect(message.outgoing?).to be true
+    end
+
+    it 'returns true when sender is an Ai::Agent' do
+      message = build(:message, sender: build(:ai_agent))
+      expect(message.outgoing?).to be true
+    end
+
     it 'returns false when sender is a Customer' do
       message = build(:message, sender: build(:customer))
       expect(message.outgoing?).to be false

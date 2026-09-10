@@ -78,7 +78,7 @@ class Message < ShardRecord
   end
 
   def outgoing?
-    sender_type == "User"
+    %w[User Account Ai::Agent].include?(sender_type)
   end
 
   def edited?
