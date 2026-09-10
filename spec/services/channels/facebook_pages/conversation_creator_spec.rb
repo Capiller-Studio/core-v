@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Channels::FacebookPages::ConversationCreator do
-  let(:facebook_page_channel) { double('Channel::FacebookPage', primary_inbox: inbox, access_token: 'token', account: account) }
+  let(:facebook_page_channel) { double('Channel::FacebookPage', primary_inbox: inbox, access_token: 'token', account: account, page_identifier: 'page1') }
   let(:parsed_message) { double('ParsedMessage', echo?: false, sender_id: 'sender_fb', recipient_id: 'page1') }
   let(:inbox) { double('Inbox') }
   let(:account) { double('Account') }
@@ -84,6 +84,28 @@ RSpec.describe Channels::FacebookPages::ConversationCreator do
       ).and_return(customer)
 
       service.call
+    end
+
+    context 'when message is an echo (sent from account/page)' do
+      let(:parsed_message) { double('ParsedMessage', echo?: true, sender_id: 'page1', recipient_id: 'sender_fb') }
+
+      it 'creates the message with sender as account and customer as the recipient' do
+        expect(Customers::CustomerCreator).to receive(:call).with(
+          hash_including(external_id: 'sender_fb')
+        ).and_return(customer)
+
+        expect(Channels::FacebookPages::MessageCreator).to receive(:call).with(
+          hash_including(
+            account: account,
+            inbox: inbox,
+            conversation: conversation,
+            sender: account,
+            facebook_page_channel: facebook_page_channel
+          )
+        )
+
+        service.call
+      end
     end
   end
 end

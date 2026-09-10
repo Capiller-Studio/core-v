@@ -22,7 +22,21 @@ module Channels
 
           # AWS nested extraction mapping natively
           aws_message = JSON.parse(parsed_params["Message"] || "{}") rescue {}
-          self.sender_id = aws_message["originationNumber"]
+          origination_number = aws_message["originationNumber"]
+          destination_number = aws_message["destinationNumber"]
+
+          origination_clean = origination_number.to_s.gsub(/\D/, "")
+
+          @is_echo = origination_clean.present? && (
+            (short_message_channel.phone_number.present? && origination_clean == short_message_channel.phone_number.to_s.gsub(/\D/, "")) ||
+            (short_message_channel.full_phone_number.present? && origination_clean == short_message_channel.full_phone_number.to_s.gsub(/\D/, ""))
+          )
+
+          self.sender_id = @is_echo ? destination_number : origination_number
+        end
+
+        def echo?
+          @is_echo
         end
 
         def call
@@ -93,7 +107,7 @@ module Channels
             inbox: inbox,
             conversation: conversation,
             parsed_message: parsed_params,
-            sender: customer,
+            sender: echo? ? account : customer,
             short_message_channel: short_message_channel
           )
         end

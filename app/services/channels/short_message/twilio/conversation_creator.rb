@@ -18,7 +18,15 @@ module Channels
           self.parsed_params         = parsed_params
           self.short_message_channel = short_message_channel
           self.account               = account || short_message_channel.account
-          self.sender_id             = parsed_params["From"]
+          self.sender_id             = echo? ? parsed_params["To"] : parsed_params["From"]
+        end
+
+        def echo?
+          from = parsed_params["From"].to_s.gsub(/\D/, "")
+          return false if from.blank?
+
+          (short_message_channel.phone_number.present? && from == short_message_channel.phone_number.to_s.gsub(/\D/, "")) ||
+            (short_message_channel.full_phone_number.present? && from == short_message_channel.full_phone_number.to_s.gsub(/\D/, ""))
         end
 
         def call
@@ -55,7 +63,7 @@ module Channels
             external_id: sender_id,
             full_phone_number: sender_id,
             params: {
-              name: parsed_params["From"]
+              name: sender_id
             }
           )
         end
@@ -87,7 +95,7 @@ module Channels
             inbox: inbox,
             conversation: conversation,
             parsed_message: parsed_params,
-            sender: customer,
+            sender: echo? ? account : customer,
             short_message_channel: short_message_channel
           )
         end

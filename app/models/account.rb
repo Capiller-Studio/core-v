@@ -137,6 +137,10 @@ class Account < ApplicationRecord
   after_create :generate_default_custom_fields
   after_create :create_default_ai_wallet
 
+  def display_name
+    name
+  end
+
   def event_payload
     {
       id: id,

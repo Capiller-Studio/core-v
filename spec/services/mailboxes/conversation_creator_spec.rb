@@ -121,5 +121,18 @@ RSpec.describe Mailboxes::ConversationCreator do
         expect(message.sender).to eq(customer)
       end
     end
+
+    context 'when sender is the email channel address itself' do
+      before do
+        allow(parsed_mail).to receive(:original_sender).and_return(email_channel.email)
+      end
+
+      it 'uses the account as sender and links customer as conversation member' do
+        message = service.call
+        expect(message.sender).to eq(account)
+        expect(message.conversation.conversation_members.map(&:member)).to include(account, global_customer)
+        expect(message.conversation.customers).to include(global_customer)
+      end
+    end
   end
 end

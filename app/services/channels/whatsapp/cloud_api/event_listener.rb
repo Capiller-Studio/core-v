@@ -26,9 +26,9 @@ module Channels
 
         def call
           account.with_shard do
-            if parsed_params[:statuses].present?
-              process_statuses
-            elsif parsed_params[:messages].present?
+            process_statuses if parsed_params[:statuses].present?
+
+            if parsed_params[:messages].present? || parsed_params[:message_echoes].present?
               ConversationCreator.call(
                 whatsapp_channel: whatsapp_channel,
                 parsed_params: parsed_params,

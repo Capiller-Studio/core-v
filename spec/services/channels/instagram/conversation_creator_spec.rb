@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Channels::Instagram::ConversationCreator do
-  let(:channel) { double('Channel::Instagram', primary_inbox: inbox, access_token: 'token', account: account) }
+  let(:channel) { double('Channel::Instagram', primary_inbox: inbox, access_token: 'token', account: account, instagram_id: 'page1') }
   let(:parsed_message) { double('ParsedMessage', echo?: false, sender_id: 'sender_ig', recipient_id: 'page1') }
   let(:inbox) { double('Inbox') }
   let(:account) { double('Account') }
@@ -89,6 +89,27 @@ RSpec.describe Channels::Instagram::ConversationCreator do
         expect(Customers::CustomerCreator).to receive(:call).with(
           hash_including(external_id: 'sender_ig')
         ).and_return(customer)
+
+        service.call
+      end
+    end
+    context 'when message is an echo (sent from account/business)' do
+      let(:parsed_message) { double('ParsedMessage', echo?: true, sender_id: 'page1', recipient_id: 'sender_ig') }
+
+      it 'creates the message with sender as account and customer as the recipient' do
+        expect(Customers::CustomerCreator).to receive(:call).with(
+          hash_including(external_id: 'sender_ig')
+        ).and_return(customer)
+
+        expect(Channels::Instagram::MessageCreator).to receive(:call).with(
+          hash_including(
+            account: account,
+            inbox: inbox,
+            conversation: conversation,
+            sender: account,
+            instagram_channel: channel
+          )
+        )
 
         service.call
       end

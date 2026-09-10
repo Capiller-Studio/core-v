@@ -72,7 +72,6 @@ class Conversation < ShardRecord
   has_many :labels, through: :applied_labels
 
   has_many :conversation_members, dependent: :destroy
-  has_many :members, through: :conversation_members, source: :member, source_type: [ "Customer", "User" ]
   has_many :customers, through: :conversation_members,
                        source: :member, source_type: "Customer",
                        class_name: "Customer"
