@@ -28,5 +28,7 @@ class Note < ShardRecord
   belongs_to :user
   belongs_to :account
 
+  validates :content, presence: true
+
   enum :visibility, { personal: 0, global: 1 }
 end

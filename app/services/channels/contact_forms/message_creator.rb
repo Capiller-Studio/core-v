@@ -32,8 +32,8 @@ module Channels
           content: content,
           inbox: inbox,
           source: :help_center,
-          message_type: :incoming,
-          private: false,
+          # message_type: :incoming,
+          # private: false,
           data: {}
         )
       end
