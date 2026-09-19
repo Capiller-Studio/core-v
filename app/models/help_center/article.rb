@@ -93,12 +93,19 @@ module HelpCenter
     after_commit :update_category_stats, if: -> { saved_change_to_status? || saved_change_to_visibility? }
 
     searchkick word_start: ["translations.title", "translations.content"],
+               merge_mappings: true,
                mappings: {
                  properties: {
-                   translations: {
+                   embeddings: {
                      type: "nested",
                      properties: {
-                       content_embedding: { type: "dense_vector", dims: 1536 }
+                       locale: { type: "keyword" },
+                       content_embedding: {
+                         type: "dense_vector",
+                         dims: 1536,
+                         index: true,
+                         similarity: "cosine"
+                       }
                      }
                    }
                  }
@@ -113,15 +120,21 @@ module HelpCenter
         visibility: visibility,
         views_count: views_count,
         translations: translations.map do |t|
-          data = {
+          {
             locale: t.locale,
             title: t.title,
             slug: t.slug,
             content: t.content,
             search_excerpt: t.search_excerpt
           }
-          data[:content_embedding] = t.content_embedding if t.content_embedding.present?
-          data
+        end,
+        embeddings: translations.filter_map do |t|
+          next if t.content_embedding.blank?
+
+          {
+            locale: t.locale,
+            content_embedding: t.content_embedding
+          }
         end
       }
     end

@@ -52,7 +52,8 @@ module Access
       "audit_logs" => ["read"],
       "help_center_portals" => ["manage"],
       "help_center_articles" => ["read", "manage"],
-      "help_center_categories" => ["read", "manage"]
+      "help_center_categories" => ["read", "manage"],
+      "sso" => ["read", "manage"]
     }.freeze
   end
 end

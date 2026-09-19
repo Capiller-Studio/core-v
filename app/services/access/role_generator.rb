@@ -63,7 +63,8 @@ module Access
           "audit_logs" => { "read" => true },
           "help_center_portals" => { "manage" => true },
           "help_center_articles" => { "read" => true, "manage" => true },
-          "help_center_categories" => { "read" => true, "manage" => true }
+          "help_center_categories" => { "read" => true, "manage" => true },
+          "sso" => { "read" => true, "manage" => true }
         }
       end
     end
