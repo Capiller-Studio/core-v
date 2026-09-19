@@ -40,6 +40,10 @@ class Integration < ShardRecord
     message.created
     customer.created
     customer.updated
+    sso.login_success
+    sso.login_failed
+    sso.user_provisioned
+    sso.certificate_expiring
   ].freeze
 
   # Webhook & Filtering Extraction Logic

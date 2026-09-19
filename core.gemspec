@@ -32,6 +32,8 @@ Gem::Specification.new do |spec|
 
   # For Authentication
   spec.add_dependency 'devise'
+  spec.add_dependency 'ruby-saml', '~> 1.17'
+  spec.add_dependency 'omniauth-google-oauth2'
   spec.add_dependency 'omniauth-facebook'
   spec.add_dependency 'omniauth-rails_csrf_protection'
 

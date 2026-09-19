@@ -61,7 +61,7 @@ module Ai
       articles = HelpCenter::Article.search(
         body: {
           knn: {
-            field: "translations.content_embedding",
+            field: "embeddings.content_embedding",
             query_vector: query_embedding,
             k: 3,
             num_candidates: 10,

@@ -88,6 +88,11 @@ class Account < ApplicationRecord
   has_many :ai_wallet_transactions, class_name: "Ai::WalletTransaction", dependent: :destroy
   has_many :account_plans, dependent: :destroy
   has_many :custom_plans, through: :account_plans, source: :plan
+  has_one  :sso_configuration, class_name: "Auth::SsoConfiguration", dependent: :destroy
+  has_many :domain_verifications, class_name: "Auth::DomainVerification", dependent: :destroy
+  has_many :scim_tokens, class_name: "Auth::ScimToken", dependent: :destroy
+  has_many :auth_audit_logs, class_name: "Auth::AuditLog", dependent: :destroy
+  has_many :auth_user_identities, class_name: "Auth::UserIdentity", dependent: :nullify
 
   # Sharded DB Associations
   # IMPORTANT: These associations reside in a separate database shard.

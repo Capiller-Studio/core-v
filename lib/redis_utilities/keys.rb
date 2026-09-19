@@ -41,5 +41,8 @@ module RedisUtilities
     UNREAD_CONVERSATION_SET = "UNREAD:%{account_id}:%{member_id}:CONVERSATIONS_SET"
     UNREAD_MENTION_COUNT = "UNREAD:%{account_id}:%{member_id}:MENTIONS"
     UNREAD_INBOX_COUNT = "UNREAD:%{account_id}:%{member_id}:INBOXES"
+
+    AUTH_DOMAIN_SSO = "AUTH_DOMAIN_SSO:%{domain}"
+    AUTH_SAML_REPLAY = "AUTH_SAML_REPLAY:%{response_id}"
   end
 end

@@ -25,7 +25,10 @@ RSpec.describe Access::RoleGenerator do
       expect(roles_scope).to receive(:find_or_create_by!).with(identifier: "administrator").and_yield(admin_role)
       expect(admin_role).to receive(:name=).with("Administrator")
       expect(admin_role).to receive(:system_provided=).with(true)
-      expect(admin_role).to receive(:permissions=).with(hash_including("conversations" => { "read" => true, "write" => true, "delete" => true }))
+      expect(admin_role).to receive(:permissions=).with(hash_including(
+        "conversations" => { "read" => true, "write" => true, "delete" => true },
+        "sso" => { "read" => true, "manage" => true }
+      ))
 
       expect(roles_scope).to receive(:find_or_create_by!).with(identifier: "agent").and_yield(agent_role)
       expect(agent_role).to receive(:name=).with("Agent")

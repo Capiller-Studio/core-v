@@ -54,6 +54,9 @@ module Seeds
           "business_hours" => false,
           "help_center_portals" => false,
           "custom_branding" => false,
+          "sso" => false,
+          "scim" => false,
+          "social_login" => true,
           "channels" => {
             "web_widget" => true,
             "email" => false,
@@ -119,6 +122,9 @@ module Seeds
           "business_hours" => false,
           "help_center_portals" => true,
           "custom_branding" => false,
+          "sso" => false,
+          "scim" => false,
+          "social_login" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -184,6 +190,9 @@ module Seeds
           "business_hours" => true,
           "help_center_portals" => true,
           "custom_branding" => false,
+          "sso" => false,
+          "scim" => false,
+          "social_login" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,
@@ -249,6 +258,9 @@ module Seeds
           "custom_domains" => true,
           "business_hours" => true,
           "help_center_portals" => true,
+          "sso" => true,
+          "scim" => true,
+          "social_login" => true,
           "channels" => {
             "web_widget" => true,
             "email" => true,

@@ -27,8 +27,6 @@
 #  locked_at              :datetime
 #  middle_name            :string
 #  name                   :string           default("")
-#  provider               :string
-#  provider_uid           :string
 #  remember_created_at    :datetime
 #  reset_password_sent_at :datetime
 #  reset_password_token   :string
@@ -51,7 +49,6 @@
 #  index_users_on_email                      (email) UNIQUE
 #  index_users_on_locale                     (locale)
 #  index_users_on_name                       (name)
-#  index_users_on_provider_and_provider_uid  (provider,provider_uid) UNIQUE
 #  index_users_on_reset_password_token       (reset_password_token) UNIQUE
 #  index_users_on_status                     (status)
 #  index_users_on_unlock_token               (unlock_token) UNIQUE
@@ -64,7 +61,8 @@
 class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :confirmable, :lockable, :trackable
+         :confirmable, :lockable, :trackable,
+         :omniauthable, omniauth_providers: %i[google_oauth2 facebook]
   belongs_to :address
 
   include Avatarable
@@ -77,6 +75,8 @@ class User < ApplicationRecord
   has_many :account_users, dependent: :destroy
   has_many :accounts, through: :account_users
   has_one :affiliate_profile, class_name: "Affiliate::Profile", dependent: :destroy, inverse_of: :user
+  has_many :auth_identities, class_name: "Auth::UserIdentity", dependent: :destroy
+  has_many :auth_audit_logs, class_name: "Auth::AuditLog", dependent: :nullify
 
   # Sharded associations — require shard context
   has_many :team_users, dependent: :destroy
@@ -103,7 +103,14 @@ class User < ApplicationRecord
   end
 
   def password_required?
-    !deleted? && super
+    return false if deleted?
+    return false if sso_provisioned?
+
+    super
+  end
+
+  def sso_provisioned?
+    auth_identities.for_enterprise.exists?
   end
 
   def active_for_authentication?

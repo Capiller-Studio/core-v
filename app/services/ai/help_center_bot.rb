@@ -30,17 +30,17 @@ module Ai
       search_results = HelpCenter::Article.search(
         body: {
           knn: {
-            field: "translations.content_embedding",
+            field: "embeddings.content_embedding",
             query_vector: query_embedding,
             k: 3,
             num_candidates: 10,
             filter: {
               bool: {
                 must: [
-                  { term: { "account_id.keyword" => @account.id } },
-                  { term: { "portal_id.keyword" => @portal.id } },
-                  { term: { "status.keyword" => "published" } },
-                  { term: { "visibility.keyword" => "everyone" } }
+                  { term: { account_id: @account.id } },
+                  { term: { portal_id: @portal.id } },
+                  { term: { status: "published" } },
+                  { term: { visibility: "everyone" } }
                 ]
               }
             }

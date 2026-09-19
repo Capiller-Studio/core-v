@@ -98,16 +98,24 @@ RSpec.describe HelpCenter::Article, type: :model do
 
   describe '#search_data' do
     let(:article) { described_class.new(id: SecureRandom.uuid, account_id: SecureRandom.uuid, portal_id: SecureRandom.uuid, status: :published, visibility: :everyone, views_count: 5) }
-    let(:translation) { HelpCenter::ArticleTranslation.new(locale: 'en', title: 'Test', slug: 'test', content: 'content', search_excerpt: 'excerpt') }
+    let(:embedding) { Array.new(1536) { 0.05 } }
+    let(:translation_en) { HelpCenter::ArticleTranslation.new(locale: 'en', title: 'Test', slug: 'test', content: 'content', search_excerpt: 'excerpt', content_embedding: embedding) }
+    let(:translation_es) { HelpCenter::ArticleTranslation.new(locale: 'es', title: 'Prueba', slug: 'prueba', content: 'contenido', search_excerpt: 'extracto', content_embedding: nil) }
 
-    it 'returns the expected payload structure' do
-      allow(article).to receive(:translations).and_return([translation])
-      
+    it 'returns the expected payload structure decoupling translations and embeddings' do
+      allow(article).to receive(:translations).and_return([translation_en, translation_es])
+
       data = article.search_data
       expect(data[:status]).to eq('published')
       expect(data[:views_count]).to eq(5)
+      expect(data[:translations].size).to eq(2)
       expect(data[:translations].first[:title]).to eq('Test')
       expect(data[:translations].first[:content]).to eq('content')
+      expect(data[:translations].first).not_to have_key(:content_embedding)
+
+      expect(data[:embeddings].size).to eq(1)
+      expect(data[:embeddings].first[:locale]).to eq('en')
+      expect(data[:embeddings].first[:content_embedding]).to eq(embedding)
     end
   end
 
