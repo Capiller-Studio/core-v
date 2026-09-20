@@ -51,8 +51,12 @@ module Conversations
       active_user_ids = ::Utilities::ActivityHelpers.available_user_ids(account.id)
       return [] if active_user_ids.blank?
 
-      # Base candidate IDs: inbox agents
+      # Base candidate IDs: inbox agents (direct or via assigned teams)
       base_agent_ids = inbox.inbox_users.pluck(:user_id).map(&:to_s)
+      if base_agent_ids.blank? && inbox.inbox_teams.any?
+        team_ids = inbox.inbox_teams.pluck(:team_id)
+        base_agent_ids = TeamUser.where(team_id: team_ids).pluck(:user_id).map(&:to_s).uniq
+      end
 
       # If assigned to a team, candidates must also be members of that team
       if team

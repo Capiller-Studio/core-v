@@ -35,6 +35,7 @@
 class Inbox < ShardRecord
   include FlagShihTzu
   include Trackable
+  include Inbox::Collaborators
 
   belongs_to :channel, polymorphic: true
   belongs_to :account
@@ -54,23 +55,14 @@ class Inbox < ShardRecord
 
   has_many :conversations, dependent: :destroy
   has_many :customer_inboxes, dependent: :destroy
-  has_many :inbox_users, dependent: :destroy
-  has_many :users, through: :inbox_users, disable_joins: true
-  has_many :inbox_teams, dependent: :destroy
-  has_many :teams, through: :inbox_teams
   has_many :customers, through: :customer_inboxes
   has_many :sla_inboxes, dependent: :destroy
   has_many :sla_policies, through: :sla_inboxes
   has_many :assignment_policy_inboxes, dependent: :destroy
   has_many :assignment_policies, through: :assignment_policy_inboxes
 
-
   after_destroy :cleanup_integration_settings
   after_destroy :cleanup_unread_counts
-
-  scope :current_inboxes, ->(current_user) { joins(:inbox_users).where(inbox_users: { user: current_user }) }
-
-
 
   before_create :set_primary_inbox_if_first
 
@@ -79,6 +71,7 @@ class Inbox < ShardRecord
   def set_primary_inbox_if_first
     self.primary_inbox = true if channel.present? && channel.inboxes.empty?
   end
+
   def cleanup_integration_settings
     Integration.where("settings @> ?", { subscribed_inboxes: [ id ] }.to_json).find_each do |integration|
       remaining_inboxes = integration.subscribed_inboxes - [ id ]

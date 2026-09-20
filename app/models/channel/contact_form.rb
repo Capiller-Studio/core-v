@@ -47,6 +47,7 @@ module Channel
     # Conversations from form submissions land in this Inbox with source: :help_center
     has_many :inboxes, as: :channel, dependent: :destroy
     has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
+    accepts_nested_attributes_for :primary_inbox, update_only: true
 
     def inbox
       primary_inbox || inboxes.first

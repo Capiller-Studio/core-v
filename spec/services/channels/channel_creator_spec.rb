@@ -88,5 +88,50 @@ RSpec.describe Channels::ChannelCreator do
         expect(service.call).to be false
       end
     end
+
+    context 'collaborator assignment with real records' do
+      let(:real_account) { create(:account) }
+      let(:creator_user) { create(:user) }
+      let(:assigned_user) { create(:user) }
+      let(:team) { create(:team, account: real_account) }
+
+      before do
+        create(:account_user, account: real_account, user: creator_user)
+        create(:account_user, account: real_account, user: assigned_user)
+      end
+
+      it 'automatically assigns the creator to inbox_users when current_user is provided' do
+        service = described_class.new(
+          channel_type: 'web_widget',
+          channel_params: { name: 'Support Widget' },
+          current_account: real_account,
+          current_user: creator_user
+        )
+
+        expect(service.call).to be true
+        inbox = service.inbox
+        expect(inbox.assigned_user_ids).to include(creator_user.id.to_s)
+      end
+
+      it 'assigns explicit user_ids and team_ids from primary_inbox_attributes' do
+        service = described_class.new(
+          channel_type: 'contact_form',
+          channel_params: {
+            name: 'Contact Us Form',
+            primary_inbox_attributes: {
+              user_ids: [assigned_user.id],
+              team_ids: [team.id]
+            }
+          },
+          current_account: real_account,
+          current_user: creator_user
+        )
+
+        expect(service.call).to be true
+        inbox = service.inbox
+        expect(inbox.assigned_user_ids).to eq([assigned_user.id.to_s])
+        expect(inbox.assigned_team_ids).to eq([team.id.to_s])
+      end
+    end
   end
 end

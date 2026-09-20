@@ -81,6 +81,8 @@ class User < ApplicationRecord
   # Sharded associations — require shard context
   has_many :team_users, dependent: :destroy
   has_many :teams, through: :team_users, disable_joins: true
+  has_many :inbox_users, dependent: :destroy
+  has_many :inboxes, through: :inbox_users, disable_joins: true
   has_many :user_skills, dependent: :destroy
   has_many :skills, through: :user_skills, disable_joins: true
   
