@@ -19,10 +19,13 @@ module Seeds
         c.send_confirmation_email = true
       end
 
-      channel.inboxes.find_or_create_by!(
+      inbox = channel.inboxes.find_or_create_by!(
         name: "Contact Form Inbox",
         account: account
-      )
+      ) do |i|
+        i.primary_inbox = true
+      end
+      inbox.update!(primary_inbox: true) unless inbox.primary_inbox?
 
       # Ensure default custom fields exist
       Accounts::DefaultCustomFieldsCreator.call(account: account)

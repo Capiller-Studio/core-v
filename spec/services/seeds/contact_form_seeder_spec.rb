@@ -28,6 +28,8 @@ RSpec.describe Seeds::ContactFormSeeder do
       inbox = channel.inboxes.last
       expect(inbox.name).to eq('Contact Form Inbox')
       expect(inbox.account).to eq(account)
+      expect(inbox.primary_inbox).to eq(true)
+      expect(channel.primary_inbox).to eq(inbox)
 
       expect(Accounts::DefaultCustomFieldsCreator).to have_received(:call).with(account: account).at_least(:once)
 
