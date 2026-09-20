@@ -20,4 +20,7 @@
 class InboxUser < ShardRecord
   belongs_to :inbox
   belongs_to :user
+
+  validates :user_id, uniqueness: { scope: :inbox_id }
 end
+

@@ -6,13 +6,14 @@
 
 module Channels
   class ChannelCreator < ApplicationService
-    attr_accessor :channel_type, :channel_params, :current_account
-    attr_reader :channel
+    attr_accessor :channel_type, :channel_params, :current_account, :current_user
+    attr_reader :channel, :inbox
 
-    def initialize(channel_type:, channel_params:, current_account:)
+    def initialize(channel_type:, channel_params:, current_account:, current_user: nil)
       self.channel_type      = channel_type
       self.channel_params    = channel_params
       self.current_account   = current_account
+      self.current_user      = current_user
     end
 
     def call
@@ -37,6 +38,39 @@ module Channels
       send("#{channel_type.underscore.parameterize(separator: '_')}_channel")
     end
 
+    def create_primary_inbox(channel, name: nil)
+      attrs = { name: name || channel.name, account: current_account, primary_inbox: true }
+      raw_inbox_attrs = channel_params[:primary_inbox_attributes]
+
+      user_ids = []
+      team_ids = []
+
+      if raw_inbox_attrs.present?
+        inbox_hash = raw_inbox_attrs.to_h.symbolize_keys
+        user_ids = Array(inbox_hash.delete(:user_ids)).map(&:to_s).reject(&:blank?)
+        team_ids = Array(inbox_hash.delete(:team_ids)).map(&:to_s).reject(&:blank?)
+        attrs.merge!(inbox_hash)
+      end
+
+      inbox = channel.inboxes.create!(attrs)
+
+      # Assign users: explicit user_ids, or fall back to current_user / account owner/first user
+      if user_ids.any?
+        inbox.assign_users(user_ids) if inbox.respond_to?(:assign_users)
+      elsif current_user.present?
+        inbox.assign_users([current_user.id]) if inbox.respond_to?(:assign_users)
+      elsif current_account.respond_to?(:users) && (fallback_user = current_account.users.first)
+        inbox.assign_users([fallback_user.id]) if inbox.respond_to?(:assign_users)
+      end
+
+      # Assign teams if specified
+      if team_ids.any? && inbox.respond_to?(:assign_teams)
+        inbox.assign_teams(team_ids)
+      end
+
+      @inbox = inbox
+    end
+
     def web_widget_channel
       @channel = Channel::WebWidget.new(
         channel_params.except(:primary_inbox_attributes, :anonymous_allowed, :help_center_enabled, :pre_chat_form_enabled, :secure_identity_enforced, :custom_branding)
@@ -51,9 +85,7 @@ module Channels
 
       @channel.save!
 
-      inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
-      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
-      @channel.inboxes.create!(inbox_attrs)
+      create_primary_inbox(@channel, name: channel_params[:name])
     end
 
     def email_channel
@@ -63,17 +95,7 @@ module Channels
       # We throw an error here if validation fails so that the transaction rolls back
       @channel.save!
 
-      inbox_attrs = {
-        name: channel_params[:name],
-        account: current_account,
-        primary_inbox: true
-      }
-      
-      if channel_params[:primary_inbox_attributes].present?
-        inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h)
-      end
-
-      @channel.inboxes.create!(inbox_attrs)
+      create_primary_inbox(@channel, name: channel_params[:name])
     end
 
     def contact_form_channel
@@ -100,9 +122,7 @@ module Channels
 
       @channel.save!
 
-      inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
-      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
-      @channel.inboxes.create!(inbox_attrs)
+      create_primary_inbox(@channel, name: channel_params[:name])
     end
 
     def facebook_page_channel
@@ -116,9 +136,7 @@ module Channels
       )
       @channel.save!
 
-      inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
-      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
-      @channel.inboxes.create!(inbox_attrs)
+      create_primary_inbox(@channel, name: channel_params[:name])
     end
 
     def instagram_channel
@@ -133,9 +151,7 @@ module Channels
       )
       @channel.save!
 
-      inbox_attrs = { name: channel_params[:name] || channel_params[:username], account: current_account, primary_inbox: true }
-      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
-      @channel.inboxes.create!(inbox_attrs)
+      create_primary_inbox(@channel, name: channel_params[:name] || channel_params[:username])
     end
 
     def whatsapp_channel
@@ -155,9 +171,7 @@ module Channels
       
       @channel.save!
 
-      inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
-      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
-      @channel.inboxes.create!(inbox_attrs)
+      create_primary_inbox(@channel, name: channel_params[:name])
     end
 
     def custom_channel
@@ -170,9 +184,7 @@ module Channels
       
       @channel.save!
 
-      inbox_attrs = { name: channel_params[:name], account: current_account, primary_inbox: true }
-      inbox_attrs.merge!(channel_params[:primary_inbox_attributes].to_h) if channel_params[:primary_inbox_attributes].present?
-      @channel.inboxes.create!(inbox_attrs)
+      create_primary_inbox(@channel, name: channel_params[:name])
     end
   end
 end

@@ -67,5 +67,20 @@ RSpec.describe Conversations::RoundRobinAssignment do
         expect(conversation.reload.assignee_id).to eq(user1.id)
       end
     end
+
+    context 'when inbox has teams assigned but no direct users' do
+      let(:team) { create(:team, account: account) }
+
+      before do
+        inbox.inbox_users.destroy_all
+        create(:inbox_team, inbox: inbox, team: team)
+        create(:team_user, team: team, user: user1)
+      end
+
+      it 'assigns the conversation to an agent from the inbox team' do
+        service.call
+        expect(conversation.reload.assignee_id).to eq(user1.id)
+      end
+    end
   end
 end
