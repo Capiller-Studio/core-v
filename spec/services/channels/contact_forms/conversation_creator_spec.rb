@@ -1,77 +1,254 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe Channels::ContactForms::ConversationCreator do
-  let(:account) { double('Account') }
-  let(:inbox) { double('Inbox') }
-  
-  let(:cf1) { double('CustomField', key: 'user_email', mapped_to: 'customer.email', entity_type: nil) }
-  let(:cf2) { double('CustomField', key: 'order_id', mapped_to: nil, entity_type: 'conversation') }
-  let(:cf3) { double('CustomField', key: 'message', mapped_to: 'message.content', entity_type: nil) }
-  
+RSpec.describe Channels::ContactForms::ConversationCreator, type: :service do
+  let(:account) { create(:account) }
   let(:channel) do
-    double('Channel::ContactForm', 
-      account: account, 
-      primary_inbox: inbox, 
-      custom_fields: [cf1, cf2, cf3],
-      outbound_channel: double('OutboundChannel'),
-      send_confirmation_email?: true
+    create(
+      :channel_contact_form,
+      account: account,
+      send_confirmation_email: true,
+      allow_attachments: true
     )
   end
-  
-  let(:form_params) { { 'user_email' => 'test@form.com', 'order_id' => '12345', 'message' => 'Help me' } }
-  
-  let(:service) do
-    described_class.new(
-      contact_form_channel: channel,
-      form_params: form_params,
-      attachments: []
+  let!(:inbox) { create(:inbox, channel: channel, account: account, primary_inbox: true) }
+
+  let(:uploaded_image) do
+    Rack::Test::UploadedFile.new(
+      StringIO.new('dummy-image'),
+      'image/png',
+      original_filename: 'receipt.png'
     )
+  end
+
+  around do |example|
+    account.with_shard do
+      example.run
+    end
+  end
+
+  before do
+    # Create standard custom fields
+    Accounts::DefaultCustomFieldsCreator.call(account: account)
+
+    # Associate default custom fields with this contact form
+    account.custom_fields.each_with_index do |cf, idx|
+      create(:custom_field_resource, custom_field: cf, resource: channel, configurations: { position: idx })
+    end
   end
 
   describe '#call' do
-    let(:customer) { double('Customer') }
-    let(:conversation) { double('Conversation', conversation_members: double('Members', create!: true)) }
-    let(:mailer_mock) { double('Mailer') }
-
-    before do
-      stub_const('Customers::CustomerCreator', double('CustomerCreator'))
-      stub_const('Channels::ContactForms::MessageCreator', double('MessageCreator'))
-      stub_const('ContactFormMailer', double('ContactFormMailer'))
-
-      allow(account).to receive_message_chain(:conversations, :create!).and_return(conversation)
-      allow(Customers::CustomerCreator).to receive(:call).and_return(customer)
-      allow(Channels::ContactForms::MessageCreator).to receive(:call)
-      
-      allow(ContactFormMailer).to receive(:confirmation_email).with(conversation).and_return(mailer_mock)
-      allow(mailer_mock).to receive(:deliver_later)
+    let(:form_params) do
+      {
+        'name' => 'Alice Johnson',
+        'email' => 'alice@example.com',
+        'subject' => 'Need billing support',
+        'message' => 'Please update my billing method to company card.',
+        'priority' => 'high'
+      }
     end
 
-    it 'creates customer, conversation, message, and sends email' do
-      expect(Customers::CustomerCreator).to receive(:call).with(
-        hash_including(
-          email: 'test@form.com',
-          external_id: 'test@form.com'
+    it 'creates a real Customer, Conversation, ConversationMember, and Message in shard database' do
+      expect {
+        conversation = described_class.call(
+          contact_form_channel: channel,
+          form_params: form_params
         )
+
+        expect(conversation).to be_persisted
+        expect(conversation.account).to eq(account)
+        expect(conversation.inbox).to eq(inbox)
+        expect(conversation.title).to eq('Need billing support')
+        expect(conversation.priority).to eq('high')
+        expect(conversation.source).to eq('help_center')
+
+        # Customer assertions
+        customer = conversation.customers.first
+        expect(customer).to be_present
+        expect(customer.name).to eq('Alice Johnson')
+        expect(customer.email).to eq('alice@example.com')
+
+        # CustomerInbox association
+        expect(CustomerInbox.find_by(customer: customer, inbox: inbox)).to be_present
+
+        # ConversationMember association
+        expect(conversation.conversation_members.where(member: customer).exists?).to be(true)
+
+        # Message assertions
+        message = conversation.messages.first
+        expect(message).to be_present
+        expect(message.sender).to eq(customer)
+        expect(message.content).to eq('Please update my billing method to company card.')
+        expect(message.source).to eq('help_center')
+        expect(message.incoming?).to be(true)
+      }.to change(Conversation, :count).by(1)
+       .and change(Customer, :count).by(1)
+       .and change(Message, :count).by(1)
+    end
+
+    it 'maps unmapped custom fields to jsonb data columns for customer and conversation' do
+      cf_membership = create(
+        :custom_field,
+        account: account,
+        key: 'membership_tier',
+        entity_type: :customer,
+        field_type: :text,
+        mapped_to: nil
+      )
+      create(:custom_field_resource, custom_field: cf_membership, resource: channel)
+
+      cf_incident = create(
+        :custom_field,
+        account: account,
+        key: 'incident_id',
+        entity_type: :conversation,
+        field_type: :text,
+        mapped_to: nil
+      )
+      create(:custom_field_resource, custom_field: cf_incident, resource: channel)
+
+      extended_params = form_params.merge(
+        'membership_tier' => 'Platinum',
+        'incident_id' => 'INC-9988'
       )
 
-      expect(account.conversations).to receive(:create!).with(
-        hash_including(
-          source: :help_center,
-          data: { 'order_id' => '12345' }
-        )
+      conversation = described_class.call(
+        contact_form_channel: channel,
+        form_params: extended_params
       )
 
-      expect(Channels::ContactForms::MessageCreator).to receive(:call).with(
-        hash_including(
-          content: 'Help me',
-          attachments: []
-        )
+      customer = conversation.customers.first
+      expect(customer.data['membership_tier']).to eq('Platinum')
+      expect(conversation.data['incident_id']).to eq('INC-9988')
+    end
+
+    it 'deduplicates existing customer by email without creating a new record' do
+      existing_customer = create(
+        :customer,
+        account: account,
+        email: 'alice@example.com',
+        name: 'Alice Original'
       )
 
-      expect(ContactFormMailer).to receive(:confirmation_email).with(conversation)
+      expect {
+        conversation = described_class.call(
+          contact_form_channel: channel,
+          form_params: form_params
+        )
 
-      result = service.call
-      expect(result).to eq(conversation)
+        expect(conversation.customers.first.id).to eq(existing_customer.id)
+      }.not_to change(Customer, :count)
+    end
+
+    it 'handles anonymous submission with no email provided' do
+      anon_params = {
+        'name' => 'Anonymous User',
+        'subject' => 'Anonymous feedback',
+        'message' => 'Great product!'
+      }
+
+      conversation = nil
+      expect {
+        conversation = described_class.call(
+          contact_form_channel: channel,
+          form_params: anon_params
+        )
+      }.to change(Conversation, :count).by(1)
+       .and change(Customer, :count).by(1)
+
+      expect(conversation).to be_persisted
+      customer = conversation.customers.first
+      expect(customer.email).to be_nil
+      expect(customer.external_id).to match(/\Aanon-[0-9a-f\-]{36}\z/)
+    end
+
+    it 'associates customer with explicit identifier parameter when provided' do
+      conversation = described_class.call(
+        contact_form_channel: channel,
+        form_params: form_params,
+        identifier: 'ext_user_98765'
+      )
+
+      customer = conversation.customers.first
+      expect(customer.external_id).to eq('ext_user_98765')
+    end
+
+    it 'generates distinct unique external_ids for successive anonymous submissions' do
+      anon_params = {
+        'name' => 'Anonymous User',
+        'subject' => 'Anonymous feedback',
+        'message' => 'Great product!'
+      }
+
+      conv1 = described_class.call(contact_form_channel: channel, form_params: anon_params)
+      conv2 = described_class.call(contact_form_channel: channel, form_params: anon_params)
+
+      cust1 = conv1.customers.first
+      cust2 = conv2.customers.first
+
+      expect(cust1.id).not_to eq(cust2.id)
+      expect(cust1.external_id).to match(/\Aanon-[0-9a-f\-]{36}\z/)
+      expect(cust2.external_id).to match(/\Aanon-[0-9a-f\-]{36}\z/)
+      expect(cust1.external_id).not_to eq(cust2.external_id)
+    end
+
+    it 'enqueues confirmation email when send_confirmation_email is enabled' do
+      expect {
+        described_class.call(
+          contact_form_channel: channel,
+          form_params: form_params
+        )
+      }.to have_enqueued_mail(ContactFormMailer, :confirmation_email)
+    end
+
+    it 'does not enqueue confirmation email when send_confirmation_email is disabled' do
+      channel.update!(send_confirmation_email: false)
+
+      expect {
+        described_class.call(
+          contact_form_channel: channel,
+          form_params: form_params
+        )
+      }.not_to have_enqueued_mail(ContactFormMailer, :confirmation_email)
+    end
+
+    it 'persists attached files on the created message' do
+      conversation = described_class.call(
+        contact_form_channel: channel,
+        form_params: form_params,
+        attachments: [uploaded_image]
+      )
+
+      message = conversation.messages.first
+      expect(message.attachments.count).to eq(1)
+      expect(message.attachments.first.file).to be_attached
+      expect(message.attachments.first.file.filename.to_s).to eq('receipt.png')
+    end
+
+    it 'resiliently resolves inbox to channel.inboxes.first when primary_inbox flag is not set' do
+      inbox.update!(primary_inbox: false)
+      expect(channel.reload.primary_inbox).to be_nil
+
+      conversation = described_class.call(
+        contact_form_channel: channel,
+        form_params: form_params
+      )
+
+      expect(conversation).to be_persisted
+      expect(conversation.inbox).to eq(inbox)
+    end
+
+    it 'returns nil gracefully when contact form channel has no inboxes' do
+      inbox.destroy!
+
+      expect {
+        result = described_class.call(
+          contact_form_channel: channel,
+          form_params: form_params
+        )
+        expect(result).to be_nil
+      }.not_to raise_error
     end
   end
 end

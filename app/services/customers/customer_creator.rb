@@ -17,7 +17,7 @@ module Customers
       self.email               = email
       self.full_phone_number   = full_phone_number
       self.full_phone_number ||= "#{params[:phone_code]}#{params[:phone_number]}"
-      self.params              = params
+      self.params              = (params || {}).with_indifferent_access
     end
 
     def call
@@ -131,6 +131,7 @@ module Customers
         external_id:,
         gender: params[:gender],
         locale: ::Utilities::LocaleParser.parse(params[:locale]) || 'en',
+        data: params[:data] || {},
         address: Address.create!
       )
     end

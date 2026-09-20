@@ -35,8 +35,6 @@ module Channel
     translates(*TRANSLATABLE_FIELDS)
 
     belongs_to :account
-    has_many :fields, class_name: "Channel::ContactFormField", foreign_key: :channel_contact_form_id, dependent: :destroy
-    accepts_nested_attributes_for :fields, allow_destroy: true
 
     def supported_formatting
       [:bold, :italic, :strikethrough, :code, :ul, :ol, :link, :image, :file]
@@ -50,13 +48,29 @@ module Channel
     has_many :inboxes, as: :channel, dependent: :destroy
     has_one :primary_inbox, -> { where(primary_inbox: true) }, as: :channel, class_name: "Inbox"
 
+    def inbox
+      primary_inbox || inboxes.first
+    end
+
     # Custom fields attached to this form via CustomFieldResource (polymorphic)
     has_many :custom_field_resources, as: :resource, class_name: "CustomFieldResource", dependent: :destroy
     has_many :custom_fields, -> { order('custom_field_resources.position ASC') }, through: :custom_field_resources
 
     enum :status, { active: 0, inactive: 1 }
 
-    store_accessor :ui_configurations, :theme_color, :position
+    store_accessor :ui_configurations, :theme_color, :position, :custom_css
+
+    def display_title(locale = I18n.locale)
+      title.presence || I18n.t("contact_form.default_title", default: "Send us a message")
+    end
+
+    def display_subtitle(locale = I18n.locale)
+      subtitle.presence || configurations["welcome_message"].presence || I18n.t("contact_form.default_subtitle", default: "Fill out the form below and we'll get back to you.")
+    end
+
+    def display_submit_button_text(locale = I18n.locale)
+      submit_button_text.presence || I18n.t("contact_form.send_message", default: "Send Message")
+    end
 
     # flags (FlagShihTzu bit fields):
     #   require_login          — customer must be logged in to submit the form

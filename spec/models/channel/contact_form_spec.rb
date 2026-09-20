@@ -12,10 +12,6 @@ RSpec.describe Channel::ContactForm, type: :model do
     it { is_expected.to have_many(:custom_fields).through(:custom_field_resources) }
   end
 
-  describe 'Nested Attributes' do
-    it { is_expected.to accept_nested_attributes_for(:fields).allow_destroy(true) }
-  end
-
   describe 'Enums' do
     it { is_expected.to define_enum_for(:status).with_values(active: 0, inactive: 1) }
   end

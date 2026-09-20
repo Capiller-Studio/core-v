@@ -4,17 +4,19 @@ module Channels
   module ContactForms
     class ConversationCreator < ApplicationService
       attr_accessor :inbox, :contact_form_channel, :customer, :account,
-                    :conversation, :form_params, :attachments
+                    :conversation, :form_params, :attachments, :identifier
 
-      def initialize(contact_form_channel:, form_params:, attachments: [])
+      def initialize(contact_form_channel:, form_params:, attachments: [], identifier: nil)
         self.contact_form_channel = contact_form_channel
         self.form_params          = form_params.to_h.with_indifferent_access
         self.attachments          = attachments || []
         self.account              = contact_form_channel.account
+        self.identifier           = identifier.presence || self.form_params[:identifier].presence
       end
 
       def call
         find_inbox
+        return unless inbox
 
         ShardRecord.transaction do
           process_custom_fields
@@ -31,7 +33,7 @@ module Channels
       private
 
       def find_inbox
-        self.inbox = contact_form_channel.primary_inbox
+        self.inbox = contact_form_channel.primary_inbox || contact_form_channel.inboxes.first
       end
 
       def process_custom_fields
@@ -78,9 +80,8 @@ module Channels
       end
 
       def find_or_create_customer
-        # Contact forms might not always have an email if anonymous, but usually they do.
-        email = @customer_data["email"]
-        external_id = email || "anon-#{SecureRandom.hex(8)}"
+        email = @customer_data["email"].presence
+        external_id = resolve_external_id(email)
 
         self.customer = Customers::CustomerCreator.call(
           account: account,
@@ -89,6 +90,26 @@ module Channels
           email: email,
           params: @customer_data.slice("name", "first_name", "last_name", "data")
         )
+
+        if @customer_data["data"].present? && customer.present?
+          customer.data = (customer.data || {}).merge(@customer_data["data"])
+          customer.save! if customer.data_changed?
+        end
+      end
+
+      def resolve_external_id(email)
+        return identifier if identifier.present?
+        return email.downcase if email.present?
+
+        generate_anonymous_external_id
+      end
+
+      def generate_anonymous_external_id
+        loop do
+          candidate = "anon-#{SecureRandom.uuid}"
+          break candidate unless account.customers.exists?(external_id: candidate) ||
+                                 inbox.customer_inboxes.exists?(external_id: candidate)
+        end
       end
 
       def create_conversation

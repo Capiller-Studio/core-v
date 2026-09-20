@@ -106,6 +106,9 @@ en:
       workspace_request:
         subject: "Workspace Joining Request"
     contact_form:
+      default_title: "Send us a message"
+      default_subtitle: "Fill out the form below and we'll get back to you."
+      send_message: "Send Message"
       reply:
         subject: "Re: %{title}"
       confirmation:
