@@ -1,0 +1,7 @@
+We received your message: <%= @conversation.title %>
+
+We have received your submission and our support team will get back to you shortly.
+Your ticket identifier is: #<%= @conversation.identifier %>
+
+---
+<%= @account&.name.presence || 'Deskbolic' %> Support

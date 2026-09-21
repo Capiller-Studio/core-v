@@ -55,7 +55,12 @@ class ContactFormMailer < ApplicationMailer
   # Uses helpbolic.com relay domain (handled by ApplicationMailer#set_delivery_options)
   # to avoid polluting deskbolic.com sender reputation.
   def from_address
-    display_name = "#{@account.name} Support"
+    company_name = @account&.name.presence || "Support"
+    display_name = if @agent_name.present? && @agent_name != "Agent"
+      "#{@agent_name} from #{company_name}"
+    else
+      "#{company_name} Support"
+    end
     email = resolve_sender_email
     %("#{display_name}" <#{email}>)
   end

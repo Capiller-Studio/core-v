@@ -21,9 +21,18 @@ RSpec.describe ContactFormMailer, type: :mailer do
       expect(mail.to).to eq(['customer@example.com'])
       expect(mail.subject).to include('Help with pricing')
       expect(mail.from).to eq(['support@helpbolic.com'])
+      expect(mail[:from].display_names).to eq(["#{message.sender.name} from #{account.name}"])
       expect(mail.reply_to).to eq(["reply+#{conversation.identifier}@#{account.identifier.downcase}.helpbolic.com"])
       expect(mail.message_id).to eq("#{message.id}@helpbolic.com")
       expect(mail.body.encoded).to include('Thank you for reaching out!')
+    end
+
+    it 'uses agent name in from display name when sender is a user' do
+      agent = create(:user, name: 'Agent Smith', display_name: 'Agent Smith')
+      message.update!(sender: agent)
+      mail = described_class.reply_message(message)
+
+      expect(mail[:from].display_names).to eq(["Agent Smith from #{account.name}"])
     end
 
     it 'sets in-reply-to and references headers if conversation data contains email message_id' do
