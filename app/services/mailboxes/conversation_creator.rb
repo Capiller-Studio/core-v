@@ -63,7 +63,7 @@ module Mailboxes
       uuid = parsed_mail.reply_to_conversation_uuid
       return unless uuid
 
-      self.conversation = account.conversations.find_by(identifier: uuid)
+      self.conversation = account.conversations.find_by(identifier: uuid.upcase)
     end
 
     # Strategy 2: In-Reply-To header matching an existing message's external_id
@@ -124,7 +124,13 @@ module Mailboxes
     end
 
     def find_customer
-      self.sender = inbox.customers.find_by(email: parsed_mail.original_sender.downcase)
+      if conversation.present?
+        cust = conversation.customers.find { |c| c.email.to_s.downcase == parsed_mail.original_sender.to_s.downcase }
+        return self.sender = cust if cust
+      end
+
+      self.sender = inbox.customers.find_by(email: parsed_mail.original_sender.downcase) ||
+                    inbox.customers.find_by("LOWER(email) = ?", parsed_mail.original_sender.downcase)
     end
 
     def create_customer
