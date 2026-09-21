@@ -31,3 +31,10 @@ ar:
       deletion_requested: "تم طلب حذف حساب المستخدم"
       deleted: "تم وضع علامة على المستخدم كمحذوف"
       restored: "تمت استعادة المستخدم إلى الحالة النشطة"
+  dashboard:
+    csat:
+      survey_badge: "استطلاع رضا العملاء"
+      survey_sent_to_customer: "تم إرسال استطلاع رضا العملاء إلى العميل."
+      awaiting_rating: "في انتظار رد العميل"
+      survey_message_preview: "تم إرسال استطلاع رضا العملاء"
+

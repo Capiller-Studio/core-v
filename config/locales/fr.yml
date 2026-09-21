@@ -31,3 +31,10 @@ fr:
       deletion_requested: "La suppression du compte utilisateur a été demandée"
       deleted: "L'utilisateur a été marqué comme supprimé"
       restored: "L'utilisateur a été restauré au statut actif"
+  dashboard:
+    csat:
+      survey_badge: Enquête de satisfaction client
+      survey_sent_to_customer: L'enquête de satisfaction a été envoyée au client.
+      awaiting_rating: En attente de la réponse du client
+      survey_message_preview: Enquête de satisfaction client envoyée
+

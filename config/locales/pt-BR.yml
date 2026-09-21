@@ -31,3 +31,10 @@ pt-BR:
       deletion_requested: "A exclusão da conta de usuário foi solicitada"
       deleted: "O usuário foi marcado como excluído"
       restored: "O usuário foi restaurado para o status ativo"
+  dashboard:
+    csat:
+      survey_badge: Pesquisa de satisfação do cliente
+      survey_sent_to_customer: A pesquisa de satisfação do cliente foi enviada ao cliente.
+      awaiting_rating: Aguardando resposta do cliente
+      survey_message_preview: Pesquisa de satisfação do cliente enviada
+

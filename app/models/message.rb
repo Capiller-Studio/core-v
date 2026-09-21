@@ -130,6 +130,10 @@ class Message < ShardRecord
     }
   end
 
+  def csat_response_id
+    csat_survey_response&.id
+  end
+
   def event_payload
     {
       id:,

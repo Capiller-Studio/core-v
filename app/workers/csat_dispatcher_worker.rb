@@ -53,10 +53,7 @@ class CsatDispatcherWorker
             inbox: inbox,
             sender: conversation.account, # System message
             content: content,
-            content_type: :csat,
-            data: {
-              csat_response_id: csat_response.id
-            }
+            content_type: :csat
           )
 
           csat_response.update!(message: message)
