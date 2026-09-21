@@ -41,7 +41,14 @@ module Mailboxes
 
     def find_or_create_conversation
       find_conversation || create_conversation
+      reopen_conversation_if_needed
       find_or_create_conversation_memeber
+    end
+
+    def reopen_conversation_if_needed
+      return unless conversation.resolved? || conversation.snoozed?
+
+      conversation.update!(status: :active)
     end
 
     def find_conversation

@@ -120,12 +120,12 @@ module Parser
         original_content = part_content(mail.text_part) || ""
         parsed_content = EmailReplyParser.parse_reply(original_content)
 
-        parsed_content
+        parsed_content&.strip
       end
     end
 
     def text_content_parsed
-      @text_content_parsed ||= text_content&.truncate(60_000, omission: '... [Message truncated]')
+      @text_content_parsed ||= text_content&.strip&.truncate(60_000, omission: '... [Message truncated]')
     end
 
     def html_content
@@ -151,7 +151,11 @@ module Parser
           attributes: ALLOWED_ATTRIBUTES
         )
         
-        sanitized_html&.truncate(60_000, omission: '... [Message truncated]')
+        doc = Nokogiri::HTML::DocumentFragment.parse(sanitized_html)
+        strip_trailing_empty_nodes!(doc)
+        cleaned_html = doc.to_html.strip
+
+        cleaned_html&.truncate(60_000, omission: '... [Message truncated]')
       end
     end
 
@@ -177,7 +181,52 @@ module Parser
         node.remove
       end
 
-      doc.to_html
+      strip_trailing_empty_nodes!(doc)
+
+      doc.to_html.strip
+    end
+
+    def strip_trailing_empty_nodes!(container)
+      loop do
+        last_child = container.children.last
+        break unless last_child
+
+        if last_child.text?
+          cleaned = last_child.content.gsub(/\u00A0/, " ").strip
+          if cleaned.empty?
+            last_child.remove
+            next
+          else
+            last_child.content = last_child.content.rstrip
+            break
+          end
+        end
+
+        if last_child.name == "br"
+          last_child.remove
+          next
+        end
+
+        if last_child.element?
+          meaningful_children = last_child.children.any? do |c|
+            (c.element? && !%w[br].include?(c.name)) || (c.text? && !c.content.gsub(/\u00A0/, " ").strip.empty?)
+          end
+
+          unless meaningful_children
+            last_child.remove
+            next
+          end
+
+          strip_trailing_empty_nodes!(last_child)
+
+          if last_child.children.empty? || (last_child.children.all? { |c| c.name == "br" || (c.text? && c.content.gsub(/\u00A0/, " ").strip.empty?) })
+            last_child.remove
+            next
+          end
+        end
+
+        break
+      end
     end
 
     def html?

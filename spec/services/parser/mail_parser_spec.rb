@@ -66,5 +66,12 @@ RSpec.describe Parser::MailParser do
       allow(mail).to receive(:to).and_return(['reply+uuid123@example.com'])
       expect(service.reply_to_conversation_uuid).to eq('uuid123')
     end
+
+    it 'strips trailing empty breaks and whitespace before email quotes' do
+      html_with_quotes_and_trailing_breaks = '<div dir="ltr">Line 1<div><br></div></div><div class="gmail_quote">quoted text</div>'
+      allow(mail).to receive(:decoded).and_return(html_with_quotes_and_trailing_breaks)
+      parser = described_class.new(mail: mail)
+      expect(parser.html_content_parsed).to eq('<div>Line 1</div>')
+    end
   end
 end
