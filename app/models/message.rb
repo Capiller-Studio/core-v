@@ -63,7 +63,6 @@ class Message < ShardRecord
   before_validation :sync_external_reply_to_id, if: -> { reply_to_message.present? && external_reply_to_id.blank? }
 
   after_create_commit :broadcast_message_creation
-  after_create_commit :deliver_contact_form_reply, if: -> { outgoing? && source == "help_center" }
   after_create_commit :process_sla
   after_create_commit :touch_conversation_activity
   after_create_commit :trigger_thank_you_detector, if: :incoming?
@@ -181,9 +180,6 @@ class Message < ShardRecord
     )
   end
 
-  def deliver_contact_form_reply
-    Messages::ContactFormDeliveryWorker.perform_async(id)
-  end
 
   # TODO: Refactor to separate concern
   def broadcast_message_creation

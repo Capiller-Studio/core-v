@@ -102,6 +102,57 @@ RSpec.describe Channels::ServicePicker do
       end
     end
 
+    context 'with ContactForm channel' do
+      let(:contact_form) { build_stubbed(:channel_contact_form, outbound_channel: configured_outbound) }
+      let(:default_channel) { contact_form }
+      let(:service) { described_class.new(conversation: conversation, message: message) }
+
+      before do
+        stub_const('ConversationReplyMailer', double('Mailer'))
+      end
+
+      context 'when outbound email channel is configured on contact form' do
+        let(:configured_outbound) { build_stubbed(:channel_email) }
+
+        it 'delivers reply using configured outbound channel' do
+          mail_message = double('MailMessage', message_id: 'cf_msg_123')
+          mailer = double('Reply')
+          expect(ConversationReplyMailer).to receive(:reply).with(conversation, message, configured_outbound).and_return(mailer)
+          expect(mailer).to receive(:deliver_now).and_return(mail_message)
+
+          expect(message).to receive(:update_columns).with(external_id: 'cf_msg_123', status: :delivered)
+
+          service.call
+        end
+      end
+
+      context 'when no outbound email channel is configured' do
+        let(:configured_outbound) { nil }
+
+        it 'delivers reply passing nil fallback so ConversationReplyMailer defaults to system relay' do
+          mail_message = double('MailMessage', message_id: 'cf_msg_456')
+          mailer = double('Reply')
+          expect(ConversationReplyMailer).to receive(:reply).with(conversation, message, nil).and_return(mailer)
+          expect(mailer).to receive(:deliver_now).and_return(mail_message)
+
+          expect(message).to receive(:update_columns).with(external_id: 'cf_msg_456', status: :delivered)
+
+          service.call
+        end
+
+        it 'handles delivery errors' do
+          mailer = double('Reply')
+          expect(ConversationReplyMailer).to receive(:reply).with(conversation, message, nil).and_return(mailer)
+          expect(mailer).to receive(:deliver_now).and_raise(StandardError.new("SMTP Error"))
+
+          expect(Rails.logger).to receive(:error).with(/ServicePicker ContactForm Delivery Error/)
+          expect(message).to receive(:update_column).with(:status, :failed)
+
+          expect { service.call }.to raise_error(StandardError, "SMTP Error")
+        end
+      end
+    end
+
     context 'with unimplemented channel' do
       let(:default_channel) { double('Channel::Unknown', class: double(name: 'Channel::Unknown')) }
       let(:service) { described_class.new(conversation: conversation, message: message) }

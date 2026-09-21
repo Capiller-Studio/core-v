@@ -148,13 +148,6 @@ RSpec.describe Message, type: :model do
       expect(message).to have_received(:process_sla)
     end
 
-    it 'calls deliver_contact_form_reply for outgoing help_center messages' do
-      user = create(:user)
-      message = build(:message, account: account, conversation: conversation, sender: user, source: :help_center)
-      allow(message).to receive(:deliver_contact_form_reply)
-      message.save!
-      expect(message).to have_received(:deliver_contact_form_reply)
-    end
 
     it 'calls broadcast_message_update on status change' do
       message = create(:message, account: account, conversation: conversation)
