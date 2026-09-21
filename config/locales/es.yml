@@ -31,3 +31,10 @@ es:
       deletion_requested: "Se solicitó la eliminación de la cuenta de usuario"
       deleted: "El usuario se marcó como eliminado"
       restored: "El usuario se restauró al estado activo"
+  dashboard:
+    csat:
+      survey_badge: Encuesta de satisfacción del cliente
+      survey_sent_to_customer: Se envió la encuesta de satisfacción al cliente.
+      awaiting_rating: Esperando respuesta del cliente
+      survey_message_preview: Encuesta de satisfacción del cliente enviada
+

@@ -31,3 +31,10 @@ de:
       deletion_requested: "Benutzerkontolöschung wurde angefordert"
       deleted: "Benutzer wurde als gelöscht markiert"
       restored: "Benutzer wurde wieder aktiviert"
+  dashboard:
+    csat:
+      survey_badge: Kundenzufriedenheitsumfrage
+      survey_sent_to_customer: Die Kundenzufriedenheitsumfrage wurde an den Kunden gesendet.
+      awaiting_rating: Warten auf Kundenantwort
+      survey_message_preview: Kundenzufriedenheitsumfrage gesendet
+

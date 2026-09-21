@@ -30,7 +30,9 @@ RSpec.describe CsatDispatcherWorker, type: :worker do
 
       message = conversation.messages.last
       expect(message.content_type).to eq('csat')
-      expect(message.data['csat_response_id']).to eq(survey_response.id)
+      expect(message.csat_survey_response).to eq(survey_response)
+      expect(message.csat_response_id).to eq(survey_response.id)
+      expect(survey_response.reload.message_id).to eq(message.id)
     end
 
     it 'returns early if conversation is not resolved' do

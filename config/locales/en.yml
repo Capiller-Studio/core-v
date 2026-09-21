@@ -293,3 +293,10 @@ en:
       deletion_requested: "User account deletion was requested"
       deleted: "User was marked as deleted"
       restored: "User was restored to active status"
+  dashboard:
+    csat:
+      survey_badge: Customer Satisfaction Survey
+      survey_sent_to_customer: Customer satisfaction survey was sent to the customer.
+      awaiting_rating: Awaiting customer response
+      survey_message_preview: Customer satisfaction survey sent
+

@@ -152,7 +152,11 @@ class Conversation < ShardRecord
   end
 
   def last_message_preview
-    ActionController::Base.helpers.strip_tags(last_message&.content.to_s)&.truncate(100)
+    return if last_message&.content.blank?
+    return I18n.t('dashboard.csat.survey_message_preview', default: 'Customer satisfaction survey sent') if last_message.csat?
+
+    content_with_spaces = last_message.content.to_s.gsub(/<\/(p|div|li|h[1-6])>|<br\s*\/?>/i, ' ')
+    ActionController::Base.helpers.strip_tags(content_with_spaces)&.squish&.truncate(100)
   end
 
   def last_message_date
