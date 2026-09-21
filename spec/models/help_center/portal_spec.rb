@@ -62,4 +62,26 @@ RSpec.describe HelpCenter::Portal, type: :model do
     end
   end
 
+  describe '#contact_form_enabled?' do
+    let(:portal) { described_class.new }
+    let(:contact_form) { build_stubbed(:channel_contact_form) }
+
+    it 'returns true when show_contact_form is true and contact_form_channel is present' do
+      portal.show_contact_form = true
+      portal.contact_form_channel = contact_form
+      expect(portal.contact_form_enabled?).to be true
+    end
+
+    it 'returns false when show_contact_form is false even if contact_form_channel is present' do
+      portal.show_contact_form = false
+      portal.contact_form_channel = contact_form
+      expect(portal.contact_form_enabled?).to be false
+    end
+
+    it 'returns false when show_contact_form is true but contact_form_channel is missing' do
+      portal.show_contact_form = true
+      portal.contact_form_channel = nil
+      expect(portal.contact_form_enabled?).to be false
+    end
+  end
 end

@@ -84,6 +84,7 @@ module Channel
               column: "flags"
 
     before_validation :ensure_secret, on: :create
+    before_validation :normalize_outbound_channel
 
     validates :secret, presence: true, uniqueness: true
     validates :submit_redirect_url, length: { maximum: 255 }, allow_blank: true
@@ -105,6 +106,16 @@ module Channel
 
     def ensure_secret
       self.secret ||= SecureRandom.hex(24)
+    end
+
+    # Clear outbound_channel_type when outbound_channel_id is blank.
+    # The form always submits a hidden field with type="Channel::Email",
+    # so we must nullify both when the user selects "none".
+    def normalize_outbound_channel
+      if outbound_channel_id.blank? && outbound_channel_type == "Channel::Email"
+        self.outbound_channel_id = nil
+        self.outbound_channel_type = nil
+      end
     end
 
     def validate_outbound_channel_ownership

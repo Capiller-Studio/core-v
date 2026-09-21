@@ -124,8 +124,45 @@ module Channels
     end
 
     def channel_contact_form_service
-      # Contact-form will only send a reply via email-channel or helpcenter login.
-      # This function is deliberately empty as per routing policy.
+      # Contact form conversations route replies via email.
+      # If the contact form has an outbound email channel configured, use it;
+      # otherwise ConversationReplyMailer defaults to the system helpbolic relay.
+      fallback = resolve_contact_form_email_channel
+
+      begin
+        mail_message = ConversationReplyMailer.reply(conversation, message, fallback).deliver_now
+
+        # rubocop:disable Rails/SkipsModelValidations
+        outbound_message_id = mail_message.try(:message_id)
+        if outbound_message_id.present?
+          message.update_columns(external_id: outbound_message_id, status: :delivered)
+        else
+          message.update_column(:status, :delivered)
+        end
+        # rubocop:enable Rails/SkipsModelValidations
+      rescue StandardError => e
+        Rails.logger.error("ServicePicker ContactForm Delivery Error: #{e.message}")
+        # rubocop:disable Rails/SkipsModelValidations
+        message.update_column(:status, :failed)
+        # rubocop:enable Rails/SkipsModelValidations
+        raise(e)
+      end
+    end
+
+    # Resolve the configured outbound email channel for contact form reply delivery.
+    # Priority:
+    #   1. Conversation's outbound_channel (if email channel)
+    #   2. Contact form channel's configured outbound_channel
+    #   (No random fallback — if none configured, nil is passed so ConversationReplyMailer uses system relay)
+    def resolve_contact_form_email_channel
+      return conversation.outbound_channel if conversation.outbound_channel.is_a?(Channel::Email)
+
+      form_channel = conversation.inbox&.channel
+      if form_channel.is_a?(Channel::ContactForm) && form_channel.outbound_channel.present?
+        return form_channel.outbound_channel
+      end
+
+      nil
     end
 
     def find_customer_inbox

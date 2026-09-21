@@ -71,6 +71,10 @@ module HelpCenter
               5 => :ai_training_enabled,
               column: "flags"
 
+    def contact_form_enabled?
+      show_contact_form? && contact_form_channel.present?
+    end
+
     # ui_configurations jsonb — visual/theme settings only (no feature flags here):
     # {
     #   "theme_mode"       => "light | dark | system",

@@ -20,8 +20,18 @@ RSpec.describe ContactFormMailer, type: :mailer do
 
       expect(mail.to).to eq(['customer@example.com'])
       expect(mail.subject).to include('Help with pricing')
-      expect(mail.from).to eq(['support@deskbolic.com'])
+      expect(mail.from).to eq(['support@helpbolic.com'])
+      expect(mail.reply_to).to eq(["reply+#{conversation.identifier}@#{account.identifier.downcase}.helpbolic.com"])
+      expect(mail.message_id).to eq("#{message.id}@helpbolic.com")
       expect(mail.body.encoded).to include('Thank you for reaching out!')
+    end
+
+    it 'sets in-reply-to and references headers if conversation data contains email message_id' do
+      conversation.update!(data: { 'email' => { 'message_id' => '<original@example.com>', 'references' => ['<ref1@example.com>'] } })
+      mail = described_class.reply_message(message)
+
+      expect(mail.in_reply_to).to eq('original@example.com')
+      expect(mail.references).to eq(['original@example.com', 'ref1@example.com'])
     end
 
     it 'returns nil if customer has no email' do
@@ -37,7 +47,7 @@ RSpec.describe ContactFormMailer, type: :mailer do
 
       expect(mail.to).to eq(['customer@example.com'])
       expect(mail.subject).to include('Help with pricing')
-      expect(mail.from).to eq(['support@deskbolic.com'])
+      expect(mail.from).to eq(['support@helpbolic.com'])
     end
 
     it 'does not deliver confirmation email if send_confirmation_email is disabled' do
