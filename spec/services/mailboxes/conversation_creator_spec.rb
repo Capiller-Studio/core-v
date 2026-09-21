@@ -74,6 +74,18 @@ RSpec.describe Mailboxes::ConversationCreator do
 
         expect(message.conversation).to eq(existing_conversation)
       end
+
+      it 'reopens the conversation to active if it was resolved' do
+        existing_conversation.update!(status: :resolved)
+        service.call
+        expect(existing_conversation.reload.status).to eq('active')
+      end
+
+      it 'reopens the conversation to active if it was snoozed' do
+        existing_conversation.update!(status: :snoozed)
+        service.call
+        expect(existing_conversation.reload.status).to eq('active')
+      end
     end
 
     context 'when finding an existing conversation by in_reply_to' do
