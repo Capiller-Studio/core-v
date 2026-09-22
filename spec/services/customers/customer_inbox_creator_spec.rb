@@ -80,6 +80,28 @@ RSpec.describe Customers::CustomerInboxCreator do
         expect(inbox_record.external_id).not_to eq(anon_customer.id.to_s)
         expect(inbox_record.external_id).to match(/\A[0-9a-f\-]{36}\z/)
       end
+
+      it 'reuses and updates existing customer_inbox when external_id changes' do
+        existing_inbox = inbox.customer_inboxes.create!(customer: customer, external_id: 'old-id')
+        service = described_class.new(account: account, customer: customer, inbox: inbox, external_id: 'new-id')
+
+        expect {
+          result = service.call
+          expect(result.id).to eq(existing_inbox.id)
+          expect(result.reload.external_id).to eq('new-id')
+        }.not_to change(CustomerInbox, :count)
+      end
+
+      it 'rescues ActiveRecord::RecordNotUnique and returns existing customer_inbox' do
+        existing_inbox = inbox.customer_inboxes.create!(customer: customer, external_id: 'existing-id')
+        service = described_class.new(account: account, customer: customer, inbox: inbox, external_id: 'new-id')
+
+        allow(customer.customer_inboxes).to receive(:find_by).with(inbox: inbox).and_return(nil, existing_inbox)
+        allow(customer.customer_inboxes).to receive(:create!).and_raise(ActiveRecord::RecordNotUnique.new('duplicate key'))
+
+        result = service.call
+        expect(result).to eq(existing_inbox)
+      end
     end
   end
 end
