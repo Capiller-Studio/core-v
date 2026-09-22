@@ -38,4 +38,12 @@ fr:
       awaiting_rating: En attente de la réponse du client
       survey_message_preview: Enquête de satisfaction client envoyée
       customer_feedback: "Commentaires du client :"
+  mailers:
+    conversation_reply:
+      csat:
+        our_team_at: "notre équipe chez %{account_name}"
+        our_team: "notre équipe"
+        handled_by_html: "Merci d'avoir contacté le support. Cette conversation a été traitée par <strong>%{handled_by}</strong>. Veuillez prendre un moment pour évaluer votre expérience."
+        team_responded: "Notre équipe chez %{account_name} a répondu à votre demande."
+        share_feedback: "Partager des commentaires"
 

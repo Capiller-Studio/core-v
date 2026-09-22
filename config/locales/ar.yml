@@ -38,4 +38,12 @@ ar:
       awaiting_rating: "في انتظار رد العميل"
       survey_message_preview: "تم إرسال استطلاع رضا العملاء"
       customer_feedback: "تعليقات العميل:"
+  mailers:
+    conversation_reply:
+      csat:
+        our_team_at: "فريقنا في %{account_name}"
+        our_team: "فريقنا"
+        handled_by_html: "شكراً لتواصلك مع الدعم. تمت معالجة هذه المحادثة بواسطة <strong>%{handled_by}</strong>. يُرجى تخصيص لحظة لتقييم تجربتك."
+        team_responded: "قام فريقنا في %{account_name} بالرد على طلبك."
+        share_feedback: "مشاركة التقييم"
 
