@@ -86,10 +86,15 @@ module Customers
     end
 
     def create_customer_inbox
-      customer.customer_inboxes.find_or_create_by!(
-        inbox:,
-        external_id:
-      )
+      existing = customer.customer_inboxes.find_by(inbox: inbox)
+      if existing
+        existing.update!(external_id: external_id) if external_id.present? && existing.external_id != external_id
+        existing
+      else
+        customer.customer_inboxes.create!(inbox: inbox, external_id: external_id)
+      end
+    rescue ActiveRecord::RecordNotUnique
+      customer.customer_inboxes.find_by!(inbox: inbox)
     end
   end
 end
