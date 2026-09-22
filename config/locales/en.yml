@@ -79,6 +79,12 @@ en:
   mailers:
     conversation_reply:
       subject: "Re: %{subject}"
+      csat:
+        our_team_at: "our team at %{account_name}"
+        our_team: "our team"
+        handled_by_html: "Thank you for contacting support. This conversation was handled by <strong>%{handled_by}</strong>. Please take a moment to rate your experience."
+        team_responded: "Our team at %{account_name} has responded to your request."
+        share_feedback: "Share feedback"
     agent_notification:
       conversation_created:
         subject: "New conversation created"
