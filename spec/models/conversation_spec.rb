@@ -219,6 +219,7 @@ RSpec.describe Conversation, type: :model do
         expect(payload[:id]).to eq(conversation.id)
         expect(payload[:status]).to eq(conversation.status)
         expect(payload[:identifier]).to eq(conversation.identifier)
+        expect(payload[:assignee_id]).to eq(conversation.assignee_id)
       end
     end
 

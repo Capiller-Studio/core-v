@@ -139,6 +139,7 @@ class Conversation < ShardRecord
       identifier:,
       inbox_id:,
       team_id:,
+      assignee_id:,
       last_activity_at:,
       created_at:,
       updated_at:
