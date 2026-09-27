@@ -23,8 +23,10 @@ RSpec.describe Seeds::PlanSeeder do
       expect(plan.features['macros']).to eq(true)
       expect(plan.features['monthly_ai_credits']).to eq(250)
       
-      # Check Parabolic plan bounded channel limit
+      # Check Parabolic plan bounded channel limit and pricing
       parabolic = Plan.find_by(name: Plan::PARABOLIC, currency: 'USD')
+      expect(parabolic.base_price).to eq(29)
+      expect(parabolic.annual_price).to eq(26)
       expect(parabolic.limits['channels']).to eq(50)
       expect(parabolic.limits['ai_agents']).to eq(15)
       expect(parabolic.limits['assignment_policies']).to eq(25)
@@ -32,6 +34,8 @@ RSpec.describe Seeds::PlanSeeder do
       expect(parabolic.limits['custom_fields']).to eq(100)
       expect(parabolic.limits['data_retention_months']).to eq(60)
       expect(parabolic.features['monthly_ai_credits']).to eq(500)
+      expect(parabolic.features['sso']).to be(false)
+      expect(parabolic.features['scim']).to be(false)
 
       translation = plan.translations.find_by(locale: 'en')
       expect(translation).not_to be_nil

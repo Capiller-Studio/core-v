@@ -258,8 +258,8 @@ module Seeds
           "custom_domains" => true,
           "business_hours" => true,
           "help_center_portals" => true,
-          "sso" => true,
-          "scim" => true,
+          "sso" => false,
+          "scim" => false,
           "social_login" => true,
           "channels" => {
             "web_widget" => true,
@@ -284,25 +284,25 @@ module Seeds
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [9, 8],
         Plan::HYPERBOLIC => [19, 17],
-        Plan::PARABOLIC => [49, 44]
+        Plan::PARABOLIC => [29, 26]
       },
       "EUR" => {
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [9, 8], # Competitive parity
         Plan::HYPERBOLIC => [19, 17], # Competitive parity
-        Plan::PARABOLIC => [49, 44] # Competitive parity
+        Plan::PARABOLIC => [29, 26] # Competitive parity
       },
       "GBP" => {
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [8, 7], # Proportionally lower
         Plan::HYPERBOLIC => [15, 13],
-        Plan::PARABOLIC => [39, 35]
+        Plan::PARABOLIC => [24, 21]
       },
       "KRW" => {
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [12000, 11000],
         Plan::HYPERBOLIC => [26000, 23000],
-        Plan::PARABOLIC => [66000, 59000]
+        Plan::PARABOLIC => [39000, 35000]
       }
     }.freeze
 
