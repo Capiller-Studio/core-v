@@ -86,8 +86,8 @@ module Channels
         end
 
         def send_attachment_message(attachment, caption: nil)
+          url = Channels::AudioTranscoder.ensure_compatible_audio_url(attachment, channel_type: :whatsapp)
           attachment_type = resolved_attachment_type(attachment)
-          url = attachment.direct_download_url
 
           if url.blank?
             Rails.logger.warn("WhatsApp MessageSender: Attachment #{attachment.id} has no direct_download_url")
@@ -278,7 +278,17 @@ module Channels
         def resolved_attachment_type(attachment)
           case attachment.attachment_type.to_s
           when "image" then "image"
-          when "audio" then "audio"
+          when "audio"
+            file = attachment.respond_to?(:file) ? attachment.file : nil
+            blob = file.respond_to?(:blob) ? file.blob : nil
+            content_type = (blob&.content_type || (file.respond_to?(:content_type) ? file.content_type : nil)).to_s.downcase
+            filename = (blob&.filename || (file.respond_to?(:filename) ? file.filename : nil)).to_s.downcase
+
+            if filename.end_with?(".wav") || content_type.include?("wav")
+              return "document"
+            end
+
+            "audio"
           when "video" then "video"
           else "document"
           end

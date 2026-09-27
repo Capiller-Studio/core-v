@@ -279,6 +279,44 @@ RSpec.describe Channels::Whatsapp::CloudApi::MessageSender do
 
           service.call
         end
+
+        it 'sends audio attachment as document when format is wav to avoid Meta API errors' do
+          wav_file = double('File', filename: 'voice.wav')
+          wav_att = double('Attachment', id: 'att_wav', attachment_type: 'audio', direct_download_url: 'http://audio.url/voice.wav', file: wav_file)
+          wav_msg = double('Message', id: 'msg_wav', content: nil, attachments: [wav_att], external_reply_to_id: nil, data: {}, conversation: nil)
+          wav_svc = described_class.new(whatsapp_channel: whatsapp_channel, customer_inbox: customer_inbox, message: wav_msg)
+
+          audio_response = double('Response', success?: true, parsed_response: { "messages" => [{ "id" => "wa_wav_id" }] })
+
+          expect(HTTParty).to receive(:post).with(
+            "https://api.whatsapp/123/messages",
+            headers: anything,
+            body: a_string_matching(/"type":"document"/)
+          ).and_return(audio_response)
+
+          expect(wav_msg).to receive(:update!).with(external_id: "wa_wav_id")
+
+          wav_svc.call
+        end
+
+        it 'keeps file attachment type as document even if file has audio extension' do
+          audio_file_att = double('File', filename: 'podcast.mp3')
+          file_att = double('Attachment', id: 'att_file_mp3', attachment_type: 'file', direct_download_url: 'http://doc.url/podcast.mp3', file: audio_file_att)
+          file_msg = double('Message', id: 'msg_file_mp3', content: nil, attachments: [file_att], external_reply_to_id: nil, data: {}, conversation: nil)
+          file_svc = described_class.new(whatsapp_channel: whatsapp_channel, customer_inbox: customer_inbox, message: file_msg)
+
+          doc_response = double('Response', success?: true, parsed_response: { "messages" => [{ "id" => "wa_doc_mp3_id" }] })
+
+          expect(HTTParty).to receive(:post).with(
+            "https://api.whatsapp/123/messages",
+            headers: anything,
+            body: a_string_matching(/"type":"document"/)
+          ).and_return(doc_response)
+
+          expect(file_msg).to receive(:update!).with(external_id: "wa_doc_mp3_id")
+
+          file_svc.call
+        end
       end
     end
 

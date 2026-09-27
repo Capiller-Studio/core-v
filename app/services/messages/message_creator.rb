@@ -179,14 +179,35 @@ module Messages
       return file.attachment_type if file.is_a?(Attachment)
 
       content_type = file.content_type.to_s if file.respond_to?(:content_type)
-      content_type = Rack::Mime.mime_type(File.extname(file.path), "") if content_type.blank? && file.respond_to?(:path) && file.path.present?
+      filename = file.original_filename if file.respond_to?(:original_filename)
+      file_path = begin
+        file.path if file.respond_to?(:path)
+      rescue StandardError
+        nil
+      end
+      filename ||= File.basename(file_path) if file_path.present?
+
+      if content_type.blank? || content_type == "application/octet-stream"
+        ext = File.extname(filename.to_s)
+        content_type = Rack::Mime.mime_type(ext, "") if ext.present?
+      end
       content_type ||= ""
 
       case content_type
       when %r{\Aimage/} then :image
       when %r{\Avideo/} then :video
       when %r{\Aaudio/} then :audio
-      else :file
+      else
+        ext = File.extname(filename.to_s).downcase
+        if %w[.mp3 .wav .ogg .m4a .aac .webm .flac .amr .opus].include?(ext)
+          :audio
+        elsif %w[.mp4 .mov .avi .mkv].include?(ext)
+          :video
+        elsif %w[.jpg .jpeg .png .gif .webp .bmp .svg].include?(ext)
+          :image
+        else
+          :file
+        end
       end
     end
 
