@@ -49,4 +49,23 @@ RSpec.describe Channels::MessageFormatter do
       expect(described_class.parse_whatsapp_markdown_to_html("")).to eq("")
     end
   end
+
+  describe '.parse_ai_markdown_to_html' do
+    it 'converts **bold**, __bold__, code blocks, inline code, and links to html' do
+      markdown = "Hello!\nHere is **bold 1** and __bold 2__.\nCheck `inline code` and:\n```\nblock code\n```\nRead more at [Knowledge Base](https://helpbolic.com/kb)."
+      html = described_class.parse_ai_markdown_to_html(markdown)
+
+      expect(html).to include('<b>bold 1</b>')
+      expect(html).to include('<b>bold 2</b>')
+      expect(html).to include('<code>inline code</code>')
+      expect(html).to include('<pre><code>')
+      expect(html).to include('<a href="https://helpbolic.com/kb" target="_blank" rel="noopener noreferrer">Knowledge Base</a>')
+      expect(html).to include('<br>')
+    end
+
+    it 'returns blank if input is blank' do
+      expect(described_class.parse_ai_markdown_to_html('')).to eq('')
+      expect(described_class.parse_ai_markdown_to_html(nil)).to be_nil
+    end
+  end
 end

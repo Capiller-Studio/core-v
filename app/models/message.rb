@@ -68,6 +68,7 @@ class Message < ShardRecord
   after_create_commit :touch_conversation_activity
   after_create_commit :trigger_thank_you_detector, if: :incoming?
   after_create_commit :trigger_ai_agent, if: :incoming?
+  after_create_commit :interrupt_ai_agent, if: :outgoing_from_human?
   after_create_commit :trigger_language_detection, if: :incoming?
   after_update_commit :broadcast_message_update, if: :should_broadcast_update?
 
@@ -236,12 +237,23 @@ class Message < ShardRecord
     return unless conversation.ai_active?
     
     if inbox.ai_agent&.active_and_configured?
-      Ai::AgentWorker.perform_async(account_id, conversation_id, id, inbox.ai_agent_id)
+      Ai::MessageDebouncer.enqueue(self)
     else
       # Agent was deactivated while conversation was active. Force handoff.
       conversation.update!(ai_status: :ai_handed_off)
       conversation.send(:auto_assign_agent) if conversation.send(:should_auto_assign?)
     end
+  end
+
+  def outgoing_from_human?
+    sender_type == "User" && global? && !activity?
+  end
+
+  def interrupt_ai_agent
+    return unless conversation.ai_active?
+
+    conversation.update!(ai_status: :ai_handed_off)
+    Ai::MessageDebouncer.clear!(account_id, conversation_id)
   end
 
   def trigger_language_detection

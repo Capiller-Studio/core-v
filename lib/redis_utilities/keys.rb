@@ -28,6 +28,8 @@ module RedisUtilities
     QUEUE_DRAIN_LOCK = "QUEUE_DRAIN_LOCK:%{account_id}:%{inbox_id}"
     BACKLOG_STATUS = "BACKLOG_STATUS:%{account_id}"
     QUEUE_DRAIN_THROTTLE = "QUEUE_DRAIN_THROTTLE:%{account_id}"
+    AI_MESSAGE_BUFFER = "AI_BUFFER:%{account_id}:%{conversation_id}"
+    AI_DEBOUNCE_TIMER = "AI_DEBOUNCE:%{account_id}:%{conversation_id}"
 
     SUBSCRIPTION_LOCK = "SUBSCRIPTION_LOCK:%{account_id}"
     WALLET_LOCK = "WALLET_LOCK:%{account_id}"
