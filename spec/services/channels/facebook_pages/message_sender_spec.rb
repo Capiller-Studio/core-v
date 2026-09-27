@@ -68,6 +68,70 @@ RSpec.describe Channels::FacebookPages::MessageSender do
 
         service.call
       end
+
+      it 'delivers audio attachment using AudioTranscoder' do
+        audio_att = double('Attachment', attachment_type: 'audio', direct_download_url: 'http://audio.url')
+        allow(Channels::AudioTranscoder).to receive(:ensure_compatible_audio_url)
+          .with(audio_att, channel_type: :facebook_page)
+          .and_return('http://audio.url/transcoded.m4a')
+
+        msg = double('Message',
+                     id: 21,
+                     content: '',
+                     attachments: [audio_att],
+                     data: {},
+                     external_id: nil,
+                     external_reply_to_id: nil,
+                     sender_type: 'User',
+                     conversation: nil)
+        svc = described_class.new(facebook_page_channel: facebook_page_channel, customer_inbox: customer_inbox, message: msg)
+
+        expected_params = {
+          recipient: { id: 'user123' },
+          message: {
+            attachment: {
+              type: 'audio',
+              payload: { url: 'http://audio.url/transcoded.m4a' }
+            }
+          },
+          messaging_type: "RESPONSE"
+        }
+
+        expect(Facebook::Messenger::Bot).to receive(:deliver).with(expected_params, page_id: 'page123').and_return('{"message_id":"msg_fb_audio"}')
+        expect(msg).to receive(:update!).with(external_id: 'msg_fb_audio')
+
+        svc.call
+      end
+
+      it 'keeps file attachment type as file even if file has audio-like name' do
+        file_att = double('Attachment', attachment_type: 'file', direct_download_url: 'http://file.url/song.mp3')
+        msg = double('Message',
+                     id: 22,
+                     content: '',
+                     attachments: [file_att],
+                     data: {},
+                     external_id: nil,
+                     external_reply_to_id: nil,
+                     sender_type: 'User',
+                     conversation: nil)
+        svc = described_class.new(facebook_page_channel: facebook_page_channel, customer_inbox: customer_inbox, message: msg)
+
+        expected_params = {
+          recipient: { id: 'user123' },
+          message: {
+            attachment: {
+              type: 'file',
+              payload: { url: 'http://file.url/song.mp3' }
+            }
+          },
+          messaging_type: "RESPONSE"
+        }
+
+        expect(Facebook::Messenger::Bot).to receive(:deliver).with(expected_params, page_id: 'page123').and_return('{"message_id":"msg_fb_file"}')
+        expect(msg).to receive(:update!).with(external_id: 'msg_fb_file')
+
+        svc.call
+      end
     end
 
     context 'when an error occurs' do

@@ -28,7 +28,7 @@ module Channels
         send_message(params) if message.content.present?
 
         message.attachments.each do |attachment|
-          url = attachment.direct_download_url
+          url = Channels::AudioTranscoder.ensure_compatible_audio_url(attachment, channel_type: :instagram)
           next if url.blank?
 
           send_message(attachment_params(attachment, url))
@@ -129,8 +129,12 @@ module Channels
       end
 
       def attachment_type(attachment)
-        return attachment.attachment_type if %w[image audio video file].include?(attachment.attachment_type)
-        "file"
+        case attachment.attachment_type.to_s
+        when "image" then "image"
+        when "audio" then "audio"
+        when "video" then "video"
+        else "file"
+        end
       end
 
       def log_error(result)

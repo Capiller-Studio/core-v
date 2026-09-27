@@ -202,6 +202,82 @@ RSpec.describe Channels::Instagram::MessageSender do
         service.call
       end
 
+      it 'delivers audio attachment using AudioTranscoder' do
+        audio_att = double('Attachment', attachment_type: 'audio', direct_download_url: 'https://cdn.example.com/audio.wav')
+        allow(Channels::AudioTranscoder).to receive(:ensure_compatible_audio_url)
+          .with(audio_att, channel_type: :instagram)
+          .and_return('https://cdn.example.com/audio.m4a')
+
+        msg = double('Message',
+                     id: 25,
+                     content: '',
+                     attachments: [audio_att],
+                     data: {},
+                     external_id: nil,
+                     external_reply_to_id: nil,
+                     sender_type: nil,
+                     conversation: nil)
+        svc = described_class.new(instagram_channel: instagram_channel, customer_inbox: customer_inbox, message: msg)
+
+        expected_audio_params = {
+          recipient: { id: 'user123' },
+          message: {
+            attachment: {
+              type: 'audio',
+              payload: { url: 'https://cdn.example.com/audio.m4a' }
+            }
+          }
+        }
+
+        mock_response = instance_double(HTTParty::Response, success?: true, code: 200, body: '{"message_id":"msg_ig_audio"}')
+        expect(HTTParty).to receive(:post).with(
+          expected_url,
+          headers: { "Content-Type" => "application/json" },
+          query: { access_token: 'ig_token' },
+          body: expected_audio_params.to_json
+        ).and_return(mock_response)
+
+        expect(msg).to receive(:update!).with(hash_including(external_id: 'msg_ig_audio', status: :delivered))
+
+        svc.call
+      end
+
+      it 'keeps file attachment type as file even if file has audio-like name' do
+        file_att = double('Attachment', attachment_type: 'file', direct_download_url: 'https://cdn.example.com/audio.mp3')
+        msg = double('Message',
+                     id: 26,
+                     content: '',
+                     attachments: [file_att],
+                     data: {},
+                     external_id: nil,
+                     external_reply_to_id: nil,
+                     sender_type: nil,
+                     conversation: nil)
+        svc = described_class.new(instagram_channel: instagram_channel, customer_inbox: customer_inbox, message: msg)
+
+        expected_file_params = {
+          recipient: { id: 'user123' },
+          message: {
+            attachment: {
+              type: 'file',
+              payload: { url: 'https://cdn.example.com/audio.mp3' }
+            }
+          }
+        }
+
+        mock_response = instance_double(HTTParty::Response, success?: true, code: 200, body: '{"message_id":"msg_ig_file"}')
+        expect(HTTParty).to receive(:post).with(
+          expected_url,
+          headers: { "Content-Type" => "application/json" },
+          query: { access_token: 'ig_token' },
+          body: expected_file_params.to_json
+        ).and_return(mock_response)
+
+        expect(msg).to receive(:update!).with(hash_including(external_id: 'msg_ig_file', status: :delivered))
+
+        svc.call
+      end
+
       it 'skips attachment delivery when direct_download_url is blank' do
         allow(attachment).to receive(:direct_download_url).and_return(nil)
         expect(HTTParty).not_to receive(:post)

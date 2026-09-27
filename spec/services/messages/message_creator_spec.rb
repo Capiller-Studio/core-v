@@ -418,4 +418,63 @@ RSpec.describe Messages::MessageCreator, type: :service do
       expect(conversation.messages.count).to eq(0)
     end
   end
+
+  describe "#detect_attachment_type" do
+    let(:inbox) { create(:inbox, account: account) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+    let(:creator) { described_class.new(conversation: conversation, sender: user) }
+
+    it "returns the existing attachment_type if file is an Attachment" do
+      att = double("Attachment", is_a?: true, attachment_type: "audio")
+      expect(creator.send(:detect_attachment_type, att)).to eq("audio")
+    end
+
+    it "detects image MIME type as :image" do
+      file = double("Upload", is_a?: false, content_type: "image/jpeg", original_filename: "photo.jpg")
+      expect(creator.send(:detect_attachment_type, file)).to eq(:image)
+    end
+
+    it "detects video MIME type as :video" do
+      file = double("Upload", is_a?: false, content_type: "video/mp4", original_filename: "movie.mp4")
+      expect(creator.send(:detect_attachment_type, file)).to eq(:video)
+    end
+
+    it "detects audio MIME type as :audio" do
+      file = double("Upload", is_a?: false, content_type: "audio/webm", original_filename: "voice.webm")
+      expect(creator.send(:detect_attachment_type, file)).to eq(:audio)
+    end
+
+    it "detects audio by extension when content_type is application/octet-stream" do
+      %w[.wav .mp3 .m4a .ogg .aac .opus].each do |ext|
+        file = double("Upload", is_a?: false, content_type: "application/octet-stream", original_filename: "voice#{ext}")
+        expect(creator.send(:detect_attachment_type, file)).to eq(:audio)
+      end
+    end
+
+    it "detects video by extension when content_type is blank" do
+      file = double("Upload", is_a?: false, content_type: "", original_filename: "clip.mp4")
+      expect(creator.send(:detect_attachment_type, file)).to eq(:video)
+    end
+
+    it "detects image by extension when content_type is application/octet-stream" do
+      file = double("Upload", is_a?: false, content_type: "application/octet-stream", original_filename: "photo.png")
+      expect(creator.send(:detect_attachment_type, file)).to eq(:image)
+    end
+
+    it "defaults to :file for general documents and unknown extensions" do
+      %w[.pdf .zip .docx .txt .tar.gz].each do |ext|
+        file = double("Upload", is_a?: false, content_type: "application/octet-stream", original_filename: "doc#{ext}")
+        expect(creator.send(:detect_attachment_type, file)).to eq(:file)
+      end
+    end
+
+    it "safely handles StringIO uploads where path is undefined or raises" do
+      string_io_file = Rack::Test::UploadedFile.new(
+        StringIO.new("audio content"),
+        "audio/wav",
+        original_filename: "voice.wav"
+      )
+      expect(creator.send(:detect_attachment_type, string_io_file)).to eq(:audio)
+    end
+  end
 end
