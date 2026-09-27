@@ -39,10 +39,10 @@ RSpec.describe ActivityLogWorker, type: :worker do
       expect(activity.metadata).to eq({ 'source' => 'web' })
     end
 
-    it 'raises error if account is not found' do
+    it 'returns gracefully if account is not found' do
       expect {
         described_class.new.perform(999_999, params)
-      }.to raise_error(ActiveRecord::RecordNotFound)
+      }.not_to change(Activity, :count)
     end
   end
 end

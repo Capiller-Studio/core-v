@@ -29,5 +29,26 @@ RSpec.describe SlaCheckWorker, type: :worker do
       conversation_sla.reload
       expect(conversation_sla.status).to eq('failed')
     end
+
+    it 'does not mark SLA as breached if agent responded before target' do
+      conversation.update_column(:first_respond_at, 15.minutes.ago)
+
+      described_class.new.perform
+
+      conversation_sla.reload
+      expect(conversation_sla.status).to eq('pending')
+    end
+
+    it 'rescues errors and logs SYSTEM_WORKER_FAILED to SystemLogs::Logger' do
+      allow(ShardRecord).to receive(:connected_to).and_raise(StandardError.new('DB connection lost'))
+      expect(SystemLogs::Logger).to receive(:call).with(
+        hash_including(
+          event_key: SystemLogs::EventKeys::SYSTEM_WORKER_FAILED,
+          level: :error
+        )
+      )
+
+      described_class.new.perform
+    end
   end
 end

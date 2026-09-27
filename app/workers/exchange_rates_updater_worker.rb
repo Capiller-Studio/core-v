@@ -36,5 +36,15 @@ class ExchangeRatesUpdaterWorker
     end
   rescue StandardError => e
     Rails.logger.error("Exchange Rate Sync Failed: #{e.message}")
+    SystemLogs::Logger.call(
+      event_key: SystemLogs::EventKeys::SYSTEM_WORKER_FAILED,
+      level: :error,
+      message: "ExchangeRatesUpdaterWorker failed: #{e.message}",
+      payload: {
+        worker: "ExchangeRatesUpdaterWorker",
+        error: e.message,
+        backtrace: e.backtrace&.first(10)
+      }
+    )
   end
 end

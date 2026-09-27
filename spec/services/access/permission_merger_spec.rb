@@ -67,5 +67,22 @@ RSpec.describe Access::PermissionMerger do
         expect(service.call).to be true
       end
     end
+
+    context 'with array permissions' do
+      it 'returns true if action is in permissions array' do
+        permissions_list << { "conversations" => %w[read write] }
+        expect(service.call).to be true
+      end
+
+      it 'returns true if manage is in permissions array' do
+        permissions_list << { "conversations" => %w[manage] }
+        expect(service.call).to be true
+      end
+
+      it 'returns false if neither action nor manage is in array' do
+        permissions_list << { "conversations" => %w[delete] }
+        expect(service.call).to be false
+      end
+    end
   end
 end

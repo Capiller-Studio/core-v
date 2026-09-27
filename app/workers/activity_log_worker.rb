@@ -10,7 +10,8 @@ class ActivityLogWorker
 
   def perform(account_id, params = {})
     params = params.with_indifferent_access
-    account = Account.find(account_id)
+    account = Account.find_by(id: account_id)
+    return unless account
 
     account.with_shard do
       # Create the Activity record using the snapshot provided by the Recorder

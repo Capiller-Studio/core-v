@@ -38,6 +38,37 @@ RSpec.describe Subscription, type: :model do
     end
   end
 
+  describe '.due_for_renewal' do
+    let(:account) { create(:account) }
+
+    it 'includes active subscriptions past current_period_end that are not cancelled' do
+      sub = create(:subscription, account: account, status: :active, current_period_end: 1.hour.ago, cancelled_at: nil)
+      expect(described_class.due_for_renewal).to include(sub)
+    end
+
+    it 'excludes active subscriptions scheduled for cancellation' do
+      sub = create(:subscription, account: account, status: :active, current_period_end: 1.hour.ago, cancelled_at: 1.day.ago)
+      expect(described_class.due_for_renewal).not_to include(sub)
+    end
+
+    it 'excludes subscriptions whose current_period_end is in the future' do
+      sub = create(:subscription, account: account, status: :active, current_period_end: 1.day.from_now)
+      expect(described_class.due_for_renewal).not_to include(sub)
+    end
+  end
+
+  describe '#due_for_renewal?' do
+    it 'returns true for active subscription past period end with no cancelled_at' do
+      sub = build(:subscription, status: :active, current_period_end: 1.hour.ago, cancelled_at: nil)
+      expect(sub.due_for_renewal?).to be true
+    end
+
+    it 'returns false for active subscription with cancelled_at' do
+      sub = build(:subscription, status: :active, current_period_end: 1.hour.ago, cancelled_at: 1.hour.ago)
+      expect(sub.due_for_renewal?).to be false
+    end
+  end
+
   describe '#total_price' do
     let(:plan) { create(:plan) }
     let(:account) { create(:account) }

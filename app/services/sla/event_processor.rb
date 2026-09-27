@@ -9,35 +9,52 @@ module Sla
     end
 
     def call
-      # Once a conversation is resolved or closed, SLAs stop tracking.
+      # Once a conversation is resolved or closed, evaluate final status for active SLAs.
       if conversation.resolved? || conversation.closed?
-        conversation.conversation_slas.active.each(&:mark_as_successful!)
+        conversation.conversation_slas.active.find_each do |sla|
+          if sla.sla_breached?
+            sla.mark_as_breached!
+          else
+            sla.mark_as_successful!
+          end
+        end
         return
       end
 
-      policy = find_applicable_policy
-      return unless policy
+      policies = find_applicable_policies
+      return if policies.empty?
 
-      sla = ConversationSla.find_or_initialize_by(
-        conversation: conversation,
-        sla_policy: policy,
-        account: conversation.account
-      )
-      
-      sla.status = :pending unless sla.failed?
-      sla.save!
-      
-      sla.recalculate_targets!
+      policies.find_each do |policy|
+        sla = ConversationSla.find_or_initialize_by(
+          conversation: conversation,
+          sla_policy: policy,
+          account: conversation.account
+        )
+
+        next if sla.failed?
+
+        if sla.sla_breached?
+          sla.mark_as_breached!
+        else
+          sla.status = :pending
+          sla.save!
+          sla.recalculate_targets!
+        end
+      end
     end
 
     private
 
-    def find_applicable_policy
-      # Simple matching: First SLA policy associated with the conversation's inbox
-      conversation.account.sla_policies
-                  .joins(:sla_inboxes)
-                  .where(sla_inboxes: { inbox_id: conversation.inbox_id })
-                  .first
+    def find_applicable_policies
+      # Policies explicitly attached to this inbox
+      inbox_policies = conversation.account.sla_policies
+                                   .joins(:sla_inboxes)
+                                   .where(sla_inboxes: { inbox_id: conversation.inbox_id })
+
+      return inbox_policies if inbox_policies.exists?
+
+      # Fallback to global policies (policies with no specific inbox assigned)
+      conversation.account.sla_policies.where.missing(:sla_inboxes)
     end
   end
 end

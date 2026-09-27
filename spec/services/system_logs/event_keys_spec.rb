@@ -22,6 +22,9 @@ RSpec.describe SystemLogs::EventKeys do
       expect(described_class::WEBHOOK_WHATSAPP_ERROR).to eq('webhook.whatsapp.error')
       expect(described_class::CHANNEL_REAUTHORIZATION_REQUIRED).to eq('channel.reauthorization_required')
       expect(described_class::BILLING_PAYMENT_FAILED).to eq('billing.payment_failed')
+      expect(described_class::BILLING_TRIAL_CONVERTED).to eq('billing.trial_converted')
+      expect(described_class::BILLING_SUBSCRIPTION_RENEWED).to eq('billing.subscription_renewed')
+      expect(described_class::BILLING_WALLET_TOPPED_UP).to eq('billing.wallet_topped_up')
       expect(described_class::SYSTEM_PRUNED_LOGS).to eq('system.pruned_logs')
     end
   end

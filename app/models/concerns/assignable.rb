@@ -62,6 +62,7 @@ module Assignable
           changes: { assignee_id: [old_assignee_id, nil] },
           actor: Current.user
         )
+        AssignmentPolicies::BacklogTracker.mark_backlog_exists(account_id) if should_auto_assign?
       end
     end
   end
@@ -122,13 +123,20 @@ module Assignable
     team_id.present?
   end
 
-  private
-
   def should_auto_assign?
     inbox.auto_assign? && !ai_active?
   end
 
+  private
+
   def auto_assign_agent
     AssignmentPolicies::Dispatcher.call(conversation: self)
+    mark_backlog_if_unassigned
+  end
+
+  def mark_backlog_if_unassigned
+    return unless assignee_id.nil? && should_auto_assign?
+
+    AssignmentPolicies::BacklogTracker.mark_backlog_exists(account_id)
   end
 end

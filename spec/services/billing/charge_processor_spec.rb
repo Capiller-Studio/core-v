@@ -79,7 +79,26 @@ RSpec.describe Billing::ChargeProcessor do
       end
 
       it 'fails and creates no transaction due to rollback' do
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::BILLING_PAYMENT_FAILED,
+            level: :error,
+            account: account
+          )
+        )
         expect { service.call }.not_to change(Transaction, :count)
+      end
+
+      it 'logs BILLING_PAYMENT_SUCCEEDED when charge succeeds' do
+        wallet.update!(balance: 100.0)
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::BILLING_PAYMENT_SUCCEEDED,
+            level: :info,
+            account: account
+          )
+        )
+        described_class.call(account: account, amount: 80.0, description: 'Test success log')
       end
     end
   end

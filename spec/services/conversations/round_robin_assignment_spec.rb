@@ -42,9 +42,15 @@ RSpec.describe Conversations::RoundRobinAssignment do
 
     context 'when auto_assign is true' do
       it 'assigns the conversation to an eligible agent' do
-        expect { service.call }.to change(Notification, :count).by_at_least(1)
+        expect { service.call }.to change(Notification, :count).by(1)
         
         expect(conversation.reload.assignee_id).to be_in([user1.id, user2.id])
+      end
+
+      it 'does not assign when no agents are active in Redis' do
+        allow(Utilities::ActivityHelpers).to receive(:available_user_ids).with(account.id).and_return([])
+        expect { service.call }.not_to change(Notification, :count)
+        expect(conversation.reload.assignee_id).to be_nil
       end
 
       it 'updates redis round robin key' do

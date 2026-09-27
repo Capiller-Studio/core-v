@@ -59,10 +59,6 @@ module AssignmentPolicies
         inbox = conversation.inbox
         team = conversation.team
 
-        # Get user IDs who are active in Redis (recent heartbeat)
-        active_user_ids = ::Utilities::ActivityHelpers.available_user_ids(account.id)
-        return [] if active_user_ids.blank?
-
         # Base candidate IDs: inbox agents
         base_agent_ids = inbox.inbox_users.pluck(:user_id).map(&:to_s)
 
@@ -74,33 +70,30 @@ module AssignmentPolicies
 
         return [] if base_agent_ids.blank?
 
-        # Intersect: must be both active AND in the candidate pool
+        # Check real-time WebSocket heartbeats in Redis (< 30s)
+        active_user_ids = ::Utilities::ActivityHelpers.available_user_ids(account.id)
+        return [] if active_user_ids.blank?
+
+        # Candidate IDs: only agents active in Redis and in inbox/team
         candidate_ids = active_user_ids & base_agent_ids
         return [] if candidate_ids.blank?
 
         # Filter: AccountUser.availability must be :online
-        AccountUser.where(
-          account: account,
-          user_id: candidate_ids,
-          availability: :online
-        ).pluck(:user_id).map(&:to_s)
+        # TODO: Uncomment once UI for agent availability toggle is implemented
+        # AccountUser.where(
+        #   account: account,
+        #   user_id: candidate_ids,
+        #   availability: :online
+        # ).pluck(:user_id).map(&:to_s)
+        candidate_ids
       end
 
       def perform_assignment(agent)
         conversation.assign!(agent)
-        create_notifications(agent)
+        create_team_lead_notifications
       end
 
-      def create_notifications(agent)
-        if policy.notify_on_assignment?
-          Notification.create(
-            account: conversation.account,
-            user: agent,
-            resource: conversation,
-            event: :conversation_assigned
-          )
-        end
-
+      def create_team_lead_notifications
         return unless policy.notify_team_leads? && conversation.team.present?
 
         conversation.team.team_users.lead.find_each do |tu|

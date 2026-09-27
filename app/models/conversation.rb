@@ -92,7 +92,8 @@ class Conversation < ShardRecord
   after_update_commit :record_status_change, if: :saved_change_to_status?
   after_update_commit :record_priority_change, if: :saved_change_to_priority?
   after_update_commit :broadcast_conversation_update
-  before_save :update_last_activity_at, if: :will_save_change_to_status?
+  after_update_commit :drain_unassigned_queue, if: -> { saved_change_to_status? && (resolved? || closed? || snoozed?) }
+  before_save :update_status_timestamps, if: :will_save_change_to_status?
   before_create :initialize_ai_status
   after_destroy :cleanup_unread_counts
 
@@ -211,6 +212,14 @@ class Conversation < ShardRecord
     # rubocop:enable Performance/ChainArrayAllocation
   end
 
+  def resolved_at
+    resolved? ? status_changed_at : nil
+  end
+
+  def closed_at
+    closed? ? status_changed_at : nil
+  end
+
   private
 
   def initialize_ai_status
@@ -239,8 +248,9 @@ class Conversation < ShardRecord
     EventBroadcastWorker.perform_async(event_payload.to_json, "conversation.updated", connection_tokens, account_id)
   end
 
-  def update_last_activity_at
+  def update_status_timestamps
     self.last_activity_at = Time.current
+    self.status_changed_at = Time.current unless will_save_change_to_status_changed_at?
   end
 
   def record_status_change
@@ -259,6 +269,14 @@ class Conversation < ShardRecord
       changes: { priority: saved_change_to_priority },
       actor: Current.user
     )
+  end
+
+  def drain_unassigned_queue
+    return unless AssignmentPolicies::BacklogTracker.backlog_pending?(account_id)
+
+    AssignmentPolicies::QueueDrainWorker.perform_async(account_id, inbox_id)
+  rescue StandardError => e
+    Rails.logger.warn("Failed to enqueue QueueDrainWorker: #{e.message}")
   end
 
   def connection_tokens

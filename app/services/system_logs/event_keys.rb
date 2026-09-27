@@ -28,9 +28,13 @@ module SystemLogs
 
     # Billing and Subscriptions
     BILLING_SUBSCRIPTION_CREATED            = "billing.subscription_created"
+    BILLING_SUBSCRIPTION_RENEWED            = "billing.subscription_renewed"
+    BILLING_SUBSCRIPTION_CANCELLED          = "billing.subscription_cancelled"
     BILLING_PAYMENT_FAILED                  = "billing.payment_failed"
     BILLING_PAYMENT_SUCCEEDED               = "billing.payment_succeeded"
     BILLING_TRIAL_EXPIRED                   = "billing.trial_expired"
+    BILLING_TRIAL_CONVERTED                 = "billing.trial_converted"
+    BILLING_WALLET_TOPPED_UP                = "billing.wallet_topped_up"
 
     # System & Maintenance
     SYSTEM_PRUNED_LOGS                      = "system.pruned_logs"

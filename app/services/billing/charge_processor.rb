@@ -16,14 +16,58 @@ module Billing
     def call
       lock_key = ::RedisUtilities::Keys::CHARGE_LOCK % { account_id: account.id }
 
-      ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
+      outcome = ::RedisUtilities::MutexHelpers.with_lock(lock_key) do
         ActiveRecord::Base.transaction do
           process_charge
         end
       end
+
+      if outcome.is_a?(Hash) && outcome[:status] == :completed
+        log_success(outcome[:transactions])
+      else
+        err = outcome.is_a?(Hash) ? outcome[:error] : "Payment failed"
+        log_failure(err)
+        outcome = { status: :failed, amount: amount, error: err } unless outcome.is_a?(Hash)
+      end
+
+      outcome
     end
 
     private
+
+    def log_success(txns)
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::BILLING_PAYMENT_SUCCEEDED,
+        level: :info,
+        account: account,
+        message: "Payment succeeded for #{description}: #{amount} #{currency}",
+        payload: {
+          amount: amount.to_f,
+          currency: currency,
+          subscription_id: subscription&.id,
+          transactions: Array(txns).map { |t| { id: t.id, amount: t.amount.to_f, provider: t.provider } }
+        }
+      )
+    rescue StandardError => e
+      Rails.logger.error("[ChargeProcessor] Failed to log success event: #{e.message}")
+    end
+
+    def log_failure(err_message)
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::BILLING_PAYMENT_FAILED,
+        level: :error,
+        account: account,
+        message: "Payment failed for #{description}: #{err_message}",
+        payload: {
+          amount: amount.to_f,
+          currency: currency,
+          subscription_id: subscription&.id,
+          error: err_message
+        }
+      )
+    rescue StandardError => e
+      Rails.logger.error("[ChargeProcessor] Failed to log failure event: #{e.message}")
+    end
 
     def process_charge
       remaining = amount

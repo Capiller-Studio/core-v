@@ -14,11 +14,22 @@ module Access
 
       # Additive Logic: If ANY role grants permission, allow it.
       @permissions_list.any? do |permissions|
-        policy = permissions.dig(@resource_type, @action)
-        manage_policy = permissions.dig(@resource_type, "manage")
+        next false unless permissions.is_a?(Hash)
 
-        # A role grants access if it explicitly grants the action OR grants "manage" capability
-        evaluate_policy(policy) || (@action != "manage" && evaluate_policy(manage_policy))
+        resource_permissions = permissions[@resource_type.to_s] || permissions[@resource_type.to_sym]
+        next false if resource_permissions.nil?
+
+        if resource_permissions.is_a?(Array)
+          resource_permissions.map(&:to_s).include?(@action.to_s) ||
+            (@action.to_s != "manage" && resource_permissions.map(&:to_s).include?("manage"))
+        elsif resource_permissions.is_a?(Hash)
+          policy = resource_permissions[@action.to_s] || resource_permissions[@action.to_sym]
+          manage_policy = resource_permissions["manage"] || resource_permissions[:manage]
+
+          evaluate_policy(policy) || (@action.to_s != "manage" && evaluate_policy(manage_policy))
+        else
+          false
+        end
       end
     end
 

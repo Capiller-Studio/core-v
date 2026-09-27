@@ -63,6 +63,7 @@ class Message < ShardRecord
   before_validation :sync_external_reply_to_id, if: -> { reply_to_message.present? && external_reply_to_id.blank? }
 
   after_create_commit :broadcast_message_creation
+  after_create_commit :track_first_response, if: :outgoing?
   after_create_commit :process_sla
   after_create_commit :touch_conversation_activity
   after_create_commit :trigger_thank_you_detector, if: :incoming?
@@ -206,6 +207,12 @@ class Message < ShardRecord
     tokens = account.users.pluck(:connection_token)
     tokens += conversation.customer_inboxes.pluck(:connection_token) unless personal?
     tokens.uniq
+  end
+
+  def track_first_response
+    return if conversation.first_respond_at.present?
+
+    conversation.update_column(:first_respond_at, created_at)
   end
 
   def process_sla

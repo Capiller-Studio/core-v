@@ -2,8 +2,8 @@
 
 class SubscriptionRenewalWorker < BaseMutexWorker
   def perform
-    renew_active_subscriptions
     process_scheduled_cancellations
+    renew_active_subscriptions
   end
 
   private
@@ -21,6 +21,18 @@ class SubscriptionRenewalWorker < BaseMutexWorker
       # Another process is handling this — skip
     rescue StandardError => e
       Rails.logger.error("Renewal failed for subscription##{subscription.id}: #{e.message}")
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::SYSTEM_WORKER_FAILED,
+        level: :error,
+        account: subscription.account,
+        message: "SubscriptionRenewalWorker failure on subscription##{subscription.id}: #{e.message}",
+        payload: {
+          worker: "SubscriptionRenewalWorker",
+          subscription_id: subscription.id,
+          error: e.message,
+          backtrace: e.backtrace&.first(10)
+        }
+      )
     end
   end
 
@@ -32,6 +44,18 @@ class SubscriptionRenewalWorker < BaseMutexWorker
       Billing::SubscriptionCanceller.call(subscription:, immediate: true)
     rescue StandardError => e
       Rails.logger.error("Cancellation failed for subscription##{subscription.id}: #{e.message}")
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::SYSTEM_WORKER_FAILED,
+        level: :error,
+        account: subscription.account,
+        message: "Subscription cancellation failure on subscription##{subscription.id}: #{e.message}",
+        payload: {
+          worker: "SubscriptionRenewalWorker#process_scheduled_cancellations",
+          subscription_id: subscription.id,
+          error: e.message,
+          backtrace: e.backtrace&.first(10)
+        }
+      )
     end
   end
 
@@ -67,18 +91,48 @@ class SubscriptionRenewalWorker < BaseMutexWorker
 
       account.reset_monthly_counters!
       grant_monthly_ai_credits(subscription)
+
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::BILLING_SUBSCRIPTION_RENEWED,
+        level: :info,
+        account: account,
+        message: "Subscription successfully renewed for #{account.name} (#{plan.name.capitalize}) until #{new_end.to_date}",
+        payload: {
+          subscription_id: subscription.id,
+          plan: plan.name,
+          amount: subscription.total_price.to_f,
+          currency: account.currency,
+          period_end: new_end
+        }
+      )
     else
       subscription.update!(status: :past_due)
+
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::BILLING_PAYMENT_FAILED,
+        level: :error,
+        account: account,
+        message: "Subscription renewal payment failed for #{account.name} (#{plan.name.capitalize}) - marked as past_due",
+        payload: {
+          subscription_id: subscription.id,
+          plan: plan.name,
+          amount: subscription.total_price.to_f,
+          currency: account.currency,
+          error: result[:error]
+        }
+      )
 
       owner = account.account_users.find_by(owner: true)&.user
       return unless owner
 
-      Notification.create!(
-        account:,
-        user: owner,
-        resource: subscription,
-        event: :payment_failed
-      )
+      account.with_shard do
+        Notification.create!(
+          account:,
+          user: owner,
+          resource: subscription,
+          event: :payment_failed
+        )
+      end
     end
   end
 

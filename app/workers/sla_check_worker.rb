@@ -11,17 +11,34 @@ class SlaCheckWorker
     active_shards = Account.distinct.pluck(:shard_key)
 
     active_shards.each do |shard_key|
-      ShardRecord.connected_to(shard: shard_key.to_sym, role: :writing) do
-        # Find SLAs where any of the targets have passed
-        breached_slas = ConversationSla.active.where(
-          "target_first_response_at < :now OR target_next_response_at < :now OR target_resolution_at < :now",
-          now: time_now
-        ).includes(:conversation, :sla_policy)
+      begin
+        ShardRecord.connected_to(shard: shard_key.to_sym, role: :writing) do
+          # Find SLAs where any of the targets have passed
+          breached_slas = ConversationSla.active.where(
+            "target_first_response_at < :now OR target_next_response_at < :now OR target_resolution_at < :now",
+            now: time_now
+          ).includes(:conversation, :sla_policy)
 
-        breached_slas.find_each do |sla|
-          sla.mark_as_breached!
-          notify_breach(sla)
+          breached_slas.find_each do |sla|
+            next unless sla.sla_breached?
+
+            sla.mark_as_breached!
+            notify_breach(sla)
+          end
         end
+      rescue StandardError => e
+        Rails.logger.error("SlaCheckWorker failed on shard #{shard_key}: #{e.message}")
+        SystemLogs::Logger.call(
+          event_key: SystemLogs::EventKeys::SYSTEM_WORKER_FAILED,
+          level: :error,
+          message: "SlaCheckWorker failed on shard #{shard_key}: #{e.message}",
+          payload: {
+            worker: "SlaCheckWorker",
+            shard_key: shard_key,
+            error: e.message,
+            backtrace: e.backtrace&.first(10)
+          }
+        )
       end
     end
   end

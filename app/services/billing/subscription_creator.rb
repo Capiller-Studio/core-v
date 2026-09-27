@@ -80,6 +80,22 @@ module Billing
 
       sync_plan_limits
       grant_initial_ai_credits(subscription)
+
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::BILLING_SUBSCRIPTION_CREATED,
+        level: :info,
+        account: account,
+        message: "Subscription created: #{plan.name.capitalize} (#{subscription.status}) for #{account.name}",
+        payload: {
+          subscription_id: subscription.id,
+          plan: plan.name,
+          status: subscription.status,
+          billing_cycle: billing_cycle,
+          quantity: quantity,
+          trial_end_at: subscription.trial_end_at
+        }
+      )
+
       subscription
     end
 

@@ -6,22 +6,23 @@
 
 module SystemLogs
   class Logger < ApplicationService
-    attr_reader :event_key, :level, :account, :message, :payload, :metadata
+    attr_reader :event_key, :level, :account, :account_id, :message, :payload, :metadata
 
-    def initialize(event_key:, level: :info, account: nil, message: nil, payload: {}, metadata: {})
-      @event_key = event_key
-      @level     = level
-      @account   = account
-      @message   = message
-      @payload   = payload
-      @metadata  = metadata
+    def initialize(event_key:, level: :info, account: nil, account_id: nil, message: nil, payload: {}, metadata: {})
+      @event_key   = event_key
+      @level       = level
+      @account     = account
+      @account_id  = account.try(:id) || account_id
+      @message     = message
+      @payload     = payload || {}
+      @metadata    = metadata || {}
     end
 
     def call
       SystemLog.log_event(
         event_key,
         level:    level,
-        account:  account,
+        account:  account || account_id,
         message:  message,
         payload:  payload,
         metadata: metadata.merge(request_context)
