@@ -6,7 +6,9 @@ module Ai
     sidekiq_options retry: 2, queue: "default", dead: false
 
     sidekiq_retries_exhausted do |msg, _e|
-      account_id, conversation_id, _message_id, _ai_agent_id = msg["args"]
+      account_id = msg["args"][0]
+      conversation_id = msg["args"][1]
+      ai_agent_id = msg["args"][2]
       
       account = Account.find(account_id)
       account.with_shard do
@@ -17,7 +19,7 @@ module Ai
         conversation.send(:auto_assign_agent) if conversation.send(:should_auto_assign?)
         
         # Add a private note explaining the AI crash
-        ai_agent = Ai::Agent.find_by(id: _ai_agent_id)
+        ai_agent = Ai::Agent.find_by(id: ai_agent_id)
         sender = ai_agent || account
 
         conversation.messages.create!(
@@ -31,22 +33,43 @@ module Ai
       end
     end
 
-    def perform(account_id, conversation_id, message_id, ai_agent_id)
+    def perform(account_id, conversation_id, ai_agent_id, token = nil)
       account = Account.find(account_id)
 
       account.with_shard do
-        conversation = Conversation.find(conversation_id)
-        message = Message.find(message_id)
-        ai_agent = Ai::Agent.find(ai_agent_id)
+        conversation = Conversation.find_by(id: conversation_id)
+        return unless conversation&.ai_active?
+
+        ai_agent = Ai::Agent.find_by(id: ai_agent_id)
+        return unless ai_agent&.active_and_configured?
+
+        # 1. Debounce check: if a newer message arrived in the sliding window, this job is superseded
+        if token.present? && !Ai::MessageDebouncer.ready_to_process?(account_id, conversation_id, token)
+          return
+        end
+
+        # 2. Drain all buffered customer messages for this conversation
+        messages = Ai::MessageDebouncer.drain_messages(account, conversation)
+        return if messages.blank?
+
         inbox = conversation.inbox
+
+        # 3. Broadcast typing indicator: START
+        broadcast_typing_status(conversation, "start")
 
         # Temporarily set the locale so the fallback messages are correctly localized
         I18n.with_locale(conversation.locale || inbox.default_locale) do
           fallback = ai_agent.fallback_message.presence || 
-                     I18n.t("ai.widget_bot.default_fallback", default: "I don't have information about that. Let me connect you with a human agent.")
+                     I18n.t("ai.widget_bot.default_fallback", default: "Sorry, I am unable to answer this question. Connecting you to a human agent...")
 
           begin
-            recent_messages = conversation.messages.order(:created_at).last(ai_agent.max_exchanges * 2)
+            # Combine debounced user messages into a unified query
+            sanitized_fragments = messages.map { |m| ActionView::Base.full_sanitizer.sanitize(m.content.to_s).strip }
+            bundled_query = sanitized_fragments.compact_blank.join("\n")
+
+            # Build conversation history excluding the messages just bundled
+            buffered_ids = messages.map(&:id)
+            recent_messages = conversation.messages.where.not(id: buffered_ids).order(:created_at).last(ai_agent.max_exchanges * 2)
             history = recent_messages.map do |msg|
               role = msg.sender_type == "Customer" ? "user" : "assistant"
               { role: role, content: ActionView::Base.full_sanitizer.sanitize(msg.content.to_s) }
@@ -55,24 +78,27 @@ module Ai
             # Get the portal for RAG search (prioritize agent-specific portal, fallback to channel portal)
             portal = ai_agent.portal || inbox.channel&.try(:portal)
 
-            response = if portal
-                         Ai::HelpCenterBot.call(
-                           account: account,
-                           portal: portal,
-                           inbox: inbox,
-                           query: message.content,
-                           user: nil,
-                           conversation_history: history
-                         )
+            bot_result = if portal
+                           Ai::HelpCenterBot.call(
+                             account: account,
+                             portal: portal,
+                             inbox: inbox,
+                             query: bundled_query,
+                             user: nil,
+                             conversation_history: history
+                           )
             else
-                         fallback
+                           fallback
             end
 
-            # Check if this is an intentional handoff (the bot couldn't find an answer or the user asked for a human)
-            is_handoff = (response == fallback)
+            is_handoff = bot_result.respond_to?(:handoff?) ? bot_result.handoff? : (bot_result.to_s == fallback)
+            raw_response = bot_result.respond_to?(:content) ? bot_result.content : bot_result.to_s
 
-            # Create AI response message in the conversation
-            formatted_response = is_handoff ? response : Channels::MessageFormatter.parse_ai_markdown_to_html(response)
+            # Turn off typing indicator before publishing message
+            broadcast_typing_status(conversation, "stop")
+
+            # Format markdown to HTML unless intentional handoff
+            formatted_response = is_handoff ? raw_response : Channels::MessageFormatter.parse_ai_markdown_to_html(raw_response)
             
             ai_message = conversation.messages.create!(
               account: account,
@@ -89,6 +115,8 @@ module Ai
             end
 
           rescue StandardError => e
+            broadcast_typing_status(conversation, "stop")
+
             if e.class.name == 'AiInsufficientBalanceError'
               Rails.logger.warn("[AI AgentWorker] Credits exhausted for account #{account_id}: #{e.message}")
               
@@ -122,6 +150,26 @@ module Ai
     end
     
     private
+
+    def broadcast_typing_status(conversation, status)
+      tokens = conversation.customer_inboxes.pluck(:connection_token) + conversation.users.pluck(:connection_token)
+
+      payload = {
+        event: "typing",
+        conversation_id: conversation.id,
+        sender_type: "Ai::Agent",
+        status: status
+      }
+
+      tokens.compact!
+      tokens.uniq!
+
+      tokens.each do |token|
+        ActionCable.server.broadcast(token, payload)
+      end
+    rescue StandardError => e
+      Rails.logger.warn("[AI AgentWorker] Typing broadcast warning: #{e.message}")
+    end
     
     def trigger_human_handoff(conversation, sender: nil, reason: nil)
       conversation.update!(ai_status: :ai_handed_off)

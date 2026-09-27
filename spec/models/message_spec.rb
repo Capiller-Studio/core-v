@@ -241,14 +241,41 @@ RSpec.describe Message, type: :model do
     end
     let(:customer) { create(:customer, account: account) }
 
-    it 'enqueues AgentWorker if conversation is ai_active and inbox has an active agent' do
-      ai_agent = double('ai_agent', active_and_configured?: true)
+    it 'routes message to MessageDebouncer if conversation is ai_active and inbox has an active agent' do
+      ai_agent = double('ai_agent', active_and_configured?: true, id: 'agent-uuid')
       allow(inbox).to receive(:ai_agent).and_return(ai_agent)
-      allow(inbox).to receive(:ai_agent_id).and_return("agent-uuid")
-      expect(Ai::AgentWorker).to receive(:perform_async)
+      allow(inbox).to receive(:ai_agent_id).and_return('agent-uuid')
+      expect(Ai::MessageDebouncer).to receive(:enqueue).with(kind_of(described_class))
       message = build(:message, account: account, conversation: conversation, sender: customer)
       allow(message).to receive(:inbox).and_return(inbox)
       message.save!
+    end
+
+    it 'interrupts AI agent and flushes debounce buffer when human agent sends a public message' do
+      user = create(:user)
+      expect(Ai::MessageDebouncer).to receive(:clear!).with(account.id, conversation.id)
+
+      human_message = build(:message, account: account, conversation: conversation, sender: user, visibility: :global)
+      human_message.save!
+      expect(conversation.reload.ai_status).to eq('ai_handed_off')
+    end
+
+    it 'does not interrupt AI agent when human agent adds a private personal note' do
+      user = create(:user)
+      expect(Ai::MessageDebouncer).not_to receive(:clear!)
+
+      private_note = build(:message, account: account, conversation: conversation, sender: user, visibility: :personal)
+      private_note.save!
+      expect(conversation.reload.ai_status).to eq('ai_active')
+    end
+
+    it 'does not interrupt AI agent when an activity message is created' do
+      user = create(:user)
+      expect(Ai::MessageDebouncer).not_to receive(:clear!)
+
+      activity_msg = build(:message, account: account, conversation: conversation, sender: user, content_type: :activity)
+      activity_msg.save!
+      expect(conversation.reload.ai_status).to eq('ai_active')
     end
 
     it 'forces handoff if agent is inactive but conversation was ai_active' do

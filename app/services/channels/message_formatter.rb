@@ -90,6 +90,8 @@ module Channels
       html.gsub!(/__(.*?)__/m, '<b>\1</b>')
       html.gsub!(/```(.*?)```/m, '<pre><code>\1</code></pre>')
       html.gsub!(/`([^`]+)`/, '<code>\1</code>')
+      # Links [text](url)
+      html.gsub!(/\[([^\]]+)\]\(([^)]+)\)/, '<a href="\2" target="_blank" rel="noopener noreferrer">\1</a>')
       html.gsub!(/\n/, '<br>')
       
       html
