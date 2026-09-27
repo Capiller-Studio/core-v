@@ -12,7 +12,7 @@ class Subscription < ApplicationRecord
 
   scope :current, -> { where(status: [ :active, :trialing ]) }
   scope :expiring_soon, ->(days = 3) { where(trial_end_at: ..days.days.from_now).where(status: :trialing) }
-  scope :due_for_renewal, -> { where(current_period_end: ..Time.current).where(status: :active) }
+  scope :due_for_renewal, -> { where(current_period_end: ..Time.current).where(status: :active, cancelled_at: nil) }
 
   validates :account_id, uniqueness: { conditions: -> { where(status: [ :active, :trialing ]) },
                                        message: :active_subscription_exists }
@@ -33,7 +33,7 @@ class Subscription < ApplicationRecord
   end
 
   def due_for_renewal?
-    active? && current_period_end.present? && current_period_end <= Time.current
+    active? && cancelled_at.nil? && current_period_end.present? && current_period_end <= Time.current
   end
 
   def days_until_trial_end
@@ -44,7 +44,7 @@ class Subscription < ApplicationRecord
 
   def cancel!(immediate: false)
     if immediate
-      update!(status: :cancelled, cancelled_at: Time.current)
+      update!(status: expired? ? :expired : :cancelled, cancelled_at: Time.current)
     else
       update!(cancelled_at: Time.current)
       # Will be cancelled at period end by SubscriptionRenewalWorker

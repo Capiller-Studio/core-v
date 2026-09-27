@@ -14,17 +14,33 @@ class UsageResetWorker
                 .where(next_usage_reset_at: ..Time.current)
                 .find_each do |subscription|
       
-      # 1. Reset standard usage limits
-      subscription.account.reset_monthly_counters!
-      
-      # 2. Grant fresh AI credits
-      grant_monthly_ai_credits(subscription)
-      
-      # 3. Calculate exactly when the NEXT reset should happen
-      # Using advance(months: 1) keeps it anchored closely to the start_date's day-of-month,
-      # but if they were overdue by several months, we must skip forward to the correct future date.
-      next_reset = calculate_next_reset(subscription.next_usage_reset_at, today)
-      subscription.update!(next_usage_reset_at: next_reset)
+      begin
+        # 1. Reset standard usage limits
+        subscription.account.reset_monthly_counters!
+
+        # 2. Grant fresh AI credits
+        grant_monthly_ai_credits(subscription)
+
+        # 3. Calculate exactly when the NEXT reset should happen
+        # Using advance(months: 1) keeps it anchored closely to the start_date's day-of-month,
+        # but if they were overdue by several months, we must skip forward to the correct future date.
+        next_reset = calculate_next_reset(subscription.next_usage_reset_at, today)
+        subscription.update!(next_usage_reset_at: next_reset)
+      rescue StandardError => e
+        Rails.logger.error("Usage reset failed for subscription##{subscription.id}: #{e.message}")
+        SystemLogs::Logger.call(
+          event_key: SystemLogs::EventKeys::SYSTEM_WORKER_FAILED,
+          level: :error,
+          account: subscription.account,
+          message: "UsageResetWorker failure on subscription##{subscription.id}: #{e.message}",
+          payload: {
+            worker: "UsageResetWorker",
+            subscription_id: subscription.id,
+            error: e.message,
+            backtrace: e.backtrace&.first(10)
+          }
+        )
+      end
     end
   end
 

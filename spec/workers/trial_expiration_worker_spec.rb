@@ -24,6 +24,21 @@ RSpec.describe TrialExpirationWorker, type: :worker do
           described_class.new.perform
         }.to change { Notification.where(account: account, event: :trial_expiring).count }.by(1)
       end
+
+      it 'does not create duplicate notifications if already notified within 3 days' do
+        account.with_shard do
+          Notification.create!(
+            account: account,
+            user: owner_user,
+            resource: expiring_subscription,
+            event: :trial_expiring
+          )
+        end
+
+        expect {
+          described_class.new.perform
+        }.not_to change { Notification.where(account: account, event: :trial_expiring).count }
+      end
     end
 
     context 'expiring ended trials' do
@@ -36,10 +51,17 @@ RSpec.describe TrialExpirationWorker, type: :worker do
         )
       end
 
-      it 'downgrades and cancels subscription when no default payment method is present' do
+      it 'downgrades, cancels, and logs BILLING_TRIAL_EXPIRED when no payment method and insufficient wallet' do
         expect(Billing::SubscriptionCanceller).to receive(:call).with(
           subscription: ended_subscription,
           immediate: true
+        )
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::BILLING_TRIAL_EXPIRED,
+            level: :warn,
+            account: account
+          )
         )
 
         described_class.new.perform
@@ -54,11 +76,59 @@ RSpec.describe TrialExpirationWorker, type: :worker do
         allow_any_instance_of(Subscription).to receive(:account).and_return(account)
 
         expect(Billing::ChargeProcessor).to receive(:call).and_return({ status: :completed })
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::BILLING_TRIAL_CONVERTED,
+            level: :info,
+            account: account
+          )
+        )
 
         described_class.new.perform
 
         ended_subscription.reload
         expect(ended_subscription.status).to eq('active')
+      end
+
+      it 'converts trial to active using wallet balance when payment method is nil but wallet covers total_price' do
+        wallet = account.wallet || create(:wallet, account: account)
+        wallet.update!(balance: 1000.0)
+        allow(account).to receive(:default_payment_method).and_return(nil)
+        allow(Subscription).to receive(:where).and_call_original
+        allow_any_instance_of(Subscription).to receive(:account).and_return(account)
+
+        expect(Billing::ChargeProcessor).to receive(:call).with(
+          account: account,
+          amount: ended_subscription.total_price,
+          currency: account.currency,
+          description: "#{ended_subscription.plan.name.capitalize} plan — trial conversion",
+          subscription: ended_subscription
+        ).and_return({ status: :completed })
+
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::BILLING_TRIAL_CONVERTED,
+            level: :info,
+            account: account
+          )
+        )
+
+        described_class.new.perform
+
+        ended_subscription.reload
+        expect(ended_subscription.status).to eq('active')
+      end
+
+      it 'rescues unexpected errors and logs SYSTEM_WORKER_FAILED to SystemLogs::Logger' do
+        allow_any_instance_of(described_class).to receive(:expire_trial).and_raise(StandardError.new('Unexpected DB error'))
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::SYSTEM_WORKER_FAILED,
+            level: :error
+          )
+        )
+
+        described_class.new.perform
       end
     end
   end

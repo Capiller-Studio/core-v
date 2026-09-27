@@ -21,6 +21,18 @@ module Billing
           end
         end
       end
+
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::BILLING_SUBSCRIPTION_CANCELLED,
+        level: :warn,
+        account: subscription.account,
+        message: "Subscription cancelled for #{subscription.account.name} (#{subscription.plan.name.capitalize})#{immediate ? ' immediately' : ' scheduled at period end'}",
+        payload: {
+          subscription_id: subscription.id,
+          plan: subscription.plan.name,
+          immediate: immediate
+        }
+      )
     end
 
     private

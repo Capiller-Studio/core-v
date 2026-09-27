@@ -66,6 +66,81 @@ RSpec.describe ConversationSla, type: :model do
       it 'returns false by default if targets are missing' do
         expect(conversation_sla.sla_breached?).to be false
       end
+
+      context 'when target_first_response_at is set' do
+        before do
+          conversation_sla.update!(target_first_response_at: 10.minutes.ago)
+        end
+
+        it 'returns true if first response was never given and target passed' do
+          expect(conversation_sla.sla_breached?).to be true
+        end
+
+        it 'returns false if first response was given before target' do
+          conversation.update_column(:first_respond_at, 15.minutes.ago)
+          expect(conversation_sla.sla_breached?).to be false
+        end
+
+        it 'returns true if first response was given after target' do
+          conversation.update_column(:first_respond_at, 5.minutes.ago)
+          expect(conversation_sla.sla_breached?).to be true
+        end
+
+        it 'falls back to outgoing message created_at if first_respond_at is nil' do
+          user = create(:user)
+          # Create message 15 minutes ago (before target 10 minutes ago)
+          create(:message, account: account, conversation: conversation, sender: user, created_at: 15.minutes.ago)
+          conversation.update_column(:first_respond_at, nil)
+
+          expect(conversation_sla.sla_breached?).to be false
+        end
+      end
+
+      context 'when target_resolution_at is set' do
+        before do
+          conversation_sla.update!(target_resolution_at: 10.minutes.ago)
+        end
+
+        it 'returns true if conversation is resolved after target' do
+          conversation.update!(status: :resolved, status_changed_at: 5.minutes.ago)
+          expect(conversation_sla.sla_breached?).to be true
+        end
+
+        it 'falls back to updated_at when status_changed_at is nil on resolved conversation' do
+          conversation.update_columns(status: Conversation.statuses[:resolved], status_changed_at: nil, updated_at: 5.minutes.ago)
+          expect(conversation_sla.sla_breached?).to be true
+        end
+
+        it 'returns false if conversation was resolved before target' do
+          conversation.update!(status: :resolved, status_changed_at: 15.minutes.ago)
+          expect(conversation_sla.sla_breached?).to be false
+        end
+
+        it 'returns true if conversation is still open past target' do
+          conversation.update!(status: :active)
+          expect(conversation_sla.sla_breached?).to be true
+        end
+      end
+
+      context 'when target_next_response_at is set' do
+        let(:customer) { create(:customer, account: account) }
+
+        before do
+          conversation_sla.update!(target_next_response_at: 5.minutes.ago)
+        end
+
+        it 'returns true if there is an unanswered customer message past target' do
+          create(:message, account: account, conversation: conversation, sender: customer, created_at: 10.minutes.ago)
+          expect(conversation_sla.sla_breached?).to be true
+        end
+
+        it 'returns false if the last message is from an agent' do
+          create(:message, account: account, conversation: conversation, sender: customer, created_at: 10.minutes.ago)
+          user = create(:user)
+          create(:message, account: account, conversation: conversation, sender: user, created_at: 2.minutes.ago)
+          expect(conversation_sla.sla_breached?).to be false
+        end
+      end
     end
   end
 end

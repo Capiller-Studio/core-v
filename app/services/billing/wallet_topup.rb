@@ -36,7 +36,16 @@ module Billing
         payment_method_id: payment_method.external_id
       )
 
-      raise("Payment failed: #{result[:error]}") if result[:status] == :failed
+      if result[:status] == :failed
+        SystemLogs::Logger.call(
+          event_key: SystemLogs::EventKeys::BILLING_PAYMENT_FAILED,
+          level: :error,
+          account: account,
+          message: "Wallet top-up failed: #{result[:error]}",
+          payload: { amount: amount.to_f, currency: currency, error: result[:error] }
+        )
+        raise("Payment failed: #{result[:error]}")
+      end
 
       transaction = Transaction.create!(
         account:,
@@ -50,6 +59,19 @@ module Billing
       )
 
       account.wallet.credit!(amount, description: "Top-up via #{payment_method.display_name}", reference: transaction)
+
+      SystemLogs::Logger.call(
+        event_key: SystemLogs::EventKeys::BILLING_WALLET_TOPPED_UP,
+        level: :info,
+        account: account,
+        message: "Wallet topped up with #{amount} #{currency} via #{payment_method.display_name}",
+        payload: {
+          amount: amount.to_f,
+          currency: currency,
+          transaction_id: transaction.id,
+          new_balance: account.wallet.balance.to_f
+        }
+      )
 
       transaction
     end

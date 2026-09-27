@@ -75,8 +75,8 @@ RSpec.describe Message, type: :model do
       expect(payload[:content]).to eq(message.content)
       expect(payload[:status]).to eq(message.status)
       expect(payload[:source]).to eq(message.source)
-      expect(payload[:is_edited]).to eq(false)
-      expect(payload[:is_deleted]).to eq(false)
+      expect(payload[:is_edited]).to be(false)
+      expect(payload[:is_deleted]).to be(false)
       expect(payload[:reactions]).to eq([])
     end
   end
@@ -259,6 +259,36 @@ RSpec.describe Message, type: :model do
       allow(message).to receive(:inbox).and_return(inbox)
       message.save!
       expect(conversation.reload.ai_status).to eq('ai_handed_off')
+    end
+  end
+
+  describe '#track_first_response' do
+    let(:account) { create(:account) }
+    let(:inbox) { create(:inbox, account: account) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox, first_respond_at: nil) }
+    let(:user) { create(:user) }
+    let(:customer) { create(:customer, account: account) }
+
+    it 'sets conversation.first_respond_at on first outgoing message' do
+      expect {
+        create(:message, account: account, conversation: conversation, sender: user)
+      }.to change { conversation.reload.first_respond_at }.from(nil)
+
+      expect(conversation.first_respond_at).to be_within(2.seconds).of(Time.current)
+    end
+
+    it 'does not overwrite existing conversation.first_respond_at on subsequent outgoing messages' do
+      first_time = 1.hour.ago.change(usec: 0)
+      conversation.update_column(:first_respond_at, first_time)
+
+      create(:message, account: account, conversation: conversation, sender: user)
+      expect(conversation.reload.first_respond_at).to eq(first_time)
+    end
+
+    it 'does not set conversation.first_respond_at on incoming customer messages' do
+      expect {
+        create(:message, account: account, conversation: conversation, sender: customer)
+      }.not_to change { conversation.reload.first_respond_at }
     end
   end
 end

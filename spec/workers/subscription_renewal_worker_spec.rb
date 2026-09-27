@@ -34,6 +34,13 @@ RSpec.describe SubscriptionRenewalWorker, type: :worker do
           description: "#{plan.name.capitalize} plan renewal",
           subscription: subscription
         ).and_return({ status: :completed })
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::BILLING_SUBSCRIPTION_RENEWED,
+            level: :info,
+            account: account
+          )
+        )
 
         described_class.new.perform
 
@@ -42,8 +49,15 @@ RSpec.describe SubscriptionRenewalWorker, type: :worker do
         expect(subscription.current_period_end).to be > Time.current
       end
 
-      it 'marks subscription past_due and creates failure notification on payment failure' do
-        expect(Billing::ChargeProcessor).to receive(:call).and_return({ status: :failed })
+      it 'marks subscription past_due, creates failure notification, and logs error on payment failure' do
+        expect(Billing::ChargeProcessor).to receive(:call).and_return({ status: :failed, error: 'Card declined' })
+        expect(SystemLogs::Logger).to receive(:call).with(
+          hash_including(
+            event_key: SystemLogs::EventKeys::BILLING_PAYMENT_FAILED,
+            level: :error,
+            account: account
+          )
+        )
 
         expect {
           described_class.new.perform

@@ -15,7 +15,6 @@ module Conversations
       return unless agent
 
       conversation.assign!(agent)
-      create_assignment_notification(agent)
     end
 
     private
@@ -38,24 +37,19 @@ module Conversations
       pick_round_robin(eligible_agents)
     end
 
-    # Agents must satisfy ALL conditions:
+    # Agents must satisfy:
     # 1. Active in Redis (recent heartbeat within ActivityHelpers margin)
-    # 2. AccountUser.availability is :online
-    # 3. Member of the inbox AND team (if team assigned)
+    # 2. Member of the inbox AND team (if team assigned)
     def find_eligible_agents
       account = conversation.account
       inbox = conversation.inbox
       team = conversation.team
 
-      # Get user IDs who are active in Redis (recent heartbeat)
-      active_user_ids = ::Utilities::ActivityHelpers.available_user_ids(account.id)
-      return [] if active_user_ids.blank?
-
       # Base candidate IDs: inbox agents (direct or via assigned teams)
       base_agent_ids = inbox.inbox_users.pluck(:user_id).map(&:to_s)
       if base_agent_ids.blank? && inbox.inbox_teams.any?
         team_ids = inbox.inbox_teams.pluck(:team_id)
-        base_agent_ids = TeamUser.where(team_id: team_ids).pluck(:user_id).map(&:to_s).uniq
+        base_agent_ids = TeamUser.where(team_id: team_ids).distinct.pluck(:user_id).map(&:to_s)
       end
 
       # If assigned to a team, candidates must also be members of that team
@@ -66,14 +60,17 @@ module Conversations
 
       return [] if base_agent_ids.blank?
 
-      # Intersect: must be both active AND in the candidate pool
+      # Get user IDs who are active in Redis (recent heartbeat)
+      active_user_ids = ::Utilities::ActivityHelpers.available_user_ids(account.id)
+      return [] if active_user_ids.blank?
+
       candidate_ids = active_user_ids & base_agent_ids
       return [] if candidate_ids.blank?
 
       # Filter: AccountUser.availability must be :online
-      # TODO: Commented out temporarily until UI is built for agent availability toggles
+      # TODO: Uncomment once UI for agent availability toggle is implemented
       # AccountUser.where(
-      #   account:,
+      #   account: account,
       #   user_id: candidate_ids,
       #   availability: :online
       # ).pluck(:user_id).map(&:to_s)
@@ -117,15 +114,6 @@ module Conversations
           inbox_id: conversation.inbox_id
         )
       end
-    end
-
-    def create_assignment_notification(agent)
-      Notification.create(
-        account: conversation.account,
-        user: agent,
-        resource: conversation,
-        event: :conversation_assigned
-      )
     end
   end
 end

@@ -278,4 +278,68 @@ RSpec.describe Conversation, type: :model do
       end
     end
   end
+
+  describe 'Status Timestamps and Helpers' do
+    let(:account) { create(:account) }
+    let(:conv) { create(:conversation, account: account, status: :active) }
+
+    describe '#update_status_timestamps' do
+      it 'updates status_changed_at and last_activity_at when status changes' do
+        expect {
+          conv.update!(status: :resolved)
+        }.to change(conv, :status_changed_at).from(nil)
+
+        expect(conv.status_changed_at).to be_within(2.seconds).of(Time.current)
+        expect(conv.last_activity_at).to be_within(2.seconds).of(Time.current)
+      end
+
+      it 'preserves explicitly passed status_changed_at' do
+        past_time = 1.hour.ago.change(usec: 0)
+        conv.update!(status: :resolved, status_changed_at: past_time)
+        expect(conv.status_changed_at).to eq(past_time)
+      end
+
+      it 'does not alter status_changed_at when updating other attributes' do
+        conv.update!(status: :resolved)
+        original_time = conv.status_changed_at
+
+        conv.update!(title: 'Updated Title')
+        expect(conv.status_changed_at).to eq(original_time)
+      end
+    end
+
+    describe '#resolved_at' do
+      it 'returns status_changed_at when status is resolved' do
+        conv.update!(status: :resolved)
+        expect(conv.resolved_at).to eq(conv.status_changed_at)
+      end
+
+      it 'returns nil when status is not resolved' do
+        expect(conv.resolved_at).to be_nil
+      end
+    end
+
+    describe '#closed_at' do
+      it 'returns status_changed_at when status is closed' do
+        conv.update!(status: :closed)
+        expect(conv.closed_at).to eq(conv.status_changed_at)
+      end
+
+      it 'returns nil when status is not closed' do
+        expect(conv.closed_at).to be_nil
+      end
+    end
+
+    describe '#drain_unassigned_queue' do
+      it 'enqueues QueueDrainWorker when status changes to resolved' do
+        expect(AssignmentPolicies::QueueDrainWorker).to receive(:perform_async).with(conv.account_id, conv.inbox_id)
+        conv.update!(status: :resolved)
+      end
+
+      it 'enqueues QueueDrainWorker when status changes to closed' do
+        expect(AssignmentPolicies::QueueDrainWorker).to receive(:perform_async).with(conv.account_id, conv.inbox_id)
+        conv.update!(status: :closed)
+      end
+    end
+  end
 end

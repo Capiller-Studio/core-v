@@ -25,6 +25,9 @@ module RedisUtilities
     AI_CLASSIFIER_LOCK = "AI_CLASSIFIER_LOCK:%{account_id}:%{conversation_id}"
     LANGUAGE_DETECTION_LOCK = "LANGUAGE_DETECTION_LOCK:%{account_id}:%{conversation_id}"
     LIMIT_NOTIFICATION_LOCK = "LIMIT_NOTIFICATION:%{account_id}:%{resource}:%{threshold}:%{window}"
+    QUEUE_DRAIN_LOCK = "QUEUE_DRAIN_LOCK:%{account_id}:%{inbox_id}"
+    BACKLOG_STATUS = "BACKLOG_STATUS:%{account_id}"
+    QUEUE_DRAIN_THROTTLE = "QUEUE_DRAIN_THROTTLE:%{account_id}"
 
     SUBSCRIPTION_LOCK = "SUBSCRIPTION_LOCK:%{account_id}"
     WALLET_LOCK = "WALLET_LOCK:%{account_id}"

@@ -62,12 +62,21 @@ class ConversationSla < ShardRecord
 
   def initial_response_breached?
     return false unless target_first_response_at
-    conversation.first_respond_at.blank? && Time.current > target_first_response_at
+
+    response_time = conversation.first_respond_at || conversation.messages.where(sender_type: %w[User Account Ai::Agent]).minimum(:created_at)
+    if response_time.present?
+      response_time > target_first_response_at
+    elsif conversation.resolved? || conversation.closed?
+      resolved_time = conversation.status_changed_at || conversation.updated_at || Time.current
+      resolved_time > target_first_response_at
+    else
+      Time.current > target_first_response_at
+    end
   end
 
   def response_breached?
     return false unless target_next_response_at
-    
+
     # Only check if there are unanswered customer messages
     last_message = conversation.messages.order(created_at: :desc).first
     return false unless last_message&.sender_type == "Customer"
@@ -77,7 +86,13 @@ class ConversationSla < ShardRecord
 
   def resolution_breached?
     return false unless target_resolution_at
-    !conversation.resolved? && !conversation.closed? && Time.current > target_resolution_at
+
+    resolved_time = conversation.status_changed_at || conversation.updated_at || Time.current
+    if conversation.resolved? || conversation.closed?
+      resolved_time > target_resolution_at
+    else
+      Time.current > target_resolution_at
+    end
   end
 
   def calculate_target(limit, start_time)
