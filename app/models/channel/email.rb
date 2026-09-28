@@ -86,7 +86,9 @@ module Channel
         port: smtp_config[:port] || 587,
         user_name: smtp_config[:username],
         password: smtp_config[:password],
-        domain: smtp_config[:domain],
+        domain: smtp_config[:domain].presence ||
+                extract_domain(email) ||
+                extract_domain(smtp_config[:username]),
         authentication: (smtp_config[:authentication] || "plain").to_sym,
         enable_starttls_auto: smtp_config[:enable_starttls] != false
       }.compact
@@ -188,6 +190,12 @@ module Channel
           route_value: forward_email
         ).delete_all
       end
+    end
+
+    def extract_domain(str)
+      return nil unless str.to_s.include?("@")
+
+      str.to_s.split("@").last.presence
     end
   end
 end
