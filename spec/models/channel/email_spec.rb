@@ -62,5 +62,59 @@ RSpec.describe Channel::Email, type: :model do
       ce = build(:channel_email)
       expect(ce.supported_formatting).to include(:bold, :italic, :strikethrough)
     end
+
+    describe '#smtp_delivery_options' do
+      it 'falls back to email domain when smtp domain is blank or missing' do
+        ce = build(:channel_email,
+                   email: 'support@myhelpdesk.com',
+                   smtp_enabled: true,
+                   smtp_configurations: {
+                     'address' => 'smtp.provider.com',
+                     'port' => 587,
+                     'username' => 'apikey',
+                     'password' => 'secret',
+                     'domain' => '',
+                     'authentication' => 'plain'
+                   })
+        opts = ce.smtp_delivery_options
+        expect(opts[:domain]).to eq('myhelpdesk.com')
+      end
+
+      it 'uses explicit smtp domain when provided' do
+        ce = build(:channel_email,
+                   email: 'support@myhelpdesk.com',
+                   smtp_enabled: true,
+                   smtp_configurations: {
+                     'address' => 'smtp.provider.com',
+                     'domain' => 'custom-smtp.com'
+                   })
+        opts = ce.smtp_delivery_options
+        expect(opts[:domain]).to eq('custom-smtp.com')
+      end
+
+      it 'falls back to username domain if channel email has no domain' do
+        ce = build(:channel_email,
+                   email: nil,
+                   smtp_enabled: true,
+                   smtp_configurations: {
+                     'address' => 'smtp.provider.com',
+                     'username' => 'admin@mailprovider.org'
+                   })
+        opts = ce.smtp_delivery_options
+        expect(opts[:domain]).to eq('mailprovider.org')
+      end
+
+      it 'omits domain key if no domain can be derived' do
+        ce = build(:channel_email,
+                   email: nil,
+                   smtp_enabled: true,
+                   smtp_configurations: {
+                     'address' => 'smtp.provider.com',
+                     'username' => 'apikey_without_domain'
+                   })
+        opts = ce.smtp_delivery_options
+        expect(opts).not_to have_key(:domain)
+      end
+    end
   end
 end
