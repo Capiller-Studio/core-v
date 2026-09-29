@@ -49,6 +49,44 @@ RSpec.describe Messages::OfflineReplyWorker, type: :worker do
       described_class.new.perform(account.id, message.id)
     end
 
+    it 'delivers reply even if conversation was marked as resolved' do
+      conversation.update_column(:status, :resolved)
+      allow(::Utilities::ActivityHelpers).to receive(:activity?).and_return(false)
+      mail_double = double('MailMessage', deliver_now: double('Mail', message_id: '<msg-resolved@example.com>'))
+      expect(ConversationReplyMailer).to receive(:reply).with(conversation, message, nil).and_return(mail_double)
+
+      described_class.new.perform(account.id, message.id)
+      expect(message.reload.status).to eq('delivered')
+    end
+
+    it 'skips delivery if message is deleted' do
+      message.update_column(:deleted_at, Time.current)
+      expect(ConversationReplyMailer).not_to receive(:reply)
+
+      described_class.new.perform(account.id, message.id)
+    end
+
+    it 'skips delivery if message is personal (private note)' do
+      message.update_column(:visibility, 0) # personal
+      expect(ConversationReplyMailer).not_to receive(:reply)
+
+      described_class.new.perform(account.id, message.id)
+    end
+
+    it 'skips delivery if message is incoming' do
+      message.update_column(:sender_type, 'Customer')
+      expect(ConversationReplyMailer).not_to receive(:reply)
+
+      described_class.new.perform(account.id, message.id)
+    end
+
+    it 'skips delivery if message is already delivered with external_id' do
+      message.update_columns(status: :delivered, external_id: '<already-sent@example.com>')
+      expect(ConversationReplyMailer).not_to receive(:reply)
+
+      described_class.new.perform(account.id, message.id)
+    end
+
     it 'marks status as failed and re-raises on mailer error' do
       allow(::Utilities::ActivityHelpers).to receive(:activity?).and_return(false)
       allow(ConversationReplyMailer).to receive(:reply).and_raise(StandardError.new('SMTP error'))

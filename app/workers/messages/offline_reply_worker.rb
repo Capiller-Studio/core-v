@@ -13,17 +13,23 @@ module Messages
       account.with_shard do
         msg = Message.find_by(id: message_id)
         return unless msg
+        return if msg.deleted?
+        return if msg.incoming?
+        return if msg.personal?
         return if msg.read?
+        return if msg.external_id.present?
 
         conversation = msg.conversation
+        return unless conversation
+
         customer = conversation.customers.first
-        
+        return if customer.nil? || customer.email.blank?
+
         # Don't send offline emails if the customer is currently online/active in the widget
-        return if ::Utilities::ActivityHelpers.activity?(account.id, "Customer", customer&.id)
+        return if ::Utilities::ActivityHelpers.activity?(account.id, "Customer", customer.id)
+
         channel = conversation.inbox.channel
         return unless channel.is_a?(Channel::WebWidget)
-
-        return if customer&.email.blank?
 
         # Fallback channel logic
         outbound = channel.fallback_channel

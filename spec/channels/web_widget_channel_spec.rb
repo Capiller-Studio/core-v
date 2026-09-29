@@ -95,4 +95,29 @@ RSpec.describe WebWidgetChannel, type: :channel do
       perform :typing, { 'status' => 'on' }
     end
   end
+
+  describe '#read' do
+    let(:user) { create(:user) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox, status: :active) }
+    let!(:outgoing_message) { create(:message, account: account, conversation: conversation, sender: user, status: :sent) }
+
+    before do
+      subscribe(connection_token: connection_token)
+      create(:conversation_member, conversation: conversation, member: customer, account: account)
+      allow(UnreadCounts::Reset).to receive(:call)
+    end
+
+    it 'marks outgoing messages as read, resets unread counts, and updates activity' do
+      perform :read, { 'conversation_id' => conversation.id, 'message_id' => outgoing_message.id }
+
+      outgoing_message.reload
+      expect(outgoing_message.status).to eq('read')
+      expect(UnreadCounts::Reset).to have_received(:call).with(conversation, customer)
+      expect(::Utilities::ActivityHelpers).to have_received(:update_activity).with(
+        account.id,
+        'Customer',
+        customer.id
+      ).at_least(:once)
+    end
+  end
 end

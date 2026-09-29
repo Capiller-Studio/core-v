@@ -43,6 +43,32 @@ class WebWidgetChannel < ApplicationCable::Channel
     end
   end
 
+  def read(data = {})
+    track_activity
+    return unless current_account && current_customer
+
+    current_account.with_shard do
+      message_id = data["message_id"]
+      if message_id.present?
+        msg = Message.find_by(id: message_id, account_id: current_account.id)
+        msg.read! if msg && !msg.incoming? && !msg.read?
+      end
+
+      conversation_id = data["conversation_id"]
+      conversation = if conversation_id.present?
+                       current_customer.conversations.find_by(id: conversation_id)
+      else
+                       current_customer.conversations.where(inbox_id: customer_inbox&.inbox_id).active.last
+      end
+
+      if conversation
+        unread = conversation.messages.where.not(sender_type: "Customer").where.not(status: :read)
+        unread.find_each(&:read!) if unread.exists?
+        UnreadCounts::Reset.call(conversation, current_customer)
+      end
+    end
+  end
+
   private
 
   def configure_connection_token
