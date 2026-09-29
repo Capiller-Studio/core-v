@@ -119,5 +119,21 @@ RSpec.describe WebWidgetChannel, type: :channel do
         customer.id
       ).at_least(:once)
     end
+
+    it 'finds active conversation when conversation_id is omitted' do
+      perform :read
+
+      outgoing_message.reload
+      expect(outgoing_message.status).to eq('read')
+      expect(UnreadCounts::Reset).to have_received(:call).with(conversation, customer)
+    end
+
+    it 'does not mark incoming customer messages as read' do
+      incoming_msg = create(:message, account: account, conversation: conversation, sender: customer, status: :sent)
+      perform :read, { 'message_id' => incoming_msg.id }
+
+      incoming_msg.reload
+      expect(incoming_msg.status).to eq('sent')
+    end
   end
 end
