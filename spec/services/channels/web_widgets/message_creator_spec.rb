@@ -61,6 +61,51 @@ RSpec.describe Channels::WebWidgets::MessageCreator do
         expect(pdf_attachment.file).to be_attached
         expect(pdf_attachment.file.content_type).to eq('application/pdf')
       end
+
+      it 'respects attachment_type if file responds to attachment_type' do
+        file_record = create(:attachment, account: account, attachment_type: :file)
+        audio_record = create(:attachment, account: account, attachment_type: :audio)
+
+        custom_service = described_class.new(
+          account: account, inbox: inbox, conversation: conversation, sender: sender,
+          content: 'Pre-typed attachments', attachments: [file_record, audio_record]
+        )
+
+        expect(custom_service.send(:detect_type, file_record)).to eq('file')
+        expect(custom_service.send(:detect_type, audio_record)).to eq('audio')
+      end
+
+      it 'reassigns existing Attachment records to the newly created message on call' do
+        old_message = create(:message, account: account, conversation: conversation)
+        audio_record = create(:attachment, account: account, resource: old_message, attachment_type: :audio)
+
+        custom_service = described_class.new(
+          account: account, inbox: inbox, conversation: conversation, sender: sender,
+          content: 'Here is your voice note', attachments: [audio_record]
+        )
+
+        msg = custom_service.call
+        expect(audio_record.reload.resource).to eq(msg)
+        expect(msg.attachments).to include(audio_record)
+      end
+
+      it 'detects audio MIME types and uppercase extensions' do
+        service_instance = described_class.new(
+          account: account, inbox: inbox, conversation: conversation, sender: sender
+        )
+
+        audio_upload = double('Upload', is_a?: false, content_type: 'audio/webm', original_filename: 'voice.webm')
+        expect(service_instance.send(:detect_type, audio_upload)).to eq(:audio)
+
+        uppercase_wav = double('Upload', is_a?: false, content_type: 'application/octet-stream', original_filename: 'VOICE.WAV')
+        expect(service_instance.send(:detect_type, uppercase_wav)).to eq(:audio)
+
+        uppercase_png = double('Upload', is_a?: false, content_type: 'application/octet-stream', original_filename: 'IMAGE.PNG')
+        expect(service_instance.send(:detect_type, uppercase_png)).to eq(:image)
+
+        blob_double = double('Blob', is_a?: false, content_type: 'audio/mpeg', filename: double(to_s: 'podcast.mp3'))
+        expect(service_instance.send(:detect_type, blob_double)).to eq(:audio)
+      end
     end
 
     context 'when an error occurs during attachment' do

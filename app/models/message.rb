@@ -155,6 +155,7 @@ class Message < ShardRecord
       is_edited: edited?,
       is_deleted: deleted?,
       reactions: reactions.map(&:event_payload),
+      attachments: attachments.map(&:event_payload),
       inbox_id:,
       incoming: incoming?,
       created_at:,

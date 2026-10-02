@@ -100,5 +100,47 @@ RSpec.describe Attachment, type: :model do
         expect(attachment.referenced_in_published_content?).to be false
       end
     end
+
+    describe '#direct_download_url' do
+      it 'returns nil when file is not attached' do
+        expect(attachment.direct_download_url).to be_nil
+      end
+
+      it 'returns relative blob path when host is missing from ActiveStorage options' do
+        attachment.file.attach(io: StringIO.new('dummy'), filename: 'test.png', content_type: 'image/png')
+        ActiveStorage::Current.url_options = nil
+        allow(Rails.application.routes).to receive(:default_url_options).and_return({})
+        allow(ActionMailer::Base).to receive(:default_url_options).and_return({})
+
+        url = attachment.direct_download_url
+        expect(url).to include('/blobs/').and(start_with('/'))
+      end
+    end
+
+    describe '#event_payload' do
+      it 'returns serializable attachment hash with url and metadata' do
+        attachment.file.attach(io: StringIO.new('dummy'), filename: 'dummy.png', content_type: 'image/png')
+        payload = attachment.event_payload
+
+        expect(payload[:id]).to eq(attachment.id)
+        expect(payload[:attachment_type]).to eq('image')
+        expect(payload[:content_type]).to eq('image/png')
+        expect(payload[:filename]).to eq('dummy.png')
+        expect(payload[:byte_size]).to be_present
+        expect(payload[:url]).to be_present
+        expect(payload[:direct_download_url]).to be_present
+      end
+
+      it 'falls back to remote_url when file is not attached' do
+        attachment.update_columns(remote_url: 'https://example.com/external-image.jpg')
+        payload = attachment.event_payload
+
+        expect(payload[:id]).to eq(attachment.id)
+        expect(payload[:url]).to eq('https://example.com/external-image.jpg')
+        expect(payload[:direct_download_url]).to eq('https://example.com/external-image.jpg')
+        expect(payload[:content_type]).to be_nil
+        expect(payload[:filename]).to be_nil
+      end
+    end
   end
 end
