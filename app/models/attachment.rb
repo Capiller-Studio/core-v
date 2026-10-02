@@ -62,9 +62,37 @@ class Attachment < ShardRecord
     return unless file.attached?
 
     if ActiveStorage::Current.url_options.blank?
-      ActiveStorage::Current.url_options = Rails.application.routes.default_url_options.presence || ActionMailer::Base.default_url_options
+      options = Rails.application.routes.default_url_options.presence || ActionMailer::Base.default_url_options
+      ActiveStorage::Current.url_options = options if options.present? && options[:host].present?
     end
-    file.blob.url
+
+    if ActiveStorage::Current.url_options.present?
+      file.blob.url
+    else
+      Rails.application.routes.url_helpers.rails_blob_path(file.blob, only_path: true)
+    end
+  rescue StandardError => e
+    Rails.logger.warn("[Attachment#direct_download_url] Failed to generate URL: #{e.message}")
+    nil
+  end
+
+  def event_payload
+    download_url = direct_download_url || remote_url
+    blob = begin
+      file.attached? ? file.blob : nil
+    rescue StandardError
+      nil
+    end
+
+    {
+      id: id,
+      attachment_type: attachment_type,
+      content_type: blob&.content_type,
+      filename: blob&.filename&.to_s,
+      byte_size: blob&.byte_size,
+      url: download_url,
+      direct_download_url: download_url
+    }
   end
 
   # Check if this attachment's URL is referenced in any published template body/compiled_html.

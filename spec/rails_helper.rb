@@ -45,6 +45,7 @@ RSpec.configure do |config|
   end
 
   config.before do
+    ActiveStorage::Current.url_options = { host: "example.com" }
     DatabaseCleaner.start
   end
 

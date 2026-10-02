@@ -78,6 +78,22 @@ RSpec.describe Message, type: :model do
       expect(payload[:is_edited]).to be(false)
       expect(payload[:is_deleted]).to be(false)
       expect(payload[:reactions]).to eq([])
+      expect(payload[:attachments]).to eq([])
+    end
+
+    it 'includes serialized attachment payloads when attachments are attached' do
+      attachment = create(:attachment, resource: message, account: message.account, attachment_type: :audio)
+      attachment.file.attach(io: StringIO.new('audio data'), filename: 'voice.mp3', content_type: 'audio/mpeg')
+
+      payload = message.reload.event_payload
+      expect(payload[:attachments].size).to eq(1)
+
+      att_payload = payload[:attachments].first
+      expect(att_payload[:id]).to eq(attachment.id)
+      expect(att_payload[:attachment_type]).to eq('audio')
+      expect(att_payload[:filename]).to eq('voice.mp3')
+      expect(att_payload[:content_type]).to eq('audio/mpeg')
+      expect(att_payload[:url]).to be_present
     end
   end
 

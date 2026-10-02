@@ -468,6 +468,36 @@ RSpec.describe Messages::MessageCreator, type: :service do
       end
     end
 
+    it "detects uppercase audio extensions (.WAV, .MP3, .OGG)" do
+      %w[.WAV .MP3 .OGG .M4A .AAC .OPUS].each do |ext|
+        file = double("Upload", is_a?: false, content_type: "application/octet-stream", original_filename: "VOICE#{ext}")
+        expect(creator.send(:detect_attachment_type, file)).to eq(:audio)
+      end
+    end
+
+    it "detects uppercase image extensions (.PNG, .JPG, .JPEG, .WEBP)" do
+      %w[.PNG .JPG .JPEG .GIF .WEBP].each do |ext|
+        file = double("Upload", is_a?: false, content_type: "application/octet-stream", original_filename: "PHOTO#{ext}")
+        expect(creator.send(:detect_attachment_type, file)).to eq(:image)
+      end
+    end
+
+    it "detects attachment type from ActiveStorage Blob objects responding to filename and content_type" do
+      blob_audio = double("Blob", is_a?: false, content_type: "audio/ogg", filename: double(to_s: "recording.ogg"))
+      expect(creator.send(:detect_attachment_type, blob_audio)).to eq(:audio)
+
+      blob_image = double("Blob", is_a?: false, content_type: "image/png", filename: double(to_s: "screenshot.png"))
+      expect(creator.send(:detect_attachment_type, blob_image)).to eq(:image)
+    end
+
+    it "falls back to attached file blob when Attachment attachment_type is blank" do
+      dummy_att = build(:attachment, account: account)
+      dummy_att.attachment_type = nil
+      dummy_att.file.attach(io: StringIO.new("fake-audio"), filename: "recording.mp3", content_type: "audio/mpeg")
+
+      expect(creator.send(:detect_attachment_type, dummy_att)).to eq(:audio)
+    end
+
     it "safely handles StringIO uploads where path is undefined or raises" do
       string_io_file = Rack::Test::UploadedFile.new(
         StringIO.new("audio content"),
@@ -475,6 +505,78 @@ RSpec.describe Messages::MessageCreator, type: :service do
         original_filename: "voice.wav"
       )
       expect(creator.send(:detect_attachment_type, string_io_file)).to eq(:audio)
+    end
+  end
+
+  describe "#captionable_attachment?" do
+    let(:inbox) { create(:inbox, account: account) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+    let(:creator) { described_class.new(conversation: conversation, sender: user) }
+
+    it "returns true for image, video, and file attachments" do
+      expect(creator.send(:captionable_attachment?, image_file)).to be true
+      expect(creator.send(:captionable_attachment?, video_file)).to be true
+      expect(creator.send(:captionable_attachment?, pdf_file)).to be true
+    end
+
+    it "returns false for audio attachments" do
+      expect(creator.send(:captionable_attachment?, audio_file)).to be false
+    end
+
+    it "checks attachment_type when given an Attachment record" do
+      audio_att = build(:attachment, account: account, attachment_type: :audio)
+      image_att = build(:attachment, account: account, attachment_type: :image)
+      file_att = build(:attachment, account: account, attachment_type: :file)
+
+      expect(creator.send(:captionable_attachment?, audio_att)).to be false
+      expect(creator.send(:captionable_attachment?, image_att)).to be true
+      expect(creator.send(:captionable_attachment?, file_att)).to be true
+    end
+  end
+
+  describe "existing Attachment records" do
+    let(:inbox) { create(:inbox, account: account) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+
+    it "reassigns resource on existing Attachment record to the newly created message" do
+      old_message = create(:message, account: account, conversation: conversation)
+      attachment_record = create(:attachment, account: account, resource: old_message, attachment_type: :audio)
+      expect(attachment_record.resource).to eq(old_message)
+
+      messages = described_class.call(
+        conversation: conversation,
+        content: "Here is your audio",
+        attachments: [attachment_record],
+        sender: user
+      )
+
+      expect(messages.size).to eq(1)
+      expect(attachment_record.reload.resource).to eq(messages.first)
+      expect(attachment_record.resource).not_to eq(old_message)
+      expect(attachment_record.attachment_type).to eq("audio")
+    end
+  end
+
+  describe "WebWidget channel handling" do
+    let(:channel) { create(:channel_web_widget, account: account) }
+    let(:inbox) { create(:inbox, account: account, channel: channel) }
+    let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+
+    it "creates a single message with multiple mixed attachments and sets attachment types correctly" do
+      messages = described_class.call(
+        conversation: conversation,
+        content: "Mixed media message",
+        attachments: [audio_file, image_file, pdf_file],
+        sender: user
+      )
+
+      expect(messages.size).to eq(1)
+      msg = messages.first
+      expect(msg.content).to eq("Mixed media message")
+      expect(msg.attachments.count).to eq(3)
+
+      types = msg.attachments.map(&:attachment_type)
+      expect(types).to contain_exactly("audio", "image", "file")
     end
   end
 end
