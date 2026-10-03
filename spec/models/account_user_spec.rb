@@ -79,4 +79,21 @@ RSpec.describe AccountUser, type: :model do
       expect(owner.errors[:base]).to include("Account owner cannot be removed")
     end
   end
+
+  describe '#assign_roles' do
+    let(:account) { create(:account) }
+    let(:account_user) { create(:account_user, account: account, user: create(:user)) }
+    let(:role_a) { create(:access_role, account: account, name: 'Custom Lead', identifier: nil) }
+    let(:role_b) { create(:access_role, account: account, name: 'Custom Support', identifier: nil) }
+
+    it 'assigns roles cleanly in shard without cross-database validation errors' do
+      account_user.assign_roles([role_a.id, role_b.id])
+      assigned_role_ids = account.with_shard { account_user.account_user_roles.reload.pluck(:role_id) }
+      expect(assigned_role_ids).to contain_exactly(role_a.id, role_b.id)
+
+      account_user.assign_roles([role_b.id])
+      assigned_role_ids = account.with_shard { account_user.account_user_roles.reload.pluck(:role_id) }
+      expect(assigned_role_ids).to contain_exactly(role_b.id)
+    end
+  end
 end

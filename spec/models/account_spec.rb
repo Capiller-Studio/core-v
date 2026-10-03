@@ -47,6 +47,13 @@ RSpec.describe Account, type: :model do
       expect(invalid_account).not_to be_valid
       expect(invalid_account.errors[:identifier]).to include("can only contain lowercase letters, numbers, and hyphens")
     end
+
+    it 'validates uniqueness of identifier case-insensitively' do
+      create(:account, identifier: 'unique-team')
+      duplicate = build(:account, identifier: 'UNIQUE-TEAM')
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:identifier]).to be_present
+    end
   end
 
   describe 'Callbacks' do
