@@ -74,6 +74,7 @@ class Account < ApplicationRecord
   # rubocop:disable Rails/I18nLocaleTexts
   validates :identifier, presence: true, unless: :deleted?
   validates :referral_code, presence: true, unless: :deleted?
+  validates :identifier, uniqueness: { case_sensitive: false }, if: -> { identifier.present? }
   validates :identifier, exclusion: { in: RESERVED_IDENTIFIERS, message: "is a reserved word and cannot be used" }, if: -> { identifier.present? }
   validates :identifier, format: { with: /\A[a-z0-9-]+\z/, message: "can only contain lowercase letters, numbers, and hyphens" }, length: { minimum: 3, maximum: 63 }, if: -> { identifier.present? }
   # rubocop:enable Rails/I18nLocaleTexts

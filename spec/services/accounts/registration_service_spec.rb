@@ -40,6 +40,15 @@ RSpec.describe Accounts::RegistrationService do
         role_assignment = Access::AccountUserRole.find_by(account_user_id: account_user.id)
         expect(role_assignment).to be_present
         expect(role_assignment.role.identifier).to eq('owner')
+        expect(result.account.identifier).to eq('test-account')
+      end
+
+      it 'uses custom identifier when provided' do
+        custom_service = described_class.new(**params.merge(identifier: 'custom-slug'))
+        result = custom_service.call
+
+        expect(result.success?).to be true
+        expect(result.account.identifier).to eq('custom-slug')
       end
     end
 

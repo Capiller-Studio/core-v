@@ -55,13 +55,16 @@ module Accounts
     end
 
     def create_account_with_owner!(user)
-      account = Account.create!(
+      account_attributes = {
         name: params[:account_name],
         email: user.email,
         locale: params[:locale] || "en",
         currency: params[:currency] || "USD",
         shard_key: params[:shard_key] || "de"
-      )
+      }
+      account_attributes[:identifier] = params[:identifier].to_s.strip.downcase if params[:identifier].present?
+
+      account = Account.create!(account_attributes)
 
       account_user = AccountUser.create!(
         account: account,
