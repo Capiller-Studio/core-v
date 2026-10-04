@@ -25,10 +25,10 @@ RSpec.describe Channel::Custom, type: :model do
         expect(cc).to be_valid
       end
 
-      it 'rejects local hosts unless in dev/test' do
-        # It's test environment so it should allow it
+      it 'rejects local hosts' do
         cc = build(:channel_custom, webhook_url: 'http://localhost/webhook')
-        expect(cc).to be_valid
+        expect(cc).not_to be_valid
+        expect(cc.errors[:webhook_url]).to include('cannot point to localhost or internal network spaces')
       end
 
       it 'rejects invalid format' do

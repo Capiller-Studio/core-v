@@ -20,6 +20,10 @@ module Identities
       headers = render_hash(identity_source.headers, liquid_context)
       params = render_hash(identity_source.params, liquid_context)
 
+      unless Security::UrlValidator.valid_url?(url)
+        raise Security::UrlValidator::InsecureUrlError, I18n.t("security.url_validator.insecure_url_error", url: url, default: "URL resolved to an insecure or internal address: %{url}")
+      end
+
       # 3. Make HTTP Request
       response = execute_request(url, headers, params)
 

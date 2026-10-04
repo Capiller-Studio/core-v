@@ -26,7 +26,7 @@ class Csat::Survey < ShardRecord
   belongs_to :account
   belongs_to :email_template, optional: true
   
-  has_many :inboxes, dependent: :nullify
+  has_many :inboxes, foreign_key: :csat_survey_id, dependent: :nullify
   
   translates(*TRANSLATABLE_FIELDS)
 

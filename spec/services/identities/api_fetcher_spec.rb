@@ -10,6 +10,7 @@ RSpec.describe Identities::ApiFetcher do
     before do
       stub_const('Identities::Mapper', double('MapperClass'))
       allow(identity).to receive(:update!)
+      allow(Security::UrlValidator).to receive(:valid_url?).and_return(true)
     end
 
     it 'raises error if identity is not custom api' do
@@ -44,11 +45,13 @@ RSpec.describe Identities::ApiFetcher do
       expect(service.call).to eq(identity)
     end
 
-    it 'handles errors by saving raw_response error' do
-      allow(HTTParty).to receive(:get).and_raise(StandardError.new('API Down'))
-      
-      expect(identity).to receive(:update!).with(raw_response: { error: 'API Down' })
-      expect(Rails.logger).to receive(:error).with(/Identities::ApiFetcher Error/)
+    it 'blocks execution and updates identity with error if URL resolves to internal or insecure address' do
+      allow(Security::UrlValidator).to receive(:valid_url?).and_return(false)
+
+      expect(HTTParty).not_to receive(:get)
+      expect(identity).to receive(:update!).with(
+        raw_response: hash_including(error: /URL resolved to an insecure or internal address/)
+      )
 
       expect { service.call }.not_to raise_error
     end

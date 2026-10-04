@@ -33,6 +33,7 @@ class Integration < ShardRecord
   validates :status, presence: true
   validates :name, length: { maximum: 255 }, allow_blank: true
   validates :provider, uniqueness: { scope: :account_id, message: :taken }, unless: :webhook?
+  validate :validate_webhook_url_safety, if: -> { (webhook? || slack?) && webhook_url.present? }
 
   WEBHOOK_EVENTS = %w[
     conversation.created
@@ -66,5 +67,14 @@ class Integration < ShardRecord
   # If present, all outgoing webhook requests include a Signature header.
   def webhook_secret
     credentials["webhook_secret"]
+  end
+
+  private
+
+  def validate_webhook_url_safety
+    return if webhook_url.blank?
+
+    result = Security::UrlValidator.validate(webhook_url)
+    errors.add(:base, "Webhook URL #{result[:error]}") unless result[:valid]
   end
 end

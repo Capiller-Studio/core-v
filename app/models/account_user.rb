@@ -83,4 +83,27 @@ class AccountUser < ApplicationRecord
     errors.add(:base, "Account owner cannot be removed")
     throw(:abort)
   end
+
+  after_destroy :cleanup_shard_records
+  after_update :cleanup_shard_records_if_deleted
+
+  def cleanup_shard_records_if_deleted
+    cleanup_shard_records if saved_change_to_status? && deleted?
+  end
+
+  def cleanup_shard_records
+    return unless account.present?
+
+    account.with_shard do
+      team_ids = account.teams.pluck(:id)
+      TeamUser.where(team_id: team_ids, user_id: user_id).destroy_all if team_ids.any?
+
+      inbox_ids = account.inboxes.pluck(:id)
+      InboxUser.where(inbox_id: inbox_ids, user_id: user_id).destroy_all if inbox_ids.any?
+
+      Conversation.where(account_id: account.id, assignee_id: user_id).update_all(assignee_id: nil)
+    end
+  rescue StandardError => e
+    Rails.logger.error("Failed to cleanup shard records for AccountUser #{id}: #{e.message}")
+  end
 end

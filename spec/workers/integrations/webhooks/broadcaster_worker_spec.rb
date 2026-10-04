@@ -8,10 +8,14 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
   let(:delivery) do
     create(:webhook_delivery,
       resource: custom_channel,
-      endpoint_url: 'https://api.example.com/webhook',
+      endpoint_url: 'https://example.com/webhook',
       request_payload: { event: 'ticket.created' },
       status: :pending
     )
+  end
+
+  before do
+    allow(Security::UrlValidator).to receive(:valid_url?).and_return(true)
   end
 
   describe '#perform' do
@@ -22,7 +26,7 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
 
     it 'posts payload with signature header and marks delivery successful' do
       expect(HTTParty).to receive(:post).with(
-        'https://api.example.com/webhook',
+        'https://example.com/webhook',
         body: delivery.request_payload.to_json,
         headers: hash_including(
           'Content-Type' => 'application/json',
@@ -65,6 +69,20 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
       expect(HTTParty).not_to receive(:post)
 
       described_class.new.perform(account.id, delivery.id, 1)
+    end
+
+    it 'blocks HTTP dispatch and marks delivery failed if URL is insecure or internal' do
+      allow(Security::UrlValidator).to receive(:valid_url?).with(delivery.endpoint_url).and_return(false)
+      expect(HTTParty).not_to receive(:post)
+
+      expect {
+        described_class.new.perform(account.id, delivery.id, 1)
+      }.to change(Webhook::DeliveryAttempt, :count).by(1)
+
+      delivery.reload
+      expect(delivery.status).to eq('failed')
+      attempt = delivery.attempts.last
+      expect(attempt.error_trace).to include('Blocked delivery to insecure or internal URL')
     end
   end
 end

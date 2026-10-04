@@ -315,4 +315,18 @@ en:
       awaiting_rating: Awaiting customer response
       survey_message_preview: Customer satisfaction survey sent
       customer_feedback: "Customer Feedback:"
+  security:
+    url_validator:
+      cannot_be_blank: "cannot be blank"
+      invalid_format: "must be a valid URL format"
+      http_or_https_required: "must be an HTTP or HTTPS URL"
+      missing_host: "must contain a valid host"
+      localhost_blocked: "cannot point to localhost or internal network spaces"
+      private_ip_blocked: "cannot point to internal or private IP addresses"
+      resolution_failed: "domain could not be resolved"
+      validation_failed: "could not be validated: %{message}"
+      insecure_url_error: "URL resolved to an insecure or internal address: %{url}"
+  integrations:
+    webhooks:
+      blocked_insecure_url: "Blocked delivery to insecure or internal URL: %{url}"
 
