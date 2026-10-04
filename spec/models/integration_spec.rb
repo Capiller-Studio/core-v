@@ -35,6 +35,42 @@ RSpec.describe Integration, type: :model do
         end
       end
     end
+
+    describe 'webhook_url safety validations' do
+      let(:account) { create(:account) }
+
+      before do
+        allow(Resolv).to receive(:getaddresses).and_call_original
+        allow(Resolv).to receive(:getaddresses).with('example.com').and_return(['93.184.216.34'])
+      end
+
+      it 'allows legitimate public HTTPS endpoints' do
+        integration = build(:integration, account: account, provider: :webhook, settings: { 'webhook_url' => 'https://example.com/webhook' })
+        expect(integration).to be_valid
+      end
+
+      it 'rejects localhost and 127.0.0.1' do
+        integration = build(:integration, account: account, provider: :webhook, settings: { 'webhook_url' => 'http://localhost:3000/webhook' })
+        expect(integration).not_to be_valid
+        expect(integration.errors[:base].join).to include('cannot point to localhost or internal network spaces')
+
+        integration2 = build(:integration, account: account, provider: :webhook, settings: { 'webhook_url' => 'http://127.0.0.1:8080/webhook' })
+        expect(integration2).not_to be_valid
+        expect(integration2.errors[:base].join).to include('cannot point to localhost or internal network spaces')
+      end
+
+      it 'rejects cloud metadata IP' do
+        integration = build(:integration, account: account, provider: :webhook, settings: { 'webhook_url' => 'http://169.254.169.254/latest/meta-data' })
+        expect(integration).not_to be_valid
+        expect(integration.errors[:base].join).to include('cannot point to internal or private IP addresses')
+      end
+
+      it 'rejects private RFC1918 subnets' do
+        integration = build(:integration, account: account, provider: :webhook, settings: { 'webhook_url' => 'http://10.0.0.1/hook' })
+        expect(integration).not_to be_valid
+        expect(integration.errors[:base].join).to include('cannot point to internal or private IP addresses')
+      end
+    end
   end
 
   describe 'Enums' do

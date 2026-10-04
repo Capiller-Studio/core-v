@@ -47,22 +47,8 @@ class IdentitySource < ShardRecord
 
   def validate_source_url_safety
     return if source_url.blank?
-    return if Rails.env.development? || Rails.env.test?
 
-    begin
-      uri = URI.parse(source_url)
-      
-      unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
-        errors.add(:source_url, "must be a valid HTTP or HTTPS URL")
-        return
-      end
-
-      forbidden_hosts = [ "localhost", "127.0.0.1", "0.0.0.0", "::1" ]
-      if forbidden_hosts.include?(uri.host) || uri.host.to_s.end_with?(".local") || uri.host.to_s.end_with?(".internal")
-        errors.add(:source_url, "cannot be a local or private address")
-      end
-    rescue URI::InvalidURIError
-      errors.add(:source_url, "is not a valid URL")
-    end
+    result = Security::UrlValidator.validate(source_url)
+    errors.add(:source_url, result[:error]) unless result[:valid]
   end
 end

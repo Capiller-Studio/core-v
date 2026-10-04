@@ -44,6 +44,17 @@ module Integrations
               headers["Signature"] = "t=#{timestamp},v1=#{signature}"
             end
 
+            unless Security::UrlValidator.valid_url?(delivery.endpoint_url)
+              handle_attempt(
+                account_id: account.id,
+                delivery: delivery,
+                attempt_number: 3,
+                success: false,
+                error: I18n.t("integrations.webhooks.blocked_insecure_url", url: delivery.endpoint_url, default: "Blocked delivery to insecure or internal URL: #{delivery.endpoint_url}")
+              )
+              return
+            end
+
             response = HTTParty.post(
               delivery.endpoint_url,
               body: body,

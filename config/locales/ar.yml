@@ -58,4 +58,18 @@ ar:
         handled_by_html: "شكراً لتواصلك مع الدعم. تمت معالجة هذه المحادثة بواسطة <strong>%{handled_by}</strong>. يُرجى تخصيص لحظة لتقييم تجربتك."
         team_responded: "قام فريقنا في %{account_name} بالرد على طلبك."
         share_feedback: "مشاركة التقييم"
+  security:
+    url_validator:
+      cannot_be_blank: "لا يمكن أن يكون فارغاً"
+      invalid_format: "يجب أن يكون بتنسيق عنوان URL صالح"
+      http_or_https_required: "يجب أن يكون عنوان URL بروتوكول HTTP أو HTTPS"
+      missing_host: "يجب أن يحتوي على مضيف صالح"
+      localhost_blocked: "لا يمكن أن يشير إلى المضيف المحلي أو مساحات الشبكة الداخلية"
+      private_ip_blocked: "لا يمكن أن يشير إلى عناوين IP داخلية أو خاصة"
+      resolution_failed: "تعذر تحليل النطاق"
+      validation_failed: "تعذر التحقق من الصحة: %{message}"
+      insecure_url_error: "تم تحليل عنوان URL إلى عنوان داخلي أو غير آمن: %{url}"
+  integrations:
+    webhooks:
+      blocked_insecure_url: "تم حظر الإرسال إلى عنوان URL غير آمن أو داخلي: %{url}"
 

@@ -58,4 +58,18 @@ es:
         handled_by_html: "Gracias por ponerte en contacto con el soporte. Esta conversación fue atendida por <strong>%{handled_by}</strong>. Tómate un momento para calificar tu experiencia."
         team_responded: "Nuestro equipo en %{account_name} ha respondido a tu solicitud."
         share_feedback: "Compartir comentarios"
+  security:
+    url_validator:
+      cannot_be_blank: "no puede estar en blanco"
+      invalid_format: "debe tener un formato de URL válido"
+      http_or_https_required: "debe ser una URL HTTP o HTTPS"
+      missing_host: "debe contener un host válido"
+      localhost_blocked: "no puede apuntar a localhost o espacios de red internos"
+      private_ip_blocked: "no puede apuntar a direcciones IP internas o privadas"
+      resolution_failed: "no se pudo resolver el dominio"
+      validation_failed: "no se pudo validar: %{message}"
+      insecure_url_error: "La URL se resolvió en una dirección interna o no segura: %{url}"
+  integrations:
+    webhooks:
+      blocked_insecure_url: "Se bloqueó la entrega a una URL no segura o interna: %{url}"
 

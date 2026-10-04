@@ -58,4 +58,18 @@ de:
         handled_by_html: "Vielen Dank für Ihre Kontaktaufnahme mit dem Support. Dieses Gespräch wurde von <strong>%{handled_by}</strong> betreut. Bitte nehmen Sie sich einen Moment Zeit, um Ihre Erfahrung zu bewerten."
         team_responded: "Unser Team bei %{account_name} hat auf Ihre Anfrage geantwortet."
         share_feedback: "Feedback teilen"
+  security:
+    url_validator:
+      cannot_be_blank: "darf nicht leer sein"
+      invalid_format: "muss ein gültiges URL-Format sein"
+      http_or_https_required: "muss eine HTTP- oder HTTPS-URL sein"
+      missing_host: "muss einen gültigen Host enthalten"
+      localhost_blocked: "darf nicht auf Localhost oder interne Netzwerkbereiche verweisen"
+      private_ip_blocked: "darf nicht auf interne oder private IP-Adressen verweisen"
+      resolution_failed: "Domain konnte nicht aufgelöst werden"
+      validation_failed: "konnte nicht validiert werden: %{message}"
+      insecure_url_error: "URL wurde zu einer unsicheren oder internen Adresse aufgelöst: %{url}"
+  integrations:
+    webhooks:
+      blocked_insecure_url: "Zustellung an unsichere oder interne URL blockiert: %{url}"
 
