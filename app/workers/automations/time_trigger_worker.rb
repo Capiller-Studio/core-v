@@ -14,14 +14,24 @@ module Automations
     #     class: "Automations::TimeTriggerWorker"
 
     def perform
-      Automation.time_triggers.includes(:account).find_each do |rule|
-        next unless rule.account
+      active_shards = Account.distinct.pluck(:shard_key)
 
-        rule.account.with_shard do
-          process_rule(rule)
+      active_shards.each do |shard_key|
+        ShardRecord.connected_to(shard: shard_key.to_sym, role: :writing) do
+          Automation.time_triggers.includes(:account).find_each do |rule|
+            next unless rule.account
+
+            begin
+              rule.account.with_shard do
+                process_rule(rule)
+              end
+            rescue StandardError => e
+              Rails.logger.error("[Automations::TimeTriggerWorker] Rule #{rule&.id} failed: #{e.message}")
+            end
+          end
         end
       rescue StandardError => e
-        Rails.logger.error("[Automations::TimeTriggerWorker] Rule #{rule&.id} failed: #{e.message}")
+        Rails.logger.error("[Automations::TimeTriggerWorker] Shard #{shard_key} failed: #{e.message}")
       end
     end
 

@@ -17,6 +17,12 @@ RSpec.describe Macro, type: :model do
   describe 'Validations' do
     it { is_expected.to validate_presence_of(:name) }
 
+    it 'requires at least one action' do
+      macro = build(:macro, actions: [])
+      expect(macro).not_to be_valid
+      expect(macro.errors[:actions]).to be_present
+    end
+
     describe '#scopeable_matches_visibility' do
       let(:account) { create(:account) }
       let(:user) { create(:user) }
@@ -138,6 +144,36 @@ RSpec.describe Macro, type: :model do
 
       it 'returns false if not personal' do
         expect(team_macro.owned_by?(user)).to be false
+      end
+    end
+
+    describe '#visible_to? and .visible_to' do
+      let(:other_user) { create(:user) }
+      let(:account_macro) { create(:macro, account: account, visibility: :account_wide) }
+
+      before do
+        create(:account_user, account: account, user: user)
+        create(:team_user, team: team, user: user)
+      end
+
+      it 'is visible to everyone for account-wide macros' do
+        expect(account_macro.visible_to?(other_user)).to be true
+      end
+
+      it 'is visible only to the owner for personal macros' do
+        expect(personal_macro.visible_to?(user)).to be true
+        expect(personal_macro.visible_to?(other_user)).to be false
+      end
+
+      it 'is visible only to team members for team macros' do
+        expect(team_macro.visible_to?(user)).to be true
+        expect(team_macro.visible_to?(other_user)).to be false
+      end
+
+      it 'scopes queries to macros the user can see' do
+        expect(Macro.visible_to(user, account)).to include(account_macro, personal_macro, team_macro)
+        expect(Macro.visible_to(other_user, account)).to include(account_macro)
+        expect(Macro.visible_to(other_user, account)).not_to include(personal_macro, team_macro)
       end
     end
 

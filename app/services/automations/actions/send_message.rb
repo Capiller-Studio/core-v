@@ -9,23 +9,24 @@ module Automations
         content = params[:content]
         raise("content is required") if content.blank?
 
-        visibility = params.fetch(:visibility, "global")
+        visibility = params.fetch(:visibility, "global").to_s == "personal" ? "personal" : "global"
 
-        # Send as a system/bot message using the Account as the sender
-        message = resource.messages.create!(
-          account: account,
-          inbox: resource.inbox,
-          content: content,
-          visibility: visibility,
-          content_type: :text,
-          sender: account,
-          source: resource.source
+        # Manual macro runs send as the agent who triggered them; automatic
+        # automation runs send as the account (system/bot sender).
+        # MessageCreator persists the message and enqueues channel delivery for global messages.
+        Messages::MessageCreator.call(
+          conversation: resource,
+          content: rendered(content),
+          sender: actor || account,
+          visibility: visibility
         )
-
-        # Dispatch the message using the core delivery worker
-        Messages::DeliveryWorker.perform_async(message.account_id, message.id)
       end
 
+      private
+
+      def rendered(content)
+        Automations::ContentRenderer.call(content: content, conversation: resource, account: account, actor: actor)
+      end
     end
   end
 end

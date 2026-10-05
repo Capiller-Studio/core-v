@@ -18,6 +18,17 @@ RSpec.describe Automations::Actions::AssignAgent do
       end
     end
 
+    context 'when the user belongs to a different account' do
+      let(:outsider) { create(:user) }
+      let(:service) { described_class.new(resource: conversation, account: account, params: { agent_id: outsider.id }) }
+
+      before { create(:account_user, account: create(:account), user: outsider) }
+
+      it 'refuses to assign them' do
+        expect { service.call }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+
     context 'when agent is found' do
       let(:service) { described_class.new(resource: conversation, account: account, params: { agent_id: agent.id }) }
 

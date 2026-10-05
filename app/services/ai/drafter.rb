@@ -26,7 +26,7 @@ module Ai
         Output ONLY the drafted reply, without any quotation marks or extra conversational text.
       PROMPT
 
-      Ai::Client.call(
+      response = Ai::Client.call(
         account: @account,
         user: @user,
         action_type: "draft_reply",
@@ -36,6 +36,7 @@ module Ai
           { role: "user", content: "Conversation History:\n#{messages_text}" }
         ]
       )
+      response&.strip
     end
 
     private

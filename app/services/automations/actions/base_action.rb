@@ -3,12 +3,15 @@
 module Automations
   module Actions
     class BaseAction < ApplicationService
-      attr_reader :resource, :account, :params
+      attr_reader :resource, :account, :params, :actor
 
-      def initialize(resource:, account:, params:)
+      # @param actor [User, nil] the agent who triggered the action (manual macro runs).
+      #   nil for automatic automation runs, in which case actions act on behalf of the account.
+      def initialize(resource:, account:, params:, actor: nil)
         @resource = resource
         @account = account
         @params = params.with_indifferent_access
+        @actor = actor
       end
 
       def call
