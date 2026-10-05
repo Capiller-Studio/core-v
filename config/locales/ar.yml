@@ -72,4 +72,15 @@ ar:
   integrations:
     webhooks:
       blocked_insecure_url: "تم حظر الإرسال إلى عنوان URL غير آمن أو داخلي: %{url}"
+  activerecord:
+    errors:
+      models:
+        custom_field:
+          attributes:
+            name:
+              taken_in_account: "مأخوذ بالفعل لهذا الحساب"
+            key:
+              invalid_format: "أحرف صغيرة وأرقام وشرطات سفلية فقط"
+              reserved: "محجوز لاستخدام النظام"
+              taken_in_account: "مأخوذ بالفعل لهذا الحساب"
 

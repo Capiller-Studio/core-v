@@ -36,6 +36,17 @@ RSpec.describe CustomField, type: :model do
       expect(build(:custom_field, key: 'INVALID_KEY')).not_to be_valid
     end
 
+    it 'disallows reserved keys' do
+      CustomField::RESERVED_KEYS.each do |reserved_key|
+        cf = build(:custom_field, key: reserved_key)
+        expect(cf).not_to be_valid
+        expect(cf.errors[:key]).to include('is reserved for system use')
+      end
+
+      # Nickname is now a legitimate custom field key and is not reserved
+      expect(build(:custom_field, key: 'nickname')).to be_valid
+    end
+
     describe '#validate_default_value' do
       it 'validates number format' do
         cf = build(:custom_field, field_type: :number, default_value: 'abc')
