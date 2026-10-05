@@ -93,9 +93,24 @@ class CustomField < ShardRecord
     conversation.priority
   ].freeze
 
+  RESERVED_KEYS = %w[
+    gift_vcode
+    id
+    account_id
+    created_at
+    updated_at
+    attachments
+    attachment
+    signature
+    identifier
+    locale
+    format
+  ].freeze
+
   validates :mapped_to, inclusion: { in: MAPPING_TARGETS, allow_blank: true }
   validates :key, presence: true, uniqueness: { scope: :account_id, message: :taken_in_account },
-                  format: { with: /\A[a-z0-9_]+\z/, message: :invalid_format }
+                  format: { with: /\A[a-z0-9_]+\z/, message: :invalid_format },
+                  exclusion: { in: RESERVED_KEYS, message: :reserved }
 
   validate :validate_default_value
 

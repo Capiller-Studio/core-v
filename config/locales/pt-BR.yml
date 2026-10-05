@@ -72,4 +72,15 @@ pt-BR:
   integrations:
     webhooks:
       blocked_insecure_url: "Entrega bloqueada para URL insegura ou interna: %{url}"
+  activerecord:
+    errors:
+      models:
+        custom_field:
+          attributes:
+            name:
+              taken_in_account: "já está em uso para esta conta"
+            key:
+              invalid_format: "apenas letras minúsculas, números e sublinhados"
+              reserved: "está reservado para uso do sistema"
+              taken_in_account: "já está em uso para esta conta"
 

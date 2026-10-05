@@ -248,6 +248,7 @@ en:
               taken_in_account: "is already taken for this account"
             key:
               invalid_format: "only lowercase letters, numbers, and underscores"
+              reserved: "is reserved for system use"
         account_invitation:
           attributes:
             role_ids:
