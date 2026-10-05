@@ -42,5 +42,19 @@ RSpec.describe Automations::Actions::AddNote do
         expect(message.source).to eq(conversation.source)
       end
     end
+
+    context 'with an actor (manual macro run)' do
+      let(:service) { described_class.new(resource: conversation, account: account, actor: user, params: { content: 'Escalated by {{ agent.name }}' }) }
+
+      it 'creates a private note authored by the agent' do
+        expect { service.call }.to change { conversation.messages.count }.by(1)
+
+        message = conversation.messages.last
+        expect(message.visibility).to eq('personal')
+        expect(message.content_type).to eq('text')
+        expect(message.sender).to eq(user)
+        expect(message.content).to include('Escalated by')
+      end
+    end
   end
 end

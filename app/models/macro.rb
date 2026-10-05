@@ -31,7 +31,9 @@ class Macro < ShardRecord
 
   enum :visibility, { account_wide: 0, personal: 1, team: 2 }
 
-  validates :name, presence: true
+  validates :name, presence: true, length: { maximum: 255 }
+  validates :description, length: { maximum: 500 }
+  validate :actions_present
   validate :scopeable_matches_visibility
 
   tracks_usage :macros
@@ -61,6 +63,22 @@ class Macro < ShardRecord
   scope :personal_macros, ->(user) { where(visibility: :personal, scopeable_type: "User", scopeable_id: user.id) }
   scope :team_macros, ->(team) { where(visibility: :team, scopeable_type: "Team", scopeable_id: team.id) }
   scope :system_macros, -> { where(system_provided: true) }
+  scope :executable, -> { where(status: :active) }
+
+  # --- Class Methods ---
+
+  # IDs of the account's teams the given user belongs to.
+  # Used to resolve team-scoped macro visibility.
+  def self.team_ids_for(user, account)
+    return [] unless user && account
+
+    account.teams.joins(:team_users).where(team_users: { user_id: user.id }).distinct.pluck(:id)
+  end
+
+  # Macros the user can see/run within the account (account-wide, system, own personal, own teams).
+  def self.visible_to(user, account)
+    where(account: account).for_user(user, team_ids: team_ids_for(user, account))
+  end
 
   # --- Instance Methods ---
 
@@ -76,6 +94,25 @@ class Macro < ShardRecord
     personal? && scopeable_type == "User" && scopeable_id == user.id
   end
 
+  # Whether the given user is allowed to see (and therefore run) this macro.
+  def visible_to?(user, team_ids: nil)
+    return false unless user
+    return true if system_provided? || account_wide?
+    return owned_by?(user) if personal?
+
+    if team?
+      team_ids ||= self.class.team_ids_for(user, account)
+      return scopeable_type == "Team" && team_ids.include?(scopeable_id)
+    end
+
+    false
+  end
+
+  # Ordered list of action names, e.g. ["set_status", "send_message"]
+  def action_names
+    Array(actions).filter_map { |a| a["action"] || a[:action] }
+  end
+
   def duplicate(new_name: nil)
     dup.tap do |copy|
       copy.name = new_name || "#{name} (copy)"
@@ -85,6 +122,10 @@ class Macro < ShardRecord
   end
 
   private
+
+  def actions_present
+    errors.add(:actions, :blank) if Array(actions).empty?
+  end
 
   def scopeable_matches_visibility
     case visibility

@@ -6,7 +6,8 @@ module Automations
       def call
         require_conversation!
 
-        agent = User.find(params[:agent_id])
+        # Scoped to the account so a crafted action can never assign a user from another tenant.
+        agent = account.users.find(params[:agent_id])
         resource.assign!(agent)
       end
     end

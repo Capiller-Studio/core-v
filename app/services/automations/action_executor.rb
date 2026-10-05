@@ -2,7 +2,7 @@
 
 module Automations
   class ActionExecutor < ApplicationService
-    attr_reader :executable, :resource, :account
+    attr_reader :executable, :resource, :account, :actor
 
     # Executes all actions defined in an Actionable record against a resource.
     # Works with both Automation and Macro models.
@@ -12,7 +12,8 @@ module Automations
     #   results = Automations::ActionExecutor.call(
     #     executable: rule_or_macro,
     #     resource: conversation,
-    #     account: account
+    #     account: account,
+    #     actor: current_user # optional — set for manual macro runs
     #   )
     #   # => [{ "action" => "assign_agent", "params" => {...}, "result" => "success" }, ...]
 
@@ -36,10 +37,11 @@ module Automations
       "set_locale"             => Automations::Actions::SetLocale
     }.freeze
 
-    def initialize(executable:, resource:, account:)
+    def initialize(executable:, resource:, account:, actor: nil)
       @executable = executable
       @resource = resource
       @account = account
+      @actor = actor
     end
 
     def call
@@ -65,7 +67,8 @@ module Automations
           handler_class.call(
             resource: resource,
             account: account,
-            params: params
+            params: params,
+            actor: actor
           )
 
           results << {

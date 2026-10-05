@@ -17,15 +17,32 @@ module Automations
     # @param resource_id [String] UUID of the target resource
     # @param triggered_by [String] "event", "schedule", or "manual"
     # @param cascade_depth [Integer] current cascade depth (prevents infinite loops)
-    def perform(executable_type, executable_id, resource_type, resource_id, triggered_by = "event", cascade_depth = 0)
+    def perform(executable_type, executable_id, resource_type, resource_id, triggered_by = "event", cascade_depth = 0, account_id = nil)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond)
 
-      executable = executable_type.constantize.find_by(id: executable_id)
-      return unless executable&.active?
+      account = Account.find_by(id: account_id) if account_id.present?
 
-      account = executable.account
+      # If account was not passed directly, locate which shard hosts this executable
+      if account.nil?
+        active_shards = Account.distinct.pluck(:shard_key)
+        active_shards.each do |shard_key|
+          ShardRecord.connected_to(shard: shard_key.to_sym, role: :reading) do
+            found = executable_type.constantize.find_by(id: executable_id)
+            if found
+              account = Account.find_by(id: found.account_id)
+              break
+            end
+          end
+          break if account
+        end
+      end
+
+      return unless account
 
       account.with_shard do
+        executable = executable_type.constantize.find_by(id: executable_id)
+        return unless executable&.active?
+
         resource = resource_type.constantize.find_by(id: resource_id)
         return unless resource
 

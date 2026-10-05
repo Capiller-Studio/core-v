@@ -23,7 +23,8 @@ RSpec.describe Automations::ActionExecutor do
         expect(Automations::Actions::SetStatus).to receive(:call).with(
           resource: resource,
           account: account,
-          params: { "status" => "resolved" }
+          params: { "status" => "resolved" },
+          actor: nil
         )
 
         results = service.call
