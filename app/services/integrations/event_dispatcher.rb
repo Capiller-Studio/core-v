@@ -53,6 +53,8 @@ module Integrations
     end
 
     def dispatch_to_slack(integration)
+      return unless integration.subscribed_events.include?(event_name)
+
       url = integration.webhook_url
       return unless url
 

@@ -47,10 +47,14 @@ class Integration < ShardRecord
     sso.certificate_expiring
   ].freeze
 
+  SLACK_EVENTS = WEBHOOK_EVENTS
+  DEFAULT_SLACK_EVENTS = %w[conversation.created message.created].freeze
+
   # Webhook & Filtering Extraction Logic
   def subscribed_events
-    return [] unless webhook?
-    settings["subscribed_events"] || []
+    return [] unless webhook? || slack?
+
+    settings["subscribed_events"] || (DEFAULT_SLACK_EVENTS if slack?) || []
   end
 
   def subscribed_inboxes
