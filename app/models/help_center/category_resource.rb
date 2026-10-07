@@ -33,7 +33,11 @@ module HelpCenter
     private
 
     def update_category_stats
-      category.update_stats!
+      # A resource can be removed in the same transaction as its category
+      # (for example, when rebuilding portal content). The after_commit hook
+      # runs only after both records are gone, so there is no category left to
+      # update in that case.
+      category.update_stats! if category&.persisted?
     end
   end
 end
