@@ -183,7 +183,10 @@ module Seeds
       category.position = cat_def[:position]
       category.status = :active
       category.visibility = :everyone
-      category.featured = cat_def[:featured] if cat_def.key?(:featured)
+      # The help-center homepage only lists featured categories. The docs
+      # seeder recreates categories, so preserve the product docs' historical
+      # behavior and feature them unless a definition explicitly opts out.
+      category.featured = cat_def.fetch(:featured, true)
       category.show_in_navbar = (cat_def[:show_in_navbar] == true || cat_def[:position].to_i <= 4)
       category.api_reference = false
       category.save!
