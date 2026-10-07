@@ -24,8 +24,13 @@ module Integrations
 
           # Don't notify Slack for outgoing agent replies or internal notes to avoid noise
           if delivery.event_name == "message.created"
-            message_type = payload["message_type"]
-            if message_type.present? && message_type != "incoming"
+            incoming_message = if payload.key?("incoming")
+              payload["incoming"] == true
+            else
+              payload["message_type"] == "incoming"
+            end
+
+            unless incoming_message
               delivery.successful!
               return
             end
@@ -39,9 +44,9 @@ module Integrations
               when "message.created"
                 build_message_created_block(payload)
               when "conversation.created"
-                build_conversation_created_block(payload)
+                build_conversation_created_block(account, payload)
               else
-                { text: I18n.t("notifications.slack.event_triggered", event_name: delivery.event_name, default: "Deskbolic Event Triggered: #{delivery.event_name}") }
+                build_event_notification(delivery.event_name)
               end
             end
 
@@ -102,6 +107,9 @@ module Integrations
         conversation_id = payload.dig("conversation", "id")
         channel_type = payload.dig("conversation", "channel_type") || payload["source"] || I18n.t("notifications.slack.default_channel", default: "Channel")
         channel_icon = channel_emoji(channel_type)
+        safe_sender_name = escape_slack_text(sender_name)
+        safe_channel_type = escape_slack_text(channel_type.to_s.titleize)
+        safe_preview_text = escape_slack_text(preview_text)
 
         blocks = [
           {
@@ -117,11 +125,11 @@ module Integrations
             fields: [
               {
                 type: "mrkdwn",
-                text: I18n.t("notifications.slack.from_field", sender: sender_name, default: "*From:*\n#{sender_name}")
+                text: I18n.t("notifications.slack.from_field", sender: safe_sender_name, default: "*From:*\n#{safe_sender_name}")
               },
               {
                 type: "mrkdwn",
-                text: I18n.t("notifications.slack.channel_field", channel: channel_type.to_s.titleize, default: "*Channel:*\n#{channel_type.to_s.titleize}")
+                text: I18n.t("notifications.slack.channel_field", channel: safe_channel_type, default: "*Channel:*\n#{safe_channel_type}")
               }
             ]
           },
@@ -129,7 +137,7 @@ module Integrations
             type: "section",
             text: {
               type: "mrkdwn",
-              text: I18n.t("notifications.slack.message_field", message: preview_text, default: "*Message:*\n#{preview_text}")
+              text: I18n.t("notifications.slack.message_field", message: safe_preview_text, default: "*Message:*\n#{safe_preview_text}")
             }
           }
         ]
@@ -155,16 +163,27 @@ module Integrations
           end
         end
 
-        { blocks: blocks }
+        fallback_text = I18n.t(
+          "notifications.slack.message_fallback",
+          sender: safe_sender_name,
+          message: safe_preview_text,
+          default: "#{channel_icon} New customer message from #{safe_sender_name}: #{safe_preview_text}"
+        )
+
+        { text: fallback_text, blocks: blocks }
       end
 
-      def build_conversation_created_block(payload)
+      def build_conversation_created_block(account, payload)
+        payload = conversation_created_payload(account, payload)
         default_customer = I18n.t("notifications.slack.default_customer", default: "Customer")
         customer_name = payload.dig("customer", "name").presence || payload.dig("customer", "email").presence || default_customer
         conversation_id = payload["id"]
         channel_type = payload["channel_type"] || I18n.t("notifications.slack.default_support", default: "Support")
         channel_icon = channel_emoji(channel_type)
         preview_text = ActionController::Base.helpers.strip_tags(payload["last_message_preview"].to_s).presence || I18n.t("notifications.slack.default_conversation_preview", default: "A new customer conversation has been opened.")
+        safe_customer_name = escape_slack_text(customer_name)
+        safe_channel_type = escape_slack_text(channel_type.to_s.titleize)
+        safe_preview_text = escape_slack_text(preview_text)
 
         blocks = [
           {
@@ -180,11 +199,11 @@ module Integrations
             fields: [
               {
                 type: "mrkdwn",
-                text: I18n.t("notifications.slack.customer_field", customer: customer_name, default: "*Customer:*\n#{customer_name}")
+                text: I18n.t("notifications.slack.customer_field", customer: safe_customer_name, default: "*Customer:*\n#{safe_customer_name}")
               },
               {
                 type: "mrkdwn",
-                text: I18n.t("notifications.slack.channel_field", channel: channel_type.to_s.titleize, default: "*Channel:*\n#{channel_type.to_s.titleize}")
+                text: I18n.t("notifications.slack.channel_field", channel: safe_channel_type, default: "*Channel:*\n#{safe_channel_type}")
               }
             ]
           },
@@ -192,7 +211,7 @@ module Integrations
             type: "section",
             text: {
               type: "mrkdwn",
-              text: I18n.t("notifications.slack.initial_message_field", message: preview_text, default: "*Initial Message:*\n#{preview_text}")
+              text: I18n.t("notifications.slack.initial_message_field", message: safe_preview_text, default: "*Initial Message:*\n#{safe_preview_text}")
             }
           }
         ]
@@ -218,7 +237,39 @@ module Integrations
           end
         end
 
-        { blocks: blocks }
+        fallback_text = I18n.t(
+          "notifications.slack.conversation_fallback",
+          customer: safe_customer_name,
+          message: safe_preview_text,
+          default: "#{channel_icon} New conversation from #{safe_customer_name}: #{safe_preview_text}"
+        )
+
+        { text: fallback_text, blocks: blocks }
+      end
+
+      def conversation_created_payload(account, payload)
+        conversation = account.conversations.includes(:customers, :last_message).find_by(id: payload["id"])
+        return payload unless conversation
+
+        customer = conversation.customers.first
+        payload.merge(
+          "customer" => {
+            "name" => customer&.name,
+            "email" => customer&.email
+          },
+          "channel_type" => conversation.source,
+          "last_message_preview" => conversation.last_message_preview,
+          "account" => { "identifier" => account.identifier }
+        )
+      end
+
+      def escape_slack_text(value)
+        value.to_s.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")
+      end
+
+      def build_event_notification(event_name)
+        event_label = event_name.to_s.tr(".", " ").humanize
+        { text: "Deskbolic: #{escape_slack_text(event_label)}" }
       end
 
       def channel_emoji(channel_type)
