@@ -11,6 +11,8 @@ require_relative "data/product_docs/csat_and_analytics"
 require_relative "data/product_docs/security_and_roles"
 require_relative "data/product_docs/billing_and_subscriptions"
 require_relative "data/product_docs/api_reference_link"
+require_relative "data/product_docs/teams_and_teammates"
+require_relative "data/product_docs/routing_and_availability"
 
 module Seeds
   class ProductDocumentationSeeder
@@ -25,7 +27,9 @@ module Seeds
       Data::ProductDocs::CsatAndAnalytics,
       Data::ProductDocs::SecurityAndRoles,
       Data::ProductDocs::BillingAndSubscriptions,
-      Data::ProductDocs::ApiReferenceLink
+      Data::ProductDocs::ApiReferenceLink,
+      Data::ProductDocs::TeamsAndTeammates,
+      Data::ProductDocs::RoutingAndAvailability
     ].freeze
 
     PORTAL_TRANSLATIONS = {
@@ -106,14 +110,14 @@ module Seeds
         portal = find_or_create_portal(domain_record)
         seed_portal_translations(portal)
 
-        # Clean purge of portal content to ensure zero leftover dummy/Lorem Ipsum data
-        purge_portal_content!(portal)
-
-        DATA_MODULES.each do |mod|
-          seed_category_and_articles(portal, mod)
+        HelpCenter::Portal.transaction do
+          reset_portal_content!(portal)
+          DATA_MODULES.each do |mod|
+            seed_category_and_articles(portal, mod)
+          end
         end
 
-        puts "✓ Successfully seeded #{DATA_MODULES.size} product documentation categories with 7-locale translations."
+        puts "✓ Successfully synchronized #{DATA_MODULES.size} product documentation categories."
       end
     end
 
@@ -134,12 +138,12 @@ module Seeds
     def find_or_create_portal(domain_record)
       portal = HelpCenter::Portal.find_or_initialize_by(domain_id: domain_record.id)
       portal.account = account
-      portal.name = "Deskbolic User Guide & Help Center"
-      portal.default_locale = "en"
-      portal.locales = Core::SUPPORTED_LOCALES.map(&:to_s)
-      portal.status = :active
-      portal.indexing_enabled = true
-      portal.show_contact_form = true
+      portal.name ||= "Deskbolic User Guide & Help Center"
+      portal.default_locale ||= "en"
+      portal.locales = Core::SUPPORTED_LOCALES.map(&:to_s) if portal.locales.blank?
+      portal.status ||= :active
+      portal.indexing_enabled = true if portal.indexing_enabled.nil?
+      portal.show_contact_form = true if portal.show_contact_form.nil?
       portal.ui_configurations = {
         "theme_mode" => "system",
         "primary_color" => "#2563eb",
@@ -147,8 +151,8 @@ module Seeds
         "font_family" => "Inter",
         "hero_style" => "plain",
         "category_layout" => "grid"
-      }
-      portal.configurations = { "custom_css" => "" }
+      }.merge(portal.ui_configurations || {})
+      portal.configurations = { "custom_css" => "" }.merge(portal.configurations || {})
       portal.save!
       portal
     end
@@ -156,18 +160,18 @@ module Seeds
     def seed_portal_translations(portal)
       PORTAL_TRANSLATIONS.each do |loc, trans_data|
         t = portal.translations.find_or_initialize_by(locale: loc.to_s)
-        t.hero_title = trans_data[:hero_title]
-        t.hero_subtitle = trans_data[:hero_subtitle]
-        t.header_tagline = trans_data[:header_tagline]
-        t.search_placeholder = trans_data[:search_placeholder]
-        t.footer_text = trans_data[:footer_text]
+        t.hero_title ||= trans_data[:hero_title]
+        t.hero_subtitle ||= trans_data[:hero_subtitle]
+        t.header_tagline ||= trans_data[:header_tagline]
+        t.search_placeholder ||= trans_data[:search_placeholder]
+        t.footer_text ||= trans_data[:footer_text]
         t.save!
       end
     end
 
-    def purge_portal_content!(portal)
-      portal.articles.destroy_all
-      portal.categories.destroy_all
+    def reset_portal_content!(portal)
+      portal.articles.find_each(&:destroy!)
+      portal.categories.find_each(&:destroy!)
     end
 
     def seed_category_and_articles(portal, mod)
@@ -179,7 +183,7 @@ module Seeds
       category.position = cat_def[:position]
       category.status = :active
       category.visibility = :everyone
-      category.featured = true
+      category.featured = cat_def[:featured] if cat_def.key?(:featured)
       category.show_in_navbar = (cat_def[:show_in_navbar] == true || cat_def[:position].to_i <= 4)
       category.api_reference = false
       category.save!
@@ -215,5 +219,6 @@ module Seeds
         at.save!
       end
     end
+
   end
 end
