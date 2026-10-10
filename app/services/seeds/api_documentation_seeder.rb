@@ -13,9 +13,11 @@ require_relative "data/api_docs/agents_and_teams"
 require_relative "data/api_docs/labels"
 require_relative "data/api_docs/canned_responses"
 require_relative "data/api_docs/notifications"
-require_relative "data/api_docs/custom_attributes"
+require_relative "data/api_docs/custom_fields"
 require_relative "data/api_docs/searches"
 require_relative "data/api_docs/system"
+require_relative "data/api_docs/macros"
+require_relative "data/api_docs/webhooks"
 require_relative "data/api_docs/user_guide_link"
 
 module Seeds
@@ -34,7 +36,9 @@ module Seeds
       Data::ApiDocs::Labels,
       Data::ApiDocs::CannedResponses,
       Data::ApiDocs::Notifications,
-      Data::ApiDocs::CustomAttributes,
+      Data::ApiDocs::CustomFields,
+      Data::ApiDocs::Macros,
+      Data::ApiDocs::Webhooks,
       Data::ApiDocs::Searches,
       Data::ApiDocs::System,
       Data::ApiDocs::UserGuideLink
@@ -114,18 +118,20 @@ module Seeds
       puts "Seeding Production API Documentation for account: #{account.name} on domain: #{domain}..."
 
       account.with_shard do
-        domain_record = find_or_create_domain
-        portal = find_or_create_portal(domain_record)
-        seed_portal_translations(portal)
+        Searchkick.callbacks(false) do
+          domain_record = find_or_create_domain
+          portal = find_or_create_portal(domain_record)
+          seed_portal_translations(portal)
 
-        # Clean purge of portal content to ensure zero leftover dummy/Lorem Ipsum data
-        purge_portal_content!(portal)
+          # Clean purge of portal content to ensure zero leftover dummy/Lorem Ipsum data
+          purge_portal_content!(portal)
 
-        DATA_MODULES.each do |mod|
-          seed_category_and_articles(portal, mod)
+          DATA_MODULES.each do |mod|
+            seed_category_and_articles(portal, mod)
+          end
+
+          puts "✓ Successfully seeded #{DATA_MODULES.size} API categories with 7-locale translations."
         end
-
-        puts "✓ Successfully seeded #{DATA_MODULES.size} API categories with 7-locale translations."
       end
     end
 

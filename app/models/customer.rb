@@ -82,6 +82,7 @@ class Customer < ShardRecord
   has_many :conversations, through: :conversation_members
   has_many :messages, as: :sender, dependent: :destroy
   has_many :identities, dependent: :destroy
+  has_many :notes, as: :resource, dependent: :destroy
 
   tracks_usage :customers, enforce: false
 

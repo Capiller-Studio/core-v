@@ -162,7 +162,7 @@ module Seeds
                     <pre><code class="language-bash">curl -H "X-Api-Key: dsk_live_abc123xyz" \\
      https://api.deskbolic.com/v1/conversations</code></pre>
                     <h3>2. JWT Bearer Token (Mobile &amp; User Sessions)</h3>
-                    <p>For mobile apps and client-side applications, authenticate via <code>POST /v1/sessions</code> to obtain a JWT token, then pass it as a Bearer token:</p>
+                    <p>For mobile apps and client-side applications, authenticate via <code>POST /v1/auth/login</code> to obtain a JWT token, then pass it as a Bearer token:</p>
                     <pre><code class="language-bash">curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
      https://api.deskbolic.com/v1/me</code></pre>
                     <h3>Multi-Tenant Account Context</h3>
