@@ -5,7 +5,7 @@ FactoryBot.define do
     user
     referral_code { SecureRandom.alphanumeric(8).downcase }
     payouts_enabled { true }
-    commission_rate { 25.0 }
+    commission_rate { 30.0 }
     currency { 'USD' }
   end
 

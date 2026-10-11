@@ -287,26 +287,26 @@ module Seeds
       "USD" => {
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [9, 8],
-        Plan::HYPERBOLIC => [19, 17],
-        Plan::PARABOLIC => [29, 26]
+        Plan::HYPERBOLIC => [14, 12],
+        Plan::PARABOLIC => [19, 16]
       },
       "EUR" => {
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [9, 8], # Competitive parity
-        Plan::HYPERBOLIC => [19, 17], # Competitive parity
-        Plan::PARABOLIC => [29, 26] # Competitive parity
+        Plan::HYPERBOLIC => [14, 12], # Competitive parity
+        Plan::PARABOLIC => [19, 16] # Competitive parity
       },
       "GBP" => {
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [8, 7], # Proportionally lower
-        Plan::HYPERBOLIC => [15, 13],
-        Plan::PARABOLIC => [24, 21]
+        Plan::HYPERBOLIC => [12, 10],
+        Plan::PARABOLIC => [16, 14]
       },
       "KRW" => {
         Plan::SYMBOLIC => [0, 0],
         Plan::ANABOLIC => [12000, 11000],
-        Plan::HYPERBOLIC => [26000, 23000],
-        Plan::PARABOLIC => [39000, 35000]
+        Plan::HYPERBOLIC => [19000, 16000],
+        Plan::PARABOLIC => [26000, 22000]
       }
     }.freeze
 

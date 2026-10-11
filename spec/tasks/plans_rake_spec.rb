@@ -19,8 +19,8 @@ RSpec.describe 'plans:update rake task' do # rubocop:disable RSpec/DescribeClass
     }.to output(/Synchronizing and Updating Plans from PlanSeeder/).to_stdout
 
     parabolic.reload
-    expect(parabolic.base_price).to eq(29)
-    expect(parabolic.annual_price).to eq(26)
+    expect(parabolic.base_price).to eq(19)
+    expect(parabolic.annual_price).to eq(16)
     expect(parabolic.features['sso']).to be(false)
     expect(parabolic.features['scim']).to be(false)
   end
