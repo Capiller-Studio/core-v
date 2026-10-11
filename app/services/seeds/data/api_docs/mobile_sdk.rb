@@ -503,6 +503,364 @@ module Seeds
                   content: "<p>앱 아이콘 배지 및 알림 탭에 표시할 전체 미확인 메시지 개수를 조회합니다.</p>"
                 }
               }
+            },
+            {
+              key: :sdk_forms_pre_chat,
+              article_type: :api_endpoint,
+              position: 10,
+              configurations: {
+                "api_method" => "GET",
+                "api_endpoint" => "/v1/sdk/forms/pre_chat",
+                "api_parameters" => [
+                  { "name" => "X-Deskbolic-App-Id", "type" => "string", "description" => "Mobile widget channel public identifier", "required" => true },
+                  { "name" => "locale", "type" => "string", "description" => "Requested language locale (e.g. en, es, fr)", "required" => false }
+                ],
+                "api_responses" => [
+                  {
+                    "status" => 200,
+                    "description" => "Pre-chat form schema retrieved successfully",
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"enabled\": true,\n    \"title\": \"Start a Conversation\",\n    \"subtitle\": \"Please introduce yourself to start chatting with our team\",\n    \"submit_button_text\": \"Start Chat\",\n    \"locale\": \"en\",\n    \"fields\": [\n      {\n        \"key\": \"name\",\n        \"label\": \"Full Name\",\n        \"placeholder\": \"Enter your full name\",\n        \"field_type\": \"text\",\n        \"entity_type\": \"customer\",\n        \"required\": true,\n        \"position\": 1,\n        \"options\": [],\n        \"validations\": {}\n      }\n    ]\n  }\n}"
+                  }
+                ]
+              },
+              translations: {
+                en: {
+                  title: "Get Pre-Chat Form",
+                  content: "<p>Retrieves dynamic custom fields or default fallback fields for pre-chat registration before starting a conversation.</p>"
+                },
+                de: {
+                  title: "Pre-Chat-Formular abrufen",
+                  content: "<p>Ruft dynamische benutzerdefinierte Felder für die Besucherregistrierung vor Beginn eines Chats ab.</p>"
+                },
+                es: {
+                  title: "Obtener Formulario Pre-Chat",
+                  content: "<p>Obtiene los campos personalizados dinámicos o campos predeterminados para la presentación del usuario antes de iniciar el chat.</p>"
+                },
+                fr: {
+                  title: "Obtenir le formulaire pré-chat",
+                  content: "<p>Récupère les champs personnalisés dynamiques pour l'enregistrement du visiteur avant d'entamer une conversation.</p>"
+                },
+                "pt-BR": {
+                  title: "Obter Formulário Pré-Chat",
+                  content: "<p>Retorna os campos personalizados para identificação do cliente antes de iniciar a conversa de suporte.</p>"
+                },
+                ar: {
+                  title: "الحصول على نموذج ما قبل الدردشة",
+                  content: "<p>استرجاع الحقول المخصصة لجمع معلومات العميل قبل بدء محادثة الدردشة.</p>"
+                },
+                ko: {
+                  title: "사전 채팅 폼 조회",
+                  content: "<p>채팅 시작 전 고객 정보 수집을 위한 동적 사용자 정의 필드 및 필수 입력 항목을 조회합니다.</p>"
+                }
+              }
+            },
+            {
+              key: :sdk_help_center_portal,
+              article_type: :api_endpoint,
+              position: 11,
+              configurations: {
+                "api_method" => "GET",
+                "api_endpoint" => "/v1/sdk/help_center",
+                "api_parameters" => [
+                  { "name" => "X-Deskbolic-App-Id", "type" => "string", "description" => "Mobile widget channel public identifier", "required" => true },
+                  { "name" => "locale", "type" => "string", "description" => "Language locale", "required" => false }
+                ],
+                "api_responses" => [
+                  {
+                    "status" => 200,
+                    "description" => "Help Center portal metadata",
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"a9e5f739-61c0-4c0d-8480-765a3d28d7f8\",\n    \"name\": \"Mobile Help Center\",\n    \"locales\": [\"en\", \"es\"],\n    \"default_locale\": \"en\",\n    \"header_title\": \"Help Center\",\n    \"hero_title\": \"How can we help?\",\n    \"hero_subtitle\": \"Search our documentation and guides\",\n    \"categories_count\": 5,\n    \"articles_count\": 42\n  }\n}"
+                  }
+                ]
+              },
+              translations: {
+                en: {
+                  title: "Get Help Center Portal",
+                  content: "<p>Retrieves portal branding, localized titles, and category/article counters for in-app knowledge base views.</p>"
+                },
+                de: {
+                  title: "Hilfecenter-Portal abrufen",
+                  content: "<p>Ruft Portal-Branding, lokalisierte Titel und Zähler für Wissensdatenbank-Ansichten ab.</p>"
+                },
+                es: {
+                  title: "Obtener Portal del Centro de Ayuda",
+                  content: "<p>Obtiene la marca del portal, títulos localizados y contadores de artículos para la base de conocimientos integrada.</p>"
+                },
+                fr: {
+                  title: "Obtenir le portail d'aide",
+                  content: "<p>Récupère la marque du portail, les titres localisés et le décompte d'articles de la base de connaissances.</p>"
+                },
+                "pt-BR": {
+                  title: "Obter Portal da Central de Ajuda",
+                  content: "<p>Retorna as informações da marca, títulos localizados e contadores de artigos da base de conhecimento.</p>"
+                },
+                ar: {
+                  title: "الحصول على بوابة مركز المساعدة",
+                  content: "<p>استرجاع بيانات مركز المساعدة والعناوين المترجمة وعدد المقالات والتصنيفات لقاعدة المعرفة في التطبيق.</p>"
+                },
+                ko: {
+                  title: "고객센터 포털 조회",
+                  content: "<p>인앱 도움말 뷰를 위한 포털 브랜드, 다국어 헤더 및 문서 카운터를 조회합니다.</p>"
+                }
+              }
+            },
+            {
+              key: :sdk_help_center_categories,
+              article_type: :api_endpoint,
+              position: 12,
+              configurations: {
+                "api_method" => "GET",
+                "api_endpoint" => "/v1/sdk/help_center/categories",
+                "api_parameters" => [
+                  { "name" => "X-Deskbolic-App-Id", "type" => "string", "required" => true },
+                  { "name" => "locale", "type" => "string", "required" => false }
+                ],
+                "api_responses" => [
+                  {
+                    "status" => 200,
+                    "description" => "List of published categories",
+                    "body" => "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"e301b442-5fba-4573-9a84-0a30b59b1a0e\",\n      \"slug\": \"getting-started\",\n      \"name\": \"Getting Started\",\n      \"description\": \"Guides and basics\",\n      \"icon_key\": \"rocket\",\n      \"position\": 1,\n      \"articles_count\": 8\n    }\n  ]\n}"
+                  }
+                ]
+              },
+              translations: {
+                en: {
+                  title: "List Help Center Categories",
+                  content: "<p>Lists all published public categories with icons and article counters.</p>"
+                },
+                de: {
+                  title: "Hilfecenter-Kategorien auflisten",
+                  content: "<p>Listet alle veröffentlichten öffentlichen Kategorien mit Symbolen und Artikelanzahl auf.</p>"
+                },
+                es: {
+                  title: "Listar Categorías del Centro de Ayuda",
+                  content: "<p>Enumera todas las categorías públicas publicadas con iconos y número de artículos.</p>"
+                },
+                fr: {
+                  title: "Lister les catégories d'aide",
+                  content: "<p>Liste toutes les catégories publiques avec icônes et nombre d'articles.</p>"
+                },
+                "pt-BR": {
+                  title: "Listar Categorias da Central de Ajuda",
+                  content: "<p>Lista todas as categorias públicas com ícones e contadores de artigos.</p>"
+                },
+                ar: {
+                  title: "عرض تصنيفات مركز المساعدة",
+                  content: "<p>عرض جميع التصنيفات العامة المنشورة مع الأيقونات وعدد المقالات المرتبطة بها.</p>"
+                },
+                ko: {
+                  title: "고객센터 카테고리 목록",
+                  content: "<p>아이콘 및 문서 개수를 포함하여 공개된 전체 카테고리 목록을 조회합니다.</p>"
+                }
+              }
+            },
+            {
+              key: :sdk_help_center_articles,
+              article_type: :api_endpoint,
+              position: 13,
+              configurations: {
+                "api_method" => "GET",
+                "api_endpoint" => "/v1/sdk/help_center/articles",
+                "api_parameters" => [
+                  { "name" => "X-Deskbolic-App-Id", "type" => "string", "required" => true },
+                  { "name" => "category_id", "type" => "string", "description" => "Category UUID or slug filter", "required" => false },
+                  { "name" => "page", "type" => "integer", "description" => "Page number (default: 1)", "required" => false },
+                  { "name" => "per_page", "type" => "integer", "description" => "Items per page (default: 20)", "required" => false },
+                  { "name" => "locale", "type" => "string", "required" => false }
+                ],
+                "api_responses" => [
+                  {
+                    "status" => 200,
+                    "description" => "Paginated list of articles",
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"articles\": [\n      {\n        \"id\": \"94bbd632-1b3d-4c31-92b7-a3f2d2012fa1\",\n        \"slug\": \"account-setup\",\n        \"title\": \"How to set up your account\",\n        \"article_type\": \"standard\",\n        \"views_count\": 310,\n        \"description\": \"Setup instructions\",\n        \"category\": { \"id\": \"e301b442\", \"name\": \"Getting Started\", \"slug\": \"getting-started\" }\n      }\n    ],\n    \"pagination\": { \"page\": 1, \"per_page\": 20, \"total_count\": 1, \"total_pages\": 1 }\n  }\n}"
+                  }
+                ]
+              },
+              translations: {
+                en: {
+                  title: "List Help Center Articles",
+                  content: "<p>Returns published articles with pagination and optional category filtering.</p>"
+                },
+                de: {
+                  title: "Hilfecenter-Artikel auflisten",
+                  content: "<p>Gibt veröffentlichte Artikel mit Paginierung und optionaler Kategoriefilterung zurück.</p>"
+                },
+                es: {
+                  title: "Listar Artículos del Centro de Ayuda",
+                  content: "<p>Devuelve artículos publicados con paginación y filtro opcional por categoría.</p>"
+                },
+                fr: {
+                  title: "Lister les articles d'aide",
+                  content: "<p>Renvoie les articles publiés avec pagination et filtre facultatif par catégorie.</p>"
+                },
+                "pt-BR": {
+                  title: "Listar Artigos da Central de Ajuda",
+                  content: "<p>Retorna artigos publicados com paginação e filtro opcional por categoria.</p>"
+                },
+                ar: {
+                  title: "عرض مقالات مركز المساعدة",
+                  content: "<p>عرض مقالات المساعدة المنشورة مع دعم الصفحات وتصفية المقالات حسب التصنيف.</p>"
+                },
+                ko: {
+                  title: "고객센터 문서 목록",
+                  content: "<p>페이지네이션 및 카테고리 필터링을 지원하여 공개된 도움말 문서 목록을 조회합니다.</p>"
+                }
+              }
+            },
+            {
+              key: :sdk_help_center_article_details,
+              article_type: :api_endpoint,
+              position: 14,
+              configurations: {
+                "api_method" => "GET",
+                "api_endpoint" => "/v1/sdk/help_center/articles/:id",
+                "api_parameters" => [
+                  { "name" => "X-Deskbolic-App-Id", "type" => "string", "required" => true },
+                  { "name" => "id", "type" => "string", "description" => "Article UUID or slug", "required" => true },
+                  { "name" => "locale", "type" => "string", "required" => false }
+                ],
+                "api_responses" => [
+                  {
+                    "status" => 200,
+                    "description" => "Full article details",
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"94bbd632-1b3d-4c31-92b7-a3f2d2012fa1\",\n    \"slug\": \"account-setup\",\n    \"title\": \"How to set up your account\",\n    \"content\": \"<p>Step 1: Open settings...</p>\",\n    \"reactions\": { \"happy\": 18, \"neutral\": 2, \"sad\": 1 }\n  }\n}"
+                  }
+                ]
+              },
+              translations: {
+                en: {
+                  title: "Get Article Details",
+                  content: "<p>Retrieves rich HTML content, author metadata, and reaction counts for a single article, incrementing its view counter.</p>"
+                },
+                de: {
+                  title: "Artikeldetails abrufen",
+                  content: "<p>Ruft den vollständigen HTML-Inhalt und Feedback-Zähler für einen einzelnen Artikel ab.</p>"
+                },
+                es: {
+                  title: "Obtener Detalles del Artículo",
+                  content: "<p>Obtiene el contenido HTML completo, autor y reacciones para un artículo, incrementando sus vistas.</p>"
+                },
+                fr: {
+                  title: "Obtenir les détails de l'article",
+                  content: "<p>Récupère le contenu HTML complet, les métadonnées et réactions d'un article.</p>"
+                },
+                "pt-BR": {
+                  title: "Obter Detalhes do Artigo",
+                  content: "<p>Retorna o conteúdo HTML completo, dados do autor e reações de um artigo de suporte.</p>"
+                },
+                ar: {
+                  title: "الحصول على تفاصيل المقال",
+                  content: "<p>استرجاع محتوى المقال الكامل بتنسيق HTML مع بيانات الكاتب وردود الفعل، وتحديث عداد المشاهدات.</p>"
+                },
+                ko: {
+                  title: "고객센터 문서 상세 조회",
+                  content: "<p>단일 문서의 서식 있는 HTML 본문, 작성자 정보 및 피드백 반응을 조회하며 조회수를 1 증가시킵니다.</p>"
+                }
+              }
+            },
+            {
+              key: :sdk_help_center_search,
+              article_type: :api_endpoint,
+              position: 15,
+              configurations: {
+                "api_method" => "GET",
+                "api_endpoint" => "/v1/sdk/help_center/search",
+                "api_parameters" => [
+                  { "name" => "X-Deskbolic-App-Id", "type" => "string", "required" => true },
+                  { "name" => "q", "type" => "string", "description" => "Search query", "required" => true },
+                  { "name" => "locale", "type" => "string", "required" => false },
+                  { "name" => "page", "type" => "integer", "required" => false },
+                  { "name" => "per_page", "type" => "integer", "required" => false }
+                ],
+                "api_responses" => [
+                  {
+                    "status" => 200,
+                    "description" => "Search results matching query",
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"articles\": [\n      {\n        \"id\": \"94bbd632\",\n        \"title\": \"How to set up your account\",\n        \"slug\": \"account-setup\"\n      }\n    ],\n    \"pagination\": { \"page\": 1, \"per_page\": 20, \"total_count\": 1, \"total_pages\": 1 }\n  }\n}"
+                  }
+                ]
+              },
+              translations: {
+                en: {
+                  title: "Search Help Center Articles",
+                  content: "<p>Performs full-text search across published article titles and content matching the query string in the active locale.</p>"
+                },
+                de: {
+                  title: "Hilfecenter-Artikel durchsuchen",
+                  content: "<p>Führt eine Volltextsuche in veröffentlichten Artikeln durch.</p>"
+                },
+                es: {
+                  title: "Buscar Artículos del Centro de Ayuda",
+                  content: "<p>Realiza una búsqueda de texto completo en artículos publicados según la consulta en el idioma activo.</p>"
+                },
+                fr: {
+                  title: "Rechercher des articles d'aide",
+                  content: "<p>Effectue une recherche plein texte sur les articles publiés dans la langue active.</p>"
+                },
+                "pt-BR": {
+                  title: "Pesquisar Artigos da Central de Ajuda",
+                  content: "<p>Realiza busca textual nos títulos e conteúdos dos artigos publicados no idioma selecionado.</p>"
+                },
+                ar: {
+                  title: "البحث في مقالات مركز المساعدة",
+                  content: "<p>إجراء بحث نصي شامل عبر عناوين ومحتوى المقالات المنشورة باللغة المحددة.</p>"
+                },
+                ko: {
+                  title: "고객센터 문서 검색",
+                  content: "<p>선택된 언어에 맞춰 공개된 문서 제목과 본문 내용을 대상으로 전체 텍스트 검색을 수행합니다.</p>"
+                }
+              }
+            },
+            {
+              key: :sdk_help_center_reactions,
+              article_type: :api_endpoint,
+              position: 16,
+              configurations: {
+                "api_method" => "POST",
+                "api_endpoint" => "/v1/sdk/help_center/articles/:id/reactions",
+                "api_parameters" => [
+                  { "name" => "X-Deskbolic-App-Id", "type" => "string", "required" => true },
+                  { "name" => "id", "type" => "string", "description" => "Article UUID or slug", "required" => true },
+                  { "name" => "reaction_type", "type" => "string", "description" => "Sentiment value ('happy', 'neutral', 'sad')", "required" => true }
+                ],
+                "api_responses" => [
+                  {
+                    "status" => 201,
+                    "description" => "Reaction recorded successfully",
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Reaction recorded successfully\",\n    \"reactions\": { \"happy\": 19, \"neutral\": 2, \"sad\": 1 }\n  }\n}"
+                  }
+                ]
+              },
+              translations: {
+                en: {
+                  title: "Submit Article Reaction",
+                  content: "<p>Submits helpfulness sentiment feedback ('happy', 'neutral', 'sad') for a documentation article.</p>"
+                },
+                de: {
+                  title: "Artikel-Reaktion übermitteln",
+                  content: "<p>Sendet Feedback ('happy', 'neutral', 'sad') für einen Dokumentationsartikel.</p>"
+                },
+                es: {
+                  title: "Enviar Reacción a un Artículo",
+                  content: "<p>Envía comentarios de satisfacción ('happy', 'neutral', 'sad') para un artículo de documentación.</p>"
+                },
+                fr: {
+                  title: "Envoyer une réaction à l'article",
+                  content: "<p>Envoie une évaluation de satisfaction ('happy', 'neutral', 'sad') pour un article.</p>"
+                },
+                "pt-BR": {
+                  title: "Enviar Reação ao Artigo",
+                  content: "<p>Envia avaliação de utilidade ('happy', 'neutral', 'sad') para um artigo de documentação.</p>"
+                },
+                ar: {
+                  title: "إرسال تقييم المقال",
+                  content: "<p>إرسال تقييم مدى فائدة المقال ('happy' أو 'neutral' أو 'sad') لمقالات المساعدة.</p>"
+                },
+                ko: {
+                  title: "문서 반응 피드백 제출",
+                  content: "<p>도움말 문서에 대한 만족도 피드백('happy', 'neutral', 'sad')을 제출합니다.</p>"
+                }
+              }
             }
           ]
         end

@@ -54,6 +54,12 @@ module Channels
             store_in_jsonb_data(field, value)
           end
         end
+
+        # Direct fallback for standard keys when custom field associations are absent
+        @customer_data["email"] ||= form_params[:email]
+        @customer_data["name"] ||= form_params[:name]
+        @conversation_data[:title] ||= form_params[:subject]
+        @message_content = form_params[:message] if @message_content.blank?
       end
 
       def map_to_internal_attribute(field, value)

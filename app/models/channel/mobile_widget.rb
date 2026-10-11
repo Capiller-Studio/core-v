@@ -76,6 +76,14 @@ module Channel
       default_locale.presence || super
     end
 
+    def locales
+      if portal.present? && portal.locales.present?
+        portal.locales
+      else
+        ([default_locale.presence || "en"] + translations.pluck(:locale)).compact_blank.uniq
+      end
+    end
+
     def supported_formatting
       [:bold, :italic, :strikethrough, :code, :ul, :ol, :link, :image, :file]
     end
