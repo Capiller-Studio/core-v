@@ -87,7 +87,7 @@ module Liquid
     end
 
     def original_subject
-      return @conversation.title if @conversation.respond_to?(:title) && @conversation.title.present?
+      return @conversation.title if @conversation.title.present?
 
       first_message = @conversation.messages.order(created_at: :asc).first
       subject = first_message&.content&.truncate(40) || "Conversation ##{@conversation.identifier}"

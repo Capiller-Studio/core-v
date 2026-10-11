@@ -35,7 +35,7 @@ RSpec.describe Seeds::ApiDocumentationSeeder do
         expect(mobile_sdk_cat).to be_present
         expect(mobile_sdk_cat).to be_api_reference
         expect(mobile_sdk_cat.translations.count).to eq(7)
-        expect(mobile_sdk_cat.articles.count).to eq(9)
+        expect(mobile_sdk_cat.articles.count).to eq(16)
 
         # Verify Conversations
         conv_cat = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: "en", name: "Conversations" })

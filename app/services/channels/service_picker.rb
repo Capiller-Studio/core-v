@@ -108,7 +108,7 @@ module Channels
       Messages::MobilePushWorker.perform_async(message.account_id, message.id)
 
       # Optional offline email fallback if configured on the channel
-      if channel.respond_to?(:fallback_channel) && channel.fallback_channel.present?
+      if channel.fallback_channel.present?
         Messages::OfflineReplyWorker.perform_in(15.minutes, message.account_id, message.id)
       end
     end

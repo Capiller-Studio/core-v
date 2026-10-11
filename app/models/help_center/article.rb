@@ -56,6 +56,7 @@ module HelpCenter
     has_many_attached :images       # Inline images embedded within article content
     has_one_attached  :banner_image # Hero/banner displayed at the top of the article page
     has_many :attachments, as: :resource, class_name: "Attachment", dependent: :destroy
+    has_many :article_reactions, class_name: "HelpCenter::ArticleReaction", dependent: :destroy
 
     enum :status, { draft: 0, published: 1, archived: 2 }
 
