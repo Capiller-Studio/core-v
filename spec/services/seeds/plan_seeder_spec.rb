@@ -11,8 +11,8 @@ RSpec.describe Seeds::PlanSeeder do
       # Check Hyperbolic plan
       plan = Plan.find_by(name: Plan::HYPERBOLIC, currency: 'USD')
       expect(plan).not_to be_nil
-      expect(plan.base_price).to eq(19)
-      expect(plan.annual_price).to eq(17)
+      expect(plan.base_price).to eq(14)
+      expect(plan.annual_price).to eq(12)
       expect(plan.limits['users_max']).to eq(30)
       expect(plan.limits['channels']).to eq(15)
       expect(plan.limits['ai_agents']).to eq(3)
@@ -26,8 +26,8 @@ RSpec.describe Seeds::PlanSeeder do
       
       # Check Parabolic plan bounded channel limit and pricing
       parabolic = Plan.find_by(name: Plan::PARABOLIC, currency: 'USD')
-      expect(parabolic.base_price).to eq(29)
-      expect(parabolic.annual_price).to eq(26)
+      expect(parabolic.base_price).to eq(19)
+      expect(parabolic.annual_price).to eq(16)
       expect(parabolic.limits['channels']).to eq(50)
       expect(parabolic.limits['ai_agents']).to eq(15)
       expect(parabolic.limits['assignment_policies']).to eq(25)
