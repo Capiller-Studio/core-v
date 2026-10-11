@@ -20,6 +20,7 @@ RSpec.describe HelpCenter::Portal, type: :model do
     it { is_expected.to have_one(:social_share_image_blob) }
     it { is_expected.to have_many(:translations) }
     it { is_expected.to have_one(:web_widget_channel) }
+    it { is_expected.to have_many(:mobile_widget_channels) }
   end
 
   describe 'Enums' do

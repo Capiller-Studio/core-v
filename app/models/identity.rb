@@ -49,7 +49,8 @@ class Identity < ShardRecord
     facebook: 1,
     instagram: 2,
     whatsapp: 3,
-    web_widget: 4
+    web_widget: 4,
+    mobile_widget: 5
   }
 
   validates :identity_type, presence: true

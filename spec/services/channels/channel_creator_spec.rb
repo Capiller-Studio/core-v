@@ -75,6 +75,52 @@ RSpec.describe Channels::ChannelCreator do
       end
     end
 
+    context 'creating a mobile widget channel' do
+      let(:channel_params) do
+        {
+          name: 'Mobile App',
+          anonymous_allowed: 'true',
+          push_enabled: 'true',
+          attachments_enabled: '1',
+          primary_inbox_attributes: { greeting: 'Hello from app' }
+        }
+      end
+      let(:service) { described_class.new(channel_type: 'mobile_widget', channel_params: channel_params, current_account: account) }
+      let(:channel) do
+        double(
+          'Channel::MobileWidget',
+          'account=': nil,
+          'anonymous_allowed=': nil,
+          'help_center_enabled=': nil,
+          'pre_chat_form_enabled=': nil,
+          'secure_identity_enforced=': nil,
+          'custom_branding=': nil,
+          'push_enabled=': nil,
+          'attachments_enabled=': nil
+        )
+      end
+
+      it 'creates the mobile widget channel and sets flags' do
+        expect(Channel::MobileWidget).to receive(:new).with({ name: 'Mobile App' }).and_return(channel)
+        expect(channel).to receive(:anonymous_allowed=).with(true)
+        expect(channel).to receive(:push_enabled=).with(true)
+        expect(channel).to receive(:attachments_enabled=).with(true)
+        expect(channel).to receive(:save!)
+        expect(channel).to receive(:inboxes).and_return(inboxes_assoc)
+
+        expect(inboxes_assoc).to receive(:create!).with(
+          hash_including(
+            name: 'Mobile App',
+            account: account,
+            primary_inbox: true,
+            greeting: 'Hello from app'
+          )
+        )
+
+        expect(service.call).to be true
+      end
+    end
+
     context 'handling errors' do
       let(:service) { described_class.new(channel_type: 'email', channel_params: {}, current_account: account) }
       

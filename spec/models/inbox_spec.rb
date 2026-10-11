@@ -15,6 +15,7 @@ RSpec.describe Inbox, type: :model do
     it { is_expected.to have_many(:teams).through(:inbox_teams) }
     it { is_expected.to have_many(:customer_inboxes).dependent(:destroy) }
     it { is_expected.to have_many(:customers).through(:customer_inboxes) }
+    it { is_expected.to have_many(:customer_devices).dependent(:delete_all) }
     it { is_expected.to have_many(:sla_inboxes).dependent(:destroy) }
     it { is_expected.to have_many(:sla_policies).through(:sla_inboxes) }
     it { is_expected.to have_many(:assignment_policy_inboxes).dependent(:destroy) }

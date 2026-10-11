@@ -98,5 +98,29 @@ RSpec.describe Messages::OfflineReplyWorker, type: :worker do
       message.reload
       expect(message.status).to eq('failed')
     end
+
+    context 'with Channel::MobileWidget' do
+      let(:fallback_email_channel) { create(:channel_email, account: account) }
+      let(:mobile_widget) { create(:channel_mobile_widget, account: account, fallback_channel: fallback_email_channel) }
+      let(:mobile_inbox) { create(:inbox, account: account, channel: mobile_widget) }
+      let(:mobile_conversation) { create(:conversation, account: account, inbox: mobile_inbox) }
+      let(:mobile_message) { create(:message, account: account, conversation: mobile_conversation, sender: user, status: :sent) }
+
+      before do
+        create(:conversation_member, conversation: mobile_conversation, member: customer)
+      end
+
+      it 'delivers email reply using fallback channel when mobile customer is offline' do
+        allow(::Utilities::ActivityHelpers).to receive(:activity?).with(account.id, 'Customer', customer.id).and_return(false)
+        mail_double = double('MailMessage', deliver_now: double('Mail', message_id: '<mobile-offline-123@example.com>'))
+        expect(ConversationReplyMailer).to receive(:reply).with(mobile_conversation, mobile_message, fallback_email_channel).and_return(mail_double)
+
+        described_class.new.perform(account.id, mobile_message.id)
+
+        mobile_message.reload
+        expect(mobile_message.status).to eq('delivered')
+        expect(mobile_message.external_id).to eq('<mobile-offline-123@example.com>')
+      end
+    end
   end
 end

@@ -23,12 +23,19 @@ RSpec.describe Seeds::ApiDocumentationSeeder do
         expect(portal.locales).to match_array(Core::SUPPORTED_LOCALES.map(&:to_s))
         expect(portal.translations.count).to eq(7)
 
-        expect(portal.categories.count).to eq(17)
+        expect(portal.categories.count).to eq(described_class::DATA_MODULES.size)
         
         # Verify Getting Started
         getting_started_cat = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: "en", name: "Getting Started" })
         expect(getting_started_cat).to be_present
         expect(getting_started_cat.translations.count).to eq(7)
+
+        # Verify Mobile SDK
+        mobile_sdk_cat = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: "en", name: "Mobile SDK API" })
+        expect(mobile_sdk_cat).to be_present
+        expect(mobile_sdk_cat).to be_api_reference
+        expect(mobile_sdk_cat.translations.count).to eq(7)
+        expect(mobile_sdk_cat.articles.count).to eq(9)
 
         # Verify Conversations
         conv_cat = portal.categories.joins(:translations).find_by(help_center_category_translations: { locale: "en", name: "Conversations" })

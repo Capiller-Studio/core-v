@@ -21,7 +21,7 @@ RSpec.describe Message, type: :model do
     it {
       is_expected.to define_enum_for(:source).with_values(
         email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3,
-        api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8
+        api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8, mobile_widget: 9
       ).with_suffix(:source)
     }
   end

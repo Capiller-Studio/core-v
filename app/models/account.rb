@@ -167,6 +167,7 @@ class Account < ApplicationRecord
   CHANNEL_CLASSES = [
     Channel::Email,
     Channel::WebWidget,
+    Channel::MobileWidget,
     Channel::ContactForm,
     Channel::FacebookPage,
     Channel::Instagram,

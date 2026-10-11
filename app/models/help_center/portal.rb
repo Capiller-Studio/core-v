@@ -49,6 +49,7 @@ module HelpCenter
 
     # Web widget is already linked via Channel::WebWidget#portal_id (FK on that table)
     has_one :web_widget_channel,   class_name: "Channel::WebWidget", dependent: :nullify
+    has_many :mobile_widget_channels, class_name: "Channel::MobileWidget", dependent: :nullify
     # Contact form channel — links this portal to its embeddable support/contact form
     belongs_to :contact_form_channel, class_name: "Channel::ContactForm", optional: true
 

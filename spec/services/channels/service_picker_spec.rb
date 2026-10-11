@@ -56,6 +56,37 @@ RSpec.describe Channels::ServicePicker do
       end
     end
 
+    context 'with MobileWidget channel' do
+      let(:fallback_email) { nil }
+      let(:default_channel) do
+        double('Channel::MobileWidget', class: double(name: 'Channel::MobileWidget'), fallback_channel: fallback_email)
+      end
+      let(:service) { described_class.new(conversation: conversation, message: message) }
+
+      before do
+        stub_const('Messages::MobilePushWorker', double('PushWorker'))
+        stub_const('Messages::OfflineReplyWorker', double('OfflineWorker'))
+      end
+
+      context 'without fallback channel' do
+        it 'enqueues mobile push worker and skips offline reply worker' do
+          expect(Messages::MobilePushWorker).to receive(:perform_async).with(2, 10)
+          expect(Messages::OfflineReplyWorker).not_to receive(:perform_in)
+          service.call
+        end
+      end
+
+      context 'with fallback channel configured' do
+        let(:fallback_email) { double('Channel::Email') }
+
+        it 'enqueues both mobile push worker and offline reply worker' do
+          expect(Messages::MobilePushWorker).to receive(:perform_async).with(2, 10)
+          expect(Messages::OfflineReplyWorker).to receive(:perform_in).with(15.minutes, 2, 10)
+          service.call
+        end
+      end
+    end
+
     context 'with Whatsapp channel' do
       let(:default_channel) { double('Channel::Whatsapp', class: double(name: 'Channel::Whatsapp')) }
       let(:service) { described_class.new(conversation: conversation, message: message) }

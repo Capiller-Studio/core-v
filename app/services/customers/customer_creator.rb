@@ -81,6 +81,7 @@ module Customers
       when Channel::Instagram    then :instagram
       when Channel::Whatsapp     then :whatsapp
       when Channel::WebWidget    then :web_widget
+      when Channel::MobileWidget then :mobile_widget
       when Channel::Custom       then :custom_api
       end
     end

@@ -56,6 +56,7 @@ class Inbox < ShardRecord
   has_many :conversations, dependent: :destroy
   has_many :customer_inboxes, dependent: :destroy
   has_many :customers, through: :customer_inboxes
+  has_many :customer_devices, dependent: :delete_all
   has_many :sla_inboxes, dependent: :destroy
   has_many :sla_policies, through: :sla_inboxes
   has_many :assignment_policy_inboxes, dependent: :destroy

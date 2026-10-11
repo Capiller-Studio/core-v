@@ -62,6 +62,10 @@ module Customers
       channel_api_external_id
     end
 
+    def channel_mobile_widget_external_id
+      channel_api_external_id
+    end
+
     def channel_contact_form_external_id
       channel_api_external_id
     end

@@ -214,16 +214,21 @@ RSpec.describe Account, type: :model do
     end
 
     it 'cleans up inboxes and channels on shard upon mark_as_deleted!' do
+      expect(Account::CHANNEL_CLASSES).to include(Channel::MobileWidget)
+
       account.with_shard do
         create(:inbox, account: account, name: 'Support Inbox')
+        create(:channel_mobile_widget, account: account, name: 'Mobile App Support')
       end
 
       expect(account.with_shard { account.inboxes.count }).to be >= 1
+      expect(account.with_shard { Channel::MobileWidget.where(account_id: account.id).count }).to eq(1)
 
       account.deactivate_for_deletion!
       account.mark_as_deleted!
 
       expect(account.with_shard { account.inboxes.count }).to eq(0)
+      expect(account.with_shard { Channel::MobileWidget.where(account_id: account.id).count }).to eq(0)
     end
 
     it 'restores account back to active status, reactivates domains and account_users' do

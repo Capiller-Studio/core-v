@@ -103,5 +103,18 @@ RSpec.describe Customers::CustomerInboxCreator do
         expect(result).to eq(existing_inbox)
       end
     end
+
+    context 'when inbox is mobile widget channel' do
+      let(:mobile_channel) { create(:channel_mobile_widget, account: account) }
+      let(:mobile_inbox) { create(:inbox, account: account, channel: mobile_channel) }
+
+      it 'resolves external_id using customer external_id or provided external_id' do
+        customer_with_ext = create(:customer, account: account, external_id: 'mob-ext-456')
+        service = described_class.new(account: account, customer: customer_with_ext, inbox: mobile_inbox)
+
+        inbox_record = service.call
+        expect(inbox_record.external_id).to eq('mob-ext-456')
+      end
+    end
   end
 end
