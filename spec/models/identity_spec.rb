@@ -14,7 +14,7 @@ RSpec.describe Identity, type: :model do
   end
 
   describe 'Enums' do
-    it { is_expected.to define_enum_for(:identity_type).with_values(custom_api: 0, facebook: 1, instagram: 2, whatsapp: 3, web_widget: 4) }
+    it { is_expected.to define_enum_for(:identity_type).with_values(custom_api: 0, facebook: 1, instagram: 2, whatsapp: 3, web_widget: 4, mobile_widget: 5) }
   end
 
 end

@@ -9,5 +9,9 @@ FactoryBot.define do
     trait :web_widget do
       association :channel, factory: :channel_web_widget
     end
+
+    trait :mobile_widget do
+      association :channel, factory: :channel_mobile_widget
+    end
   end
 end

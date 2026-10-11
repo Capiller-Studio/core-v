@@ -29,7 +29,7 @@ module Messages
         return if ::Utilities::ActivityHelpers.activity?(account.id, "Customer", customer.id)
 
         channel = conversation.inbox.channel
-        return unless channel.is_a?(Channel::WebWidget)
+        return unless channel.is_a?(Channel::WebWidget) || channel.is_a?(Channel::MobileWidget)
 
         # Fallback channel logic
         outbound = channel.fallback_channel

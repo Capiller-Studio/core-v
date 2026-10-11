@@ -11,6 +11,7 @@ RSpec.describe Customer, type: :model do
     it { is_expected.to have_many(:conversations).through(:conversation_members) }
     it { is_expected.to have_many(:messages).dependent(:destroy) }
     it { is_expected.to have_many(:identities).dependent(:destroy) }
+    it { is_expected.to have_many(:customer_devices).dependent(:destroy) }
   end
 
   describe 'Enums' do

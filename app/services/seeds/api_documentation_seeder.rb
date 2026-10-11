@@ -18,6 +18,7 @@ require_relative "data/api_docs/searches"
 require_relative "data/api_docs/system"
 require_relative "data/api_docs/macros"
 require_relative "data/api_docs/webhooks"
+require_relative "data/api_docs/mobile_sdk"
 require_relative "data/api_docs/user_guide_link"
 
 module Seeds
@@ -27,6 +28,7 @@ module Seeds
       Data::ApiDocs::Authentication,
       Data::ApiDocs::IdentityAndProfiles,
       Data::ApiDocs::Devices,
+      Data::ApiDocs::MobileSdk,
       Data::ApiDocs::Inboxes,
       Data::ApiDocs::Customers,
       Data::ApiDocs::Conversations,

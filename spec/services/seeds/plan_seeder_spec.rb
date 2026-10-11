@@ -22,6 +22,7 @@ RSpec.describe Seeds::PlanSeeder do
       expect(plan.limits['custom_fields']).to eq(20)
       expect(plan.features['macros']).to eq(true)
       expect(plan.features['monthly_ai_credits']).to eq(250)
+      expect(plan.features.dig('channels', 'mobile_widget')).to eq(true)
       
       # Check Parabolic plan bounded channel limit and pricing
       parabolic = Plan.find_by(name: Plan::PARABOLIC, currency: 'USD')

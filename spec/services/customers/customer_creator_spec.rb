@@ -44,6 +44,19 @@ RSpec.describe Customers::CustomerCreator do
       end
     end
 
+    context 'when customer has an existing identity matching mobile_widget channel' do
+      let(:mobile_channel) { create(:channel_mobile_widget, account: account) }
+      let(:mobile_inbox) { create(:inbox, account: account, channel: mobile_channel) }
+      let!(:existing_customer) { create(:customer, account: account, name: 'Mobile App User') }
+      let!(:identity) { create(:identity, customer: existing_customer, identity_type: :mobile_widget, identifier: 'mobile-ext-777', account: account) }
+      let(:service) { described_class.new(account: account, inbox: mobile_inbox, external_id: 'mobile-ext-777') }
+
+      it 'finds and returns the customer via mobile_widget identity' do
+        expect { service.call }.not_to change(Customer, :count)
+        expect(service.call).to eq(existing_customer)
+      end
+    end
+
     context 'when creating a new customer' do
       let(:params) do
         {

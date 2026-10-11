@@ -59,6 +59,7 @@ module Seeds
           "social_login" => true,
           "channels" => {
             "web_widget" => true,
+            "mobile_widget" => false,
             "email" => false,
             "custom" => false,
             "contact_form" => false,
@@ -127,6 +128,7 @@ module Seeds
           "social_login" => true,
           "channels" => {
             "web_widget" => true,
+            "mobile_widget" => true,
             "email" => true,
             "custom" => false,
             "contact_form" => true,
@@ -195,6 +197,7 @@ module Seeds
           "social_login" => true,
           "channels" => {
             "web_widget" => true,
+            "mobile_widget" => true,
             "email" => true,
             "custom" => false,
             "contact_form" => true,
@@ -263,6 +266,7 @@ module Seeds
           "social_login" => true,
           "channels" => {
             "web_widget" => true,
+            "mobile_widget" => true,
             "email" => true,
             "custom" => true,
             "contact_form" => true,

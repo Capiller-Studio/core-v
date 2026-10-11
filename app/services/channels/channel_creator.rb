@@ -88,6 +88,25 @@ module Channels
       create_primary_inbox(@channel, name: channel_params[:name])
     end
 
+    def mobile_widget_channel
+      @channel = Channel::MobileWidget.new(
+        channel_params.except(:primary_inbox_attributes, :anonymous_allowed, :help_center_enabled, :pre_chat_form_enabled, :secure_identity_enforced, :custom_branding, :push_enabled, :attachments_enabled)
+      )
+      @channel.account = current_account
+
+      @channel.anonymous_allowed = channel_params[:anonymous_allowed] == "true" || channel_params[:anonymous_allowed] == "1" || channel_params[:anonymous_allowed] == true
+      @channel.help_center_enabled = channel_params[:help_center_enabled] == "true" || channel_params[:help_center_enabled] == "1" || channel_params[:help_center_enabled] == true
+      @channel.pre_chat_form_enabled = channel_params[:pre_chat_form_enabled] == "true" || channel_params[:pre_chat_form_enabled] == "1" || channel_params[:pre_chat_form_enabled] == true
+      @channel.secure_identity_enforced = channel_params[:secure_identity_enforced] == "true" || channel_params[:secure_identity_enforced] == "1" || channel_params[:secure_identity_enforced] == true
+      @channel.custom_branding = channel_params[:custom_branding] == "true" || channel_params[:custom_branding] == "1" || channel_params[:custom_branding] == true
+      @channel.push_enabled = channel_params[:push_enabled] == "true" || channel_params[:push_enabled] == "1" || channel_params[:push_enabled] == true
+      @channel.attachments_enabled = channel_params[:attachments_enabled].nil? || channel_params[:attachments_enabled] == "true" || channel_params[:attachments_enabled] == "1" || channel_params[:attachments_enabled] == true
+
+      @channel.save!
+
+      create_primary_inbox(@channel, name: channel_params[:name])
+    end
+
     def email_channel
       @channel = Channel::Email.new(channel_params.except(:primary_inbox_attributes))
       @channel.account = current_account

@@ -23,6 +23,7 @@
 class CustomerInbox < ShardRecord
   belongs_to :customer
   belongs_to :inbox
+  has_many :customer_devices, dependent: :delete_all
 
   # TODO: Would be unique system wide. We would prepend account id
   has_secure_token :connection_token

@@ -47,7 +47,7 @@ RSpec.describe Conversation, type: :model do
 
     it { expect(conversation).to define_enum_for(:source).with_values(
       email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3,
-      api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8
+      api: 4, web_widget: 5, sms: 6, telegram: 7, help_center: 8, mobile_widget: 9
     ).with_suffix(:source) }
 
     it { expect(conversation).to define_enum_for(:ai_status).with_values(ai_inactive: 0, ai_active: 1, ai_handed_off: 2) }
