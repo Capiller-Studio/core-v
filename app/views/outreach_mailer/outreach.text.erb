@@ -1,0 +1,56 @@
+<%= @salutation %>
+
+I'm reaching out directly as the founder of Deskbolic (https://deskbolic.com). While analyzing how fast-moving online teams scale their customer operations, I noticed how quickly traditional support software costs spiral out of hand<%= " for teams like yours at #{@company}" if @company.present? %>.
+<% if @competitor.present? %>
+
+<% case @competitor %>
+<% when "intercom" %>
+Why teams look for Intercom alternatives: Steep seat costs ($39–$139/seat), surprise contact tier penalties, and $0.99 per-resolution AI fees that penalize you for growing.
+<% when "zendesk" %>
+Why teams look for Zendesk alternatives: Clunky legacy 2010s interfaces, fragmented multi-product add-ons, and enterprise pricing starting at $55–$115+/agent/mo.
+<% when "crisp" %>
+Why teams look for Crisp alternatives: Sharp cliff jumps between flat-rate tiers where adding a couple of agents or inboxes forces expensive plan upgrades.
+<% when "freshdesk" %>
+Why teams look for Freshdesk alternatives: Fragmented add-on fees, separate charges for Freddy AI, and artificial limits on shared inboxes and SLAs.
+<% when "helpscout" %>
+Why teams look for Help Scout alternatives: Strict mailbox limits, email-first silos, and expensive upgrades required to unlock modern live chat and automation.
+<% when "tidio" %>
+Why teams look for Tidio alternatives: Restrictive monthly conversation quotas and expensive AI credit top-ups that make scaling unpredictable.
+<% else %>
+Why modern teams switch: Inflated per-seat pricing, surprise tier walls, and extra fees for basic AI bots.
+<% end %>
+<% end %>
+<% if @custom_hook.present? %>
+
+<%= @custom_hook %>
+<% end %>
+
+We built Deskbolic to fix this — a modern AI customer support platform and shared inbox built from scratch for 2026:
+
+- Predictable $9 – $19 / agent / month: Transparent pricing with zero contact storage fees and zero per-resolution penalties.
+- Built-In Boli AI Copilot: Instant ticket summaries, draft replies, tone switching, and 24/7 autonomous website chatbots — included directly.
+- True Omnichannel Shared Inbox: Live Chat widget, WhatsApp Cloud API, Instagram DMs, and Email unified in one fast workspace.
+- Instant 60-Second Setup: Connect your existing email or live chat in minutes without technical assistance or consultants.
+<% if @competitor.present? %>
+
+See our honest comparison breakdown:
+https://deskbolic.com/comparisons/<%= @competitor %>
+<% end %>
+
+We offer a 14-day free trial with full feature access and no credit card required. You can try it out directly here:
+https://deskbolic.app/register
+
+I would also be happy to personally help configure your routing policies, knowledge base, or custom domain if you'd like concierge onboarding.
+
+If you have any questions or would like to see a quick 5-minute walkthrough, simply reply directly to this email — it comes straight to my inbox.
+
+Best regards,
+
+Ahsan
+Founder, Deskbolic & Techbolic
+Email: ahsan@techbolic.com
+Web: https://deskbolic.com
+
+---
+TECHBOLIC, LLC • Transparent AI Customer Support.
+You received this one-time founder outreach note because we believe Deskbolic can help your support operations. If you'd rather not hear from me, just reply and let me know.

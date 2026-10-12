@@ -17,3 +17,6 @@
 /config/master.key
 
 /config/credentials.yml.enc
+
+# Outbound leads CSVs
+leads_batch_*.csv
