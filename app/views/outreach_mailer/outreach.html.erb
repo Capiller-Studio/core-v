@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= @subject %></title>
+</head>
+<body style="margin: 0; padding: 24px 16px; background-color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.6; color: #1E293B;">
+  <div style="max-width: 580px; margin: 0 auto;">
+    <p style="margin: 0 0 16px;"><%= @salutation %></p>
+
+    <p style="margin: 0 0 16px;">
+      I'm reaching out directly as the founder of Deskbolic (<a href="https://deskbolic.com" style="color: #4F46E5; text-decoration: underline;">deskbolic.com</a>). While analyzing how fast-moving online teams scale their customer operations, I noticed how quickly traditional support software costs spiral out of hand<%= " for teams like yours at #{@company}" if @company.present? %>.
+    </p>
+
+    <% if @competitor.present? %>
+      <p style="margin: 0 0 16px; padding: 12px 16px; background-color: #F8FAFC; border-left: 3px solid #6366F1; font-size: 14px; color: #334155; border-radius: 0 6px 6px 0;">
+        <% case @competitor %>
+        <% when "intercom" %>
+          <strong>Why teams look for Intercom alternatives:</strong> Steep seat costs ($39–$139/seat), surprise contact tier penalties, and $0.99 per-resolution AI fees that penalize you for growing.
+        <% when "zendesk" %>
+          <strong>Why teams look for Zendesk alternatives:</strong> Clunky legacy 2010s interfaces, fragmented multi-product add-ons, and enterprise pricing starting at $55–$115+/agent/mo.
+        <% when "crisp" %>
+          <strong>Why teams look for Crisp alternatives:</strong> Sharp cliff jumps between flat-rate tiers where adding a couple of agents or inboxes forces expensive plan upgrades.
+        <% when "freshdesk" %>
+          <strong>Why teams look for Freshdesk alternatives:</strong> Fragmented add-on fees, separate charges for Freddy AI, and artificial limits on shared inboxes and SLAs.
+        <% when "helpscout" %>
+          <strong>Why teams look for Help Scout alternatives:</strong> Strict mailbox limits, email-first silos, and expensive upgrades required to unlock modern live chat and automation.
+        <% when "tidio" %>
+          <strong>Why teams look for Tidio alternatives:</strong> Restrictive monthly conversation quotas and expensive AI credit top-ups that make scaling unpredictable.
+        <% else %>
+          <strong>Why modern teams switch:</strong> Inflated per-seat pricing, surprise tier walls, and extra fees for basic AI bots.
+        <% end %>
+      </p>
+    <% end %>
+
+    <% if @custom_hook.present? %>
+      <p style="margin: 0 0 16px;">
+        <%= @custom_hook %>
+      </p>
+    <% end %>
+
+    <p style="margin: 0 0 16px;">
+      We built <strong>Deskbolic</strong> to fix this — a modern AI customer support platform and shared inbox built from scratch for 2026:
+    </p>
+
+    <ul style="margin: 0 0 20px; padding-left: 20px; color: #334155;">
+      <li style="margin-bottom: 8px;"><strong>Predictable $9 – $19 / agent / month</strong>: Transparent pricing with zero contact storage fees and zero per-resolution penalties.</li>
+      <li style="margin-bottom: 8px;"><strong>Built-In Boli AI Copilot</strong>: Instant ticket summaries, draft replies, tone switching, and 24/7 autonomous website chatbots — included directly.</li>
+      <li style="margin-bottom: 8px;"><strong>True Omnichannel Shared Inbox</strong>: Live Chat widget, WhatsApp Cloud API, Instagram DMs, and Email unified in one fast workspace.</li>
+      <li style="margin-bottom: 8px;"><strong>Instant 60-Second Setup</strong>: Connect your existing email or live chat in minutes without technical assistance or consultants.</li>
+    </ul>
+
+    <% if @competitor.present? %>
+      <p style="margin: 0 0 16px;">
+        You can also see an honest head-to-head comparison here:
+        <br>
+        👉 <a href="https://deskbolic.com/comparisons/<%= @competitor %>" style="color: #4F46E5; text-decoration: underline; font-weight: 600;">See Deskbolic vs <%= @competitor_name %> breakdown</a>
+      </p>
+    <% end %>
+
+    <p style="margin: 0 0 16px;">
+      We offer a <strong>14-day free trial</strong> with full feature access and no credit card required. You can try it out directly here:
+      <br>
+      👉 <a href="https://deskbolic.app/register" style="color: #4F46E5; font-weight: 600; text-decoration: underline;">https://deskbolic.app/register</a>
+    </p>
+
+    <p style="margin: 0 0 24px;">
+      I would also be happy to personally help configure your routing policies, knowledge base, or custom domain if you'd like concierge onboarding.
+    </p>
+
+    <p style="margin: 0 0 16px;">
+      If you have any questions or would like to see a quick 5-minute walkthrough, simply reply directly to this email — it comes straight to my inbox.
+    </p>
+
+    <p style="margin: 0; line-height: 1.5;">
+      Best regards,<br>
+      <strong>Ahsan</strong><br>
+      <span style="color: #64748B; font-size: 14px;">Founder, Deskbolic &amp; Techbolic</span><br>
+      <span style="color: #64748B; font-size: 13px;">
+        <a href="mailto:ahsan@techbolic.com" style="color: #4F46E5; text-decoration: none;">ahsan@techbolic.com</a> • <a href="https://deskbolic.com" style="color: #4F46E5; text-decoration: none;">deskbolic.com</a>
+      </span>
+    </p>
+
+    <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 32px 0 16px;">
+
+    <p style="margin: 0; font-size: 12px; color: #94A3B8; line-height: 1.5;">
+      TECHBOLIC, LLC • Transparent AI Customer Support.<br>
+      You received this one-time founder outreach note because we believe Deskbolic can help your support operations. If you'd rather not hear from me, just reply and let me know.
+    </p>
+  </div>
+</body>
+</html>
