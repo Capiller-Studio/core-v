@@ -58,8 +58,8 @@ module Affiliates
         original_clawback_amount = (commission.original_amount * ratio).round(2)
         
         ::Affiliate::Commission.create!(
-          profile_id: commission.affiliate_profile_id,
-          referral_id: commission.affiliate_referral_id,
+          affiliate_profile_id: commission.affiliate_profile_id,
+          affiliate_referral_id: commission.affiliate_referral_id,
           transaction_record_id: commission.transaction_record_id,
           original_commission_id: commission.id,
           commission_type: :refund,

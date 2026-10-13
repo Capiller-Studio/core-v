@@ -23,7 +23,8 @@ module Automations
           "customer" => { "name" => customer.name, "email" => customer.email },
           "agent"    => { "name" => conversation.assignee&.name, "email" => conversation.assignee&.email },
           "account"  => { "name" => account.name },
-          "inbox"    => { "name" => inbox.name }
+          "inbox"    => { "name" => inbox.name },
+          "conversation" => { "identifier" => conversation.identifier, "subject" => conversation.title }
         }
 
         # Render content

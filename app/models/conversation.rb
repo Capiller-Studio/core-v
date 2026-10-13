@@ -64,7 +64,8 @@ class Conversation < ShardRecord
     email: 0, facebook_message: 1, whatsapp: 2, instagram_direct_message: 3,
     api: 4, web_widget: 5, sms: 6, telegram: 7,
     help_center: 8,  # Submitted via a Channel::ContactForm on a Help Center portal
-    mobile_widget: 9
+    mobile_widget: 9,
+    custom: 10
   }, suffix: true
 
   enum :ai_status, { ai_inactive: 0, ai_active: 1, ai_handed_off: 2 }

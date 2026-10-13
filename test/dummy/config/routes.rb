@@ -19,6 +19,7 @@ Rails.application.routes.draw do
     post "instagram", to: "instagram#index"
     post "paddle", to: "paddle#create"
     post "stripe", to: "stripe#create"
+    post "custom/:account_id/:channel_id", to: "custom#create"
 
     namespace :sms do
       post "aws_sns/:account_id/:channel_id", to: "aws_sns#create"
