@@ -47,7 +47,7 @@ module Sla
         
         # Find the active or next block of business hours for today
         active_block = hours.find do |bh|
-          current_time_str >= bh.opening_time.strftime("%H:%M:%S") && current_time_str <= bh.closing_time.strftime("%H:%M:%S")
+          current_time_str >= bh.opening_time.strftime("%H:%M:%S") && current_time_str < bh.closing_time.strftime("%H:%M:%S")
         end
 
         next_block = hours.select { |bh| bh.opening_time.strftime("%H:%M:%S") > current_time_str }.min_by { |bh| bh.opening_time.strftime("%H:%M:%S") }
