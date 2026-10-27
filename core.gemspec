@@ -3,9 +3,9 @@ require_relative "lib/core/version"
 Gem::Specification.new do |spec|
   spec.name        = "core"
   spec.version     = Core::VERSION
-  spec.authors     = [ "TECHBOLIC SOLUTIONS (PRIVATE) LIMITED" ]
-  spec.email       = [ "info@techbolic.com" ]
-  spec.homepage    = "https://techbolic.com/"
+  spec.authors     = [ ENV.fetch("GEM_AUTHOR", "TECHBOLIC SOLUTIONS (PRIVATE) LIMITED") ]
+  spec.email       = [ ENV.fetch("GEM_EMAIL", "info@techbolic.com") ]
+  spec.homepage    = ENV.fetch("GEM_HOMEPAGE", "https://techbolic.com/")
   spec.summary     = "Deskbolic Shared backend"
   spec.description = "Deskbolic Shared backend"
   spec.license     = "MIT"
@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the "allowed_push_host"
   # to allow pushing to a single host or delete this section to allow pushing to any host.
-  spec.metadata["allowed_push_host"] = "https://techbolic.com/"
+  spec.metadata["allowed_push_host"] = ENV.fetch("GEM_ALLOWED_PUSH_HOST", "https://techbolic.com/")
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/deskbolic/core.git"

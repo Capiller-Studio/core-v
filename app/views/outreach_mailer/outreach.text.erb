@@ -48,8 +48,8 @@ Best regards,
 
 Ahsan
 Founder, Deskbolic & Techbolic
-Email: ahsan@techbolic.com
-Web: https://deskbolic.com
+Email: <%= ENV.fetch("OUTREACH_REPLY_TO", "ahsan@techbolic.com") %>
+Web: <%= ENV.fetch("APP_MARKETING_URL", "https://deskbolic.com") %>
 
 ---
 TECHBOLIC, LLC • Transparent AI Customer Support.

@@ -78,7 +78,7 @@
       <strong>Ahsan</strong><br>
       <span style="color: #64748B; font-size: 14px;">Founder, Deskbolic &amp; Techbolic</span><br>
       <span style="color: #64748B; font-size: 13px;">
-        <a href="mailto:ahsan@techbolic.com" style="color: #4F46E5; text-decoration: none;">ahsan@techbolic.com</a> • <a href="https://deskbolic.com" style="color: #4F46E5; text-decoration: none;">deskbolic.com</a>
+        <a href="mailto:<%= ENV.fetch('OUTREACH_REPLY_TO', 'ahsan@techbolic.com') %>" style="color: #4F46E5; text-decoration: none;"><%= ENV.fetch('OUTREACH_REPLY_TO', 'ahsan@techbolic.com') %></a> • <a href="<%= ENV.fetch('APP_MARKETING_URL', 'https://deskbolic.com') %>" style="color: #4F46E5; text-decoration: none;"><%= ENV.fetch('APP_MARKETING_DOMAIN', 'deskbolic.com') %></a>
       </span>
     </p>
 

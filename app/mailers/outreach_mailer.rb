@@ -3,8 +3,8 @@
 # rubocop:disable Rails/ApplicationMailer
 class OutreachMailer < ActionMailer::Base
   # rubocop:enable Rails/ApplicationMailer
-  default from: "Ahsan from Deskbolic <ahsan@techbolic.com>"
-  default reply_to: "ahsan@techbolic.com"
+  default from: -> { ENV.fetch("OUTREACH_FROM_EMAIL", "Ahsan from Deskbolic <ahsan@techbolic.com>") }
+  default reply_to: -> { ENV.fetch("OUTREACH_REPLY_TO", "ahsan@techbolic.com") }
 
   after_action :set_delivery_options
 
@@ -22,8 +22,8 @@ class OutreachMailer < ActionMailer::Base
 
     mail(
       to: @recipient_email,
-      from: "Ahsan from Deskbolic <ahsan@techbolic.com>",
-      reply_to: "ahsan@techbolic.com",
+      from: ENV.fetch("OUTREACH_FROM_EMAIL", "Ahsan from Deskbolic <ahsan@techbolic.com>"),
+      reply_to: ENV.fetch("OUTREACH_REPLY_TO", "ahsan@techbolic.com"),
       subject: @subject
     )
   end

@@ -2,9 +2,9 @@
 
 module Seeds
   class AdminSeeder
-    DEFAULT_EMAIL = "ahsan@techbolic.com"
-    DEFAULT_PASSWORD = "ChangeMe123#"
-    DEFAULT_NAME = "Ahsan"
+    DEFAULT_EMAIL = ENV.fetch("ADMIN_DEFAULT_EMAIL", "ahsan@techbolic.com")
+    DEFAULT_PASSWORD = ENV.fetch("ADMIN_DEFAULT_PASSWORD", "ChangeMe123#")
+    DEFAULT_NAME = ENV.fetch("ADMIN_DEFAULT_NAME", "Ahsan")
 
     STANDARD_ROLES = {
       "super_admin" => {
