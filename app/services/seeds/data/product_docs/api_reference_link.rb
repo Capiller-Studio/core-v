@@ -43,7 +43,7 @@ module Seeds
           }
         end
 
-        def self.articles(api_portal_domain: "developers.deskbolic.com")
+        def self.articles(api_portal_domain: "api-rely.capiller.com")
           api_url = api_portal_domain.include?("localhost") ? "http://#{api_portal_domain}:3001" : "https://#{api_portal_domain}"
 
           [

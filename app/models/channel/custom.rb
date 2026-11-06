@@ -43,7 +43,7 @@ module Channel
 
     # Public endpoint where the customer sends their payloads to us.
     def webhook_endpoint
-      host = ENV.fetch("FRONTEND_URL", "https://deskbolic.app")
+      host = ENV.fetch("FRONTEND_URL", "https://rely.capiller.com")
       "#{host}/webhooks/custom/#{account_id}/#{id}"
     end
 

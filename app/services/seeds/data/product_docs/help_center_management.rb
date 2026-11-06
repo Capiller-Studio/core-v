@@ -42,7 +42,7 @@ module Seeds
           }
         end
 
-        def self.articles(api_portal_domain: "developers.deskbolic.com")
+        def self.articles(api_portal_domain: "api-rely.capiller.com")
           api_url = "https://#{api_portal_domain}"
 
           [
@@ -151,7 +151,7 @@ module Seeds
                     <div style="padding: 20px; border-radius: 12px; background: #EEF2FF; border: 1px solid #C7D2FE; margin: 20px 0;">
                       <h4 style="margin: 0 0 8px 0; color: #3730A3;">Explore the Capiller Rely API Reference</h4>
                       <p style="margin: 0 0 14px 0; color: #4338CA;">Review the available API documentation and integration guidance.</p>
-                      <a href="#{api_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #4F46E5; color: #ffffff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600;">Open API Documentation &rarr;</a>
+                      <a href="#{api_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #3b82f6; color: #ffffff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600;">Open API Documentation &rarr;</a>
                     </div>
                   HTML
                 },

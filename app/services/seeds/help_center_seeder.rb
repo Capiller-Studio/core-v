@@ -41,8 +41,8 @@ module Seeds
       
       portal.ui_configurations = {
         "theme_mode" => "light",
-        "primary_color" => "#778DFF",
-        "secondary_color" => "#4F46E5",
+        "primary_color" => "#3b82f6",
+        "secondary_color" => "#2563eb",
         "font_family" => "Inter",
         "hero_style" => "plain",
         "category_layout" => "grid"

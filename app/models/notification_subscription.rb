@@ -69,7 +69,7 @@ class NotificationSubscription < ShardRecord
       p256dh: data["p256dh"],
       auth: data["auth"],
       vapid: {
-        subject: ENV['VAPID_SUBJECT'] || (Rails.application.credentials.dig(:vapid, :subject) ? "mailto:#{Rails.application.credentials.dig(:vapid, :subject)}" : "mailto:support@deskbolic.com"),
+        subject: ENV['VAPID_SUBJECT'] || (Rails.application.credentials.dig(:vapid, :subject) ? "mailto:#{Rails.application.credentials.dig(:vapid, :subject)}" : "mailto:support@capiller.com"),
         public_key: ENV['VAPID_PUBLIC_KEY'] || Rails.application.credentials.dig(:vapid, :public_key),
         private_key: ENV['VAPID_PRIVATE_KEY'] || Rails.application.credentials.dig(:vapid, :private_key)
       }

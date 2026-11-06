@@ -100,7 +100,7 @@ module Seeds
 
     attr_reader :account, :domain, :help_center_domain
 
-    def self.seed(account: nil, domain: "developers.deskbolic.com", help_center_domain: "help.deskbolic.com")
+    def self.seed(account: nil, domain: "api-rely.capiller.com", help_center_domain: "help-rely.capiller.com")
       target_account = account || Account.find_by(identifier: "deskbolic") || Account.first
       unless target_account
         puts "Skipping API documentation seed: No account available."
@@ -110,7 +110,7 @@ module Seeds
       new(account: target_account, domain: domain, help_center_domain: help_center_domain).seed
     end
 
-    def initialize(account:, domain: "developers.deskbolic.com", help_center_domain: "help.deskbolic.com")
+    def initialize(account:, domain: "api-rely.capiller.com", help_center_domain: "help-rely.capiller.com")
       @account = account
       @domain = domain
       @help_center_domain = help_center_domain
@@ -161,7 +161,7 @@ module Seeds
       portal.indexing_enabled = true
       portal.ui_configurations = {
         "theme_mode" => "system",
-        "primary_color" => "#4f46e5",
+        "primary_color" => "#3b82f6",
         "secondary_color" => "#3730a3",
         "font_family" => "Inter",
         "hero_style" => "plain",

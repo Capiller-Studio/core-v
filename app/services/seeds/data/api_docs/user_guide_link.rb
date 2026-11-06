@@ -44,7 +44,7 @@ module Seeds
           }
         end
 
-        def self.articles(help_center_domain: "help.deskbolic.com")
+        def self.articles(help_center_domain: "help-rely.capiller.com")
           help_url = help_center_domain.include?("localhost") ? "http://#{help_center_domain}:3001" : "https://#{help_center_domain}"
 
           [

@@ -81,7 +81,7 @@ module Seeds
       widget.assign_attributes(
         allowed_hosts: ["http://localhost:3000"],
         ui_configurations: {
-          "theme_color" => "#778DFF",
+          "theme_color" => "#3b82f6",
           "welcome_title" => "Welcome to Capiller Rely!",
           "welcome_tagline" => "We typically reply within a few minutes.",
           "position" => "right"

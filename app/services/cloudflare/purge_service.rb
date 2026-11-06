@@ -86,7 +86,7 @@ module Cloudflare
     end
 
     def self.widget_base_url
-      (ENV["WIDGET_APP_URL"].presence || "https://widget.deskbolic.com").delete_suffix("/")
+      (ENV["WIDGET_APP_URL"].presence || "https://widget-rely.capiller.com").delete_suffix("/")
     end
   end
 end

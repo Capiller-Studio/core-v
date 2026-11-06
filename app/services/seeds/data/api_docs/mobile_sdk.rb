@@ -268,7 +268,7 @@ module Seeds
                   {
                     "status" => 200,
                     "description" => "List of messages",
-                    "body" => "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 84920,\n      \"content\": \"Hello, how may I assist you today?\",\n      \"sender_type\": \"user\",\n      \"sender\": {\n        \"id\": \"usr_102\",\n        \"name\": \"Sarah Connor\",\n        \"avatar_url\": \"https://cdn.deskbolic.com/avatars/102.png\"\n      },\n      \"attachments\": [],\n      \"created_at\": \"2026-10-10T17:42:00Z\"\n    }\n  ],\n  \"meta\": {\n    \"has_more\": false\n  }\n}"
+                    "body" => "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 84920,\n      \"content\": \"Hello, how may I assist you today?\",\n      \"sender_type\": \"user\",\n      \"sender\": {\n        \"id\": \"usr_102\",\n        \"name\": \"Sarah Connor\",\n        \"avatar_url\": \"https://cdn.capiller.com/avatars/102.png\"\n      },\n      \"attachments\": [],\n      \"created_at\": \"2026-10-10T17:42:00Z\"\n    }\n  ],\n  \"meta\": {\n    \"has_more\": false\n  }\n}"
                   }
                 ]
               },
@@ -320,7 +320,7 @@ module Seeds
                   {
                     "status" => 201,
                     "description" => "Message posted successfully",
-                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 84931,\n    \"content\": \"Here is a screenshot of the issue.\",\n    \"sender_type\": \"customer\",\n    \"echo_id\": \"local-109\",\n    \"attachments\": [\n      {\n        \"id\": 912,\n        \"filename\": \"screenshot.png\",\n        \"content_type\": \"image/png\",\n        \"byte_size\": 124800,\n        \"url\": \"https://storage.deskbolic.com/blobs/...\"\n      }\n    ],\n    \"created_at\": \"2026-10-10T18:05:00Z\"\n  }\n}"
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 84931,\n    \"content\": \"Here is a screenshot of the issue.\",\n    \"sender_type\": \"customer\",\n    \"echo_id\": \"local-109\",\n    \"attachments\": [\n      {\n        \"id\": 912,\n        \"filename\": \"screenshot.png\",\n        \"content_type\": \"image/png\",\n        \"byte_size\": 124800,\n        \"url\": \"https://storage.capiller.com/blobs/...\"\n      }\n    ],\n    \"created_at\": \"2026-10-10T18:05:00Z\"\n  }\n}"
                   }
                 ]
               },

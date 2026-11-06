@@ -57,7 +57,7 @@ module Seeds
                   {
                     "status" => 200,
                     "description" => "System configuration details",
-                    "body" => "{\n  \"data\": {\n    \"api_version\": \"1.0.0\",\n    \"supported_locales\": [\"en\", \"de\", \"es\", \"fr\", \"pt-BR\", \"ar\", \"ko\"],\n    \"default_locale\": \"en\",\n    \"action_cable_url\": \"wss://ws.deskbolic.com\",\n    \"maintenance_mode\": false\n  }\n}"
+                    "body" => "{\n  \"data\": {\n    \"api_version\": \"1.0.0\",\n    \"supported_locales\": [\"en\", \"de\", \"es\", \"fr\", \"pt-BR\", \"ar\", \"ko\"],\n    \"default_locale\": \"en\",\n    \"action_cable_url\": \"wss://ws-rely.capiller.com\",\n    \"maintenance_mode\": false\n  }\n}"
                   }
                 ]
               },

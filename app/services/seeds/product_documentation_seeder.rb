@@ -86,7 +86,7 @@ module Seeds
 
     attr_reader :account, :domain, :api_portal_domain
 
-    def self.seed(account: nil, domain: "help.deskbolic.com", api_portal_domain: "developers.deskbolic.com")
+    def self.seed(account: nil, domain: "help-rely.capiller.com", api_portal_domain: "api-rely.capiller.com")
       target_account = account || Account.find_by(identifier: "deskbolic") || Account.first
       unless target_account
         puts "Skipping Product documentation seed: No account available."
@@ -96,7 +96,7 @@ module Seeds
       new(account: target_account, domain: domain, api_portal_domain: api_portal_domain).seed
     end
 
-    def initialize(account:, domain: "help.deskbolic.com", api_portal_domain: "developers.deskbolic.com")
+    def initialize(account:, domain: "help-rely.capiller.com", api_portal_domain: "api-rely.capiller.com")
       @account = account
       @domain = domain
       @api_portal_domain = api_portal_domain

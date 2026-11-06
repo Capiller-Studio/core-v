@@ -46,10 +46,10 @@ module Auth
           host_str = host.to_s.strip
           host_str.start_with?("http://", "https://") ? host_str : "https://#{host_str}"
         elsif config.account.present? && config.account.identifier.present?
-          app_domain = ENV.fetch("APP_DOMAIN", "deskbolic.app")
+          app_domain = ENV.fetch("APP_DOMAIN", "rely.capiller.com")
           "https://#{config.account.identifier}.#{app_domain}"
         else
-          ENV.fetch("APP_HOST", "https://deskbolic.app")
+          ENV.fetch("APP_HOST", "https://rely.capiller.com")
         end
       end
     end
