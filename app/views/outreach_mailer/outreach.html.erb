@@ -10,7 +10,7 @@
     <p style="margin: 0 0 16px;"><%= @salutation %></p>
 
     <p style="margin: 0 0 16px;">
-      I'm reaching out directly as the founder of Capiller Rely (<a href="https://deskbolic.com" style="color: #4F46E5; text-decoration: underline;">deskbolic.com</a>). While analyzing how fast-moving online teams scale their customer operations, I noticed how quickly traditional support software costs spiral out of hand<%= " for teams like yours at #{@company}" if @company.present? %>.
+      I'm reaching out directly as the founder of Capiller Rely (<a href="https://capiller.com" style="color: #3b82f6; text-decoration: underline;">capiller.com</a>). While analyzing how fast-moving online teams scale their customer operations, I noticed how quickly traditional support software costs spiral out of hand<%= " for teams like yours at #{@company}" if @company.present? %>.
     </p>
 
     <% if @competitor.present? %>
@@ -55,14 +55,14 @@
       <p style="margin: 0 0 16px;">
         You can also see an honest head-to-head comparison here:
         <br>
-        👉 <a href="https://deskbolic.com/comparisons/<%= @competitor %>" style="color: #4F46E5; text-decoration: underline; font-weight: 600;">See Capiller Rely vs <%= @competitor_name %> breakdown</a>
+        👉 <a href="https://capiller.com/comparisons/<%= @competitor %>" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">See Capiller Rely vs <%= @competitor_name %> breakdown</a>
       </p>
     <% end %>
 
     <p style="margin: 0 0 16px;">
       We offer a <strong>14-day free trial</strong> with full feature access and no credit card required. You can try it out directly here:
       <br>
-      👉 <a href="https://deskbolic.app/register" style="color: #4F46E5; font-weight: 600; text-decoration: underline;">https://deskbolic.app/register</a>
+      👉 <a href="https://rely.capiller.com/register" style="color: #3b82f6; font-weight: 600; text-decoration: underline;">https://rely.capiller.com/register</a>
     </p>
 
     <p style="margin: 0 0 24px;">
@@ -78,7 +78,7 @@
       <strong>Ahsan</strong><br>
       <span style="color: #64748B; font-size: 14px;">Founder, Capiller Rely &amp; Techbolic</span><br>
       <span style="color: #64748B; font-size: 13px;">
-        <a href="mailto:<%= ENV.fetch('OUTREACH_REPLY_TO', 'ahsan@techbolic.com') %>" style="color: #4F46E5; text-decoration: none;"><%= ENV.fetch('OUTREACH_REPLY_TO', 'ahsan@techbolic.com') %></a> • <a href="<%= ENV.fetch('APP_MARKETING_URL', 'https://deskbolic.com') %>" style="color: #4F46E5; text-decoration: none;"><%= ENV.fetch('APP_MARKETING_DOMAIN', 'deskbolic.com') %></a>
+        <a href="mailto:<%= ENV.fetch('OUTREACH_REPLY_TO', 'ahsan@techbolic.com') %>" style="color: #3b82f6; text-decoration: none;"><%= ENV.fetch('OUTREACH_REPLY_TO', 'ahsan@techbolic.com') %></a> • <a href="<%= ENV.fetch('APP_MARKETING_URL', 'https://capiller.com') %>" style="color: #3b82f6; text-decoration: none;"><%= ENV.fetch('APP_MARKETING_DOMAIN', 'capiller.com') %></a>
       </span>
     </p>
 

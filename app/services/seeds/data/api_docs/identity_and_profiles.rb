@@ -57,7 +57,7 @@ module Seeds
                   {
                     "status" => 200,
                     "description" => "User and workspace context",
-                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"usr_888\",\n      \"email\": \"agent@acme.com\",\n      \"first_name\": \"Sarah\",\n      \"last_name\": \"Connor\",\n      \"display_name\": \"Sarah\",\n      \"locale\": \"en\",\n      \"avatar_url\": \"https://cdn.deskbolic.com/avatars/usr_888.jpg\"\n    },\n    \"accounts\": [\n      {\n        \"id\": \"acc_123\",\n        \"name\": \"Acme Global Support\",\n        \"identifier\": \"acme-global\"\n      }\n    ],\n    \"current_account\": {\n      \"id\": \"acc_123\",\n      \"name\": \"Acme Global Support\",\n      \"identifier\": \"acme-global\"\n    },\n    \"availability\": \"online\",\n    \"role\": \"owner\"\n  }\n}"
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"usr_888\",\n      \"email\": \"agent@acme.com\",\n      \"first_name\": \"Sarah\",\n      \"last_name\": \"Connor\",\n      \"display_name\": \"Sarah\",\n      \"locale\": \"en\",\n      \"avatar_url\": \"https://cdn.capiller.com/avatars/usr_888.jpg\"\n    },\n    \"accounts\": [\n      {\n        \"id\": \"acc_123\",\n        \"name\": \"Acme Global Support\",\n        \"identifier\": \"acme-global\"\n      }\n    ],\n    \"current_account\": {\n      \"id\": \"acc_123\",\n      \"name\": \"Acme Global Support\",\n      \"identifier\": \"acme-global\"\n    },\n    \"availability\": \"online\",\n    \"role\": \"owner\"\n  }\n}"
                   }
                 ]
               },
@@ -257,7 +257,7 @@ module Seeds
                   {
                     "status" => 200,
                     "description" => "WebSocket connection credentials",
-                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"connection_token\": \"cbl_tok_7a9f2...\",\n    \"action_cable_url\": \"wss://ws.deskbolic.com\",\n    \"channels\": [\n      {\n        \"name\": \"SubscriptionChannel\",\n        \"params\": {\n          \"connection_token\": \"cbl_tok_7a9f2...\"\n        }\n      }\n    ]\n  }\n}"
+                    "body" => "{\n  \"success\": true,\n  \"data\": {\n    \"connection_token\": \"cbl_tok_7a9f2...\",\n    \"action_cable_url\": \"wss://ws-rely.capiller.com\",\n    \"channels\": [\n      {\n        \"name\": \"SubscriptionChannel\",\n        \"params\": {\n          \"connection_token\": \"cbl_tok_7a9f2...\"\n        }\n      }\n    ]\n  }\n}"
                   }
                 ]
               },

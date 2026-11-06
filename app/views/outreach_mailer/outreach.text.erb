@@ -1,6 +1,6 @@
 <%= @salutation %>
 
-I'm reaching out directly as the founder of Capiller Rely (https://deskbolic.com). While analyzing how fast-moving online teams scale their customer operations, I noticed how quickly traditional support software costs spiral out of hand<%= " for teams like yours at #{@company}" if @company.present? %>.
+I'm reaching out directly as the founder of Capiller Rely (https://capiller.com). While analyzing how fast-moving online teams scale their customer operations, I noticed how quickly traditional support software costs spiral out of hand<%= " for teams like yours at #{@company}" if @company.present? %>.
 <% if @competitor.present? %>
 
 <% case @competitor %>
@@ -34,11 +34,11 @@ We built Capiller Rely to fix this — a modern AI customer support platform and
 <% if @competitor.present? %>
 
 See our honest comparison breakdown:
-https://deskbolic.com/comparisons/<%= @competitor %>
+https://capiller.com/comparisons/<%= @competitor %>
 <% end %>
 
 We offer a 14-day free trial with full feature access and no credit card required. You can try it out directly here:
-https://deskbolic.app/register
+https://rely.capiller.com/register
 
 I would also be happy to personally help configure your routing policies, knowledge base, or custom domain if you'd like concierge onboarding.
 
@@ -49,7 +49,7 @@ Best regards,
 Ahsan
 Founder, Capiller Rely & Techbolic
 Email: <%= ENV.fetch("OUTREACH_REPLY_TO", "ahsan@techbolic.com") %>
-Web: <%= ENV.fetch("APP_MARKETING_URL", "https://deskbolic.com") %>
+Web: <%= ENV.fetch("APP_MARKETING_URL", "https://capiller.com") %>
 
 ---
 TECHBOLIC, LLC • Transparent AI Customer Support.

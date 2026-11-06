@@ -42,7 +42,7 @@ module Affiliates
 
       def add_header
         pdf.fill_color "1E293B"
-        pdf.text "DESKBOLIC", size: 20, style: :bold
+        pdf.text "Capiller Rely", size: 20, style: :bold
         pdf.fill_color "64748B"
         pdf.text "Affiliate Payout Statement & Invoice", size: 10
         pdf.move_down 10
@@ -150,7 +150,7 @@ module Affiliates
       def add_footer
         pdf.fill_color "94A3B8"
         pdf.text_box(
-          "Thank you for being a valued Deskbolic affiliate partner. For questions regarding this payout statement, please contact support@deskbolic.com.",
+          "Thank you for being a valued Deskbolic affiliate partner. For questions regarding this payout statement, please contact support@capiller.com.",
           at: [0, 30],
           width: pdf.bounds.width,
           height: 30,

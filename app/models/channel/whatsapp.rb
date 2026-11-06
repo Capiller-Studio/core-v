@@ -109,7 +109,7 @@ module Channel
     # Full public webhook URL for display in the edit page.
     # Users paste this into Meta's webhook configuration.
     def webhook_url
-      host = ENV.fetch("FRONTEND_URL", "https://deskbolic.app")
+      host = ENV.fetch("FRONTEND_URL", "https://rely.capiller.com")
       "#{host}/webhooks/whatsapp/#{account_id}/#{id}"
     end
 

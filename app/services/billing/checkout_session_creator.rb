@@ -73,7 +73,7 @@ module Billing
     end
 
     def base_url
-      Rails.application.credentials.dig(:app, :base_url) || "https://deskbolic.app"
+      Rails.application.credentials.dig(:app, :base_url) || "https://rely.capiller.com"
     end
   end
 end

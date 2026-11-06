@@ -113,7 +113,7 @@ module Seeds
                   {
                     "status" => 200,
                     "description" => "Attachment created",
-                    "body" => "{\n  \"data\": {\n    \"id\": \"att_991\",\n    \"file_url\": \"https://cdn.deskbolic.com/storage/invoice.pdf\",\n    \"attachment_type\": \"file\",\n    \"extension\": \".pdf\"\n  }\n}"
+                    "body" => "{\n  \"data\": {\n    \"id\": \"att_991\",\n    \"file_url\": \"https://cdn.capiller.com/storage/invoice.pdf\",\n    \"attachment_type\": \"file\",\n    \"extension\": \".pdf\"\n  }\n}"
                   }
                 ]
               },

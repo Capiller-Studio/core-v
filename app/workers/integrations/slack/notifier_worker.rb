@@ -294,7 +294,7 @@ module Integrations
         elsif base.present?
           "#{base.chomp('/')}/conversations/#{conversation_id}"
         else
-          "https://deskbolic.app/conversations/#{conversation_id}"
+          "https://rely.capiller.com/conversations/#{conversation_id}"
         end
       rescue StandardError
         nil
