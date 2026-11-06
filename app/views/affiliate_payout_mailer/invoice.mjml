@@ -47,7 +47,7 @@
     <mj-section padding="24px 40px">
       <mj-column>
         <mj-text align="center" font-size="13px" color="#94A3B8">
-          © [[ERB= Time.current.year ]] Deskbolic Inc. All rights reserved.
+          © [[ERB= Time.current.year ]] Capiller Rely Inc. All rights reserved.
         </mj-text>
       </mj-column>
     </mj-section>

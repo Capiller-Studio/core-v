@@ -12,7 +12,7 @@ RSpec.describe Automations::EmailDeliveryWorker, type: :worker do
     create(:email_template,
       account: account,
       name: 'Welcome',
-      subject: 'Welcome to Deskbolic',
+      subject: 'Welcome to Capiller Rely',
       body: '<p>Hello {{ customer.name }} from {{ account.name }}</p>'
     )
   end

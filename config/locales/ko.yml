@@ -21,12 +21,12 @@ ko:
       message_field: "*메시지:*\n%{message}"
       initial_message_field: "*첫 메시지:*\n%{message}"
       attachment_preview: "*(첨부 파일 / 미디어)*"
-      open_button: "Deskbolic에서 열기 ↗"
+      open_button: "Capiller Rely에서 열기 ↗"
       default_customer: "고객"
       default_channel: "채널"
       default_support: "지원"
       default_conversation_preview: "새로운 고객 대화가 시작되었습니다."
-      event_triggered: "Deskbolic 이벤트 트리거됨: %{event_name}"
+      event_triggered: "Capiller Rely 이벤트 트리거됨: %{event_name}"
 
   activities:
     account:

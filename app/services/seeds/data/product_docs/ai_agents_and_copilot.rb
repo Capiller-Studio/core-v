@@ -51,7 +51,7 @@ module Seeds
                 en: {
                   title: "Deploying Autonomous AI Support Agents",
                   content: <<~HTML
-                    <p>Deskbolic AI Agents can handle conversations through a configured Web Widget inbox. Results depend on your agent instructions, connected help center content, and the customer's question; review conversations and handoffs before relying on automation.</p>
+                    <p>Capiller Rely AI Agents can handle conversations through a configured Web Widget inbox. Results depend on your agent instructions, connected help center content, and the customer's question; review conversations and handoffs before relying on automation.</p>
                     <h3>Setting Up an AI Agent</h3>
                     <ol>
                       <li>Open <strong>Settings &rarr; AI Agents</strong> and choose <strong>Add new agent</strong>.</li>
@@ -63,7 +63,7 @@ module Seeds
                 },
                 de: {
                   title: "Autonome KI-Support-Agenten einsetzen",
-                  content: "<p>Deskbolic AI Agents können Gespräche über einen konfigurierten Web-Widget-Posteingang bearbeiten. Die Ergebnisse hängen von Anweisungen, Help-Center-Inhalten und der Kundenfrage ab.</p><h3>Agent einrichten</h3><ol><li>Öffnen Sie <strong>Settings → AI Agents</strong> und wählen Sie <strong>Add new agent</strong>.</li><li>Konfigurieren Sie den Agenten und ergänzen Sie Übersetzungen für Begrüßung, Übergabe und Fallback.</li><li>Bearbeiten Sie einen <strong>Web Widget</strong>-Kanal und wählen Sie den Agenten in der Einstellung <strong>AI Agent</strong> aus. Die Zuweisung wird derzeit für Web Widgets unterstützt.</li><li>Testen Sie im Widget beantwortbare und unbeantwortbare Fragen sowie Übergabe und Fallback, bevor Sie es veröffentlichen.</li></ol>"
+                  content: "<p>Capiller Rely AI Agents können Gespräche über einen konfigurierten Web-Widget-Posteingang bearbeiten. Die Ergebnisse hängen von Anweisungen, Help-Center-Inhalten und der Kundenfrage ab.</p><h3>Agent einrichten</h3><ol><li>Öffnen Sie <strong>Settings → AI Agents</strong> und wählen Sie <strong>Add new agent</strong>.</li><li>Konfigurieren Sie den Agenten und ergänzen Sie Übersetzungen für Begrüßung, Übergabe und Fallback.</li><li>Bearbeiten Sie einen <strong>Web Widget</strong>-Kanal und wählen Sie den Agenten in der Einstellung <strong>AI Agent</strong> aus. Die Zuweisung wird derzeit für Web Widgets unterstützt.</li><li>Testen Sie im Widget beantwortbare und unbeantwortbare Fragen sowie Übergabe und Fallback, bevor Sie es veröffentlichen.</li></ol>"
                 },
                 es: {
                   title: "Implementación de Agentes de Soporte de IA",

@@ -54,7 +54,7 @@ RSpec.describe 'Integrations::Webhooks Comprehensive Edge Cases Suite', type: :s
           body: expected_body,
           headers: hash_including(
             'Content-Type' => 'application/json',
-            'User-Agent' => 'Deskbolic-Webhook-Engine/1.0',
+            'User-Agent' => 'Capiller Rely-Webhook-Engine/1.0',
             'Signature' => "t=#{frozen_time.to_i},v1=#{expected_signature}"
           ),
           timeout: 10

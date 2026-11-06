@@ -21,12 +21,12 @@ de:
       message_field: "*Nachricht:*\n%{message}"
       initial_message_field: "*Erste Nachricht:*\n%{message}"
       attachment_preview: "*(Anhang / Medien)*"
-      open_button: "In Deskbolic öffnen ↗"
+      open_button: "In Capiller Rely öffnen ↗"
       default_customer: "Kunde"
       default_channel: "Kanal"
       default_support: "Support"
       default_conversation_preview: "Eine neue Kundenkonversation wurde eröffnet."
-      event_triggered: "Deskbolic-Ereignis ausgelöst: %{event_name}"
+      event_triggered: "Capiller Rely-Ereignis ausgelöst: %{event_name}"
 
   activities:
     account:

@@ -13,31 +13,31 @@ module Seeds
             translations: {
               en: {
                 name: "Getting Started",
-                description: "Everything you need to set up your Deskbolic workspace, invite your team, and begin delivering exceptional customer support."
+                description: "Everything you need to set up your Capiller Rely workspace, invite your team, and begin delivering exceptional customer support."
               },
               de: {
                 name: "Erste Schritte",
-                description: "Alles, was Sie brauchen, um Ihren Deskbolic-Arbeitsbereich einzurichten und Ihr Team einzuladen."
+                description: "Alles, was Sie brauchen, um Ihren Capiller Rely-Arbeitsbereich einzurichten und Ihr Team einzuladen."
               },
               es: {
                 name: "Primeros Pasos",
-                description: "Todo lo que necesita para configurar su espacio de trabajo en Deskbolic e invitar a su equipo."
+                description: "Todo lo que necesita para configurar su espacio de trabajo en Capiller Rely e invitar a su equipo."
               },
               fr: {
                 name: "Mise en route",
-                description: "Tout ce dont vous avez besoin pour configurer votre espace Deskbolic et inviter votre équipe."
+                description: "Tout ce dont vous avez besoin pour configurer votre espace Capiller Rely et inviter votre équipe."
               },
               "pt-BR": {
                 name: "Primeiros Passos",
-                description: "Tudo o que você precisa para configurar seu espaço de trabalho no Deskbolic e convidar sua equipe."
+                description: "Tudo o que você precisa para configurar seu espaço de trabalho no Capiller Rely e convidar sua equipe."
               },
               ar: {
                 name: "دليل البدء السريع",
-                description: "كل ما تحتاجه لإعداد مساحة عمل Deskbolic، ودعوة فريقك، وبدء تقديم دعم استثنائي للعملاء."
+                description: "كل ما تحتاجه لإعداد مساحة عمل Capiller Rely، ودعوة فريقك، وبدء تقديم دعم استثنائي للعملاء."
               },
               ko: {
                 name: "시작하기",
-                description: "Deskbolic 워크스페이스를 설정하고 팀원을 초대하여 고객 지원을 시작하는 데 필요한 모든 가이드입니다."
+                description: "Capiller Rely 워크스페이스를 설정하고 팀원을 초대하여 고객 지원을 시작하는 데 필요한 모든 가이드입니다."
               }
             }
           }
@@ -52,7 +52,7 @@ module Seeds
                 en: {
                   title: "Quick Start Guide & Onboarding",
                   content: <<~HTML
-                    <p>Welcome to <strong>Deskbolic</strong>. Use this checklist to prepare your workspace before your team starts handling conversations.</p>
+                    <p>Welcome to <strong>Capiller Rely</strong>. Use this checklist to prepare your workspace before your team starts handling conversations.</p>
                     <h3>Step 1: Configure Your Workspace Profile</h3>
                     <p>Open <strong>Settings &rarr; General Settings</strong> to review your workspace details and account time zone. Save any changes before moving on.</p>
                     <h3>Step 2: Connect Your First Communication Channel</h3>
@@ -68,7 +68,7 @@ module Seeds
                 de: {
                   title: "Schnellstartanleitung & Onboarding",
                   content: <<~HTML
-                    <p>Willkommen bei <strong>Deskbolic</strong>. Nutzen Sie diese Checkliste, um Ihren Arbeitsbereich vorzubereiten, bevor Ihr Team Gespräche bearbeitet.</p>
+                    <p>Willkommen bei <strong>Capiller Rely</strong>. Nutzen Sie diese Checkliste, um Ihren Arbeitsbereich vorzubereiten, bevor Ihr Team Gespräche bearbeitet.</p>
                     <h3>Schritt 1: Arbeitsbereich konfigurieren</h3>
                     <p>Öffnen Sie <strong>Einstellungen &rarr; Allgemeine Einstellungen</strong>, um Ihre Arbeitsbereichsdaten und Zeitzone zu prüfen.</p>
                     <h3>Schritt 2: Kommunikationskanal verbinden</h3>
@@ -84,7 +84,7 @@ module Seeds
                 es: {
                   title: "Guía de Inicio Rápido e Incorporación",
                   content: <<~HTML
-                    <p>¡Bienvenido a <strong>Deskbolic</strong>! Use esta lista para preparar su espacio antes de que el equipo atienda conversaciones.</p>
+                    <p>¡Bienvenido a <strong>Capiller Rely</strong>! Use esta lista para preparar su espacio antes de que el equipo atienda conversaciones.</p>
                     <h3>Paso 1: Configure su Espacio de Trabajo</h3>
                     <p>Abra <strong>Configuración &rarr; General Settings</strong> para revisar los datos del espacio de trabajo y la zona horaria de la cuenta.</p>
                     <h3>Paso 2: Conecte su Primer Canal</h3>
@@ -100,7 +100,7 @@ module Seeds
                 fr: {
                   title: "Guide de Démarrage Rapide",
                   content: <<~HTML
-                    <p>Bienvenue sur <strong>Deskbolic</strong>! Utilisez cette liste pour préparer votre espace avant que l'équipe traite les conversations.</p>
+                    <p>Bienvenue sur <strong>Capiller Rely</strong>! Utilisez cette liste pour préparer votre espace avant que l'équipe traite les conversations.</p>
                     <h3>Étape 1: Configurer l'espace de travail</h3>
                     <p>Ouvrez <strong>Paramètres &rarr; General Settings</strong> pour vérifier les informations de l'espace et le fuseau horaire du compte.</p>
                     <h3>Étape 2: Connecter un canal de support</h3>
@@ -116,7 +116,7 @@ module Seeds
                 "pt-BR": {
                   title: "Guia de Início Rápido e Integração",
                   content: <<~HTML
-                    <p>Bem-vindo ao <strong>Deskbolic</strong>! Use esta lista para preparar seu espaço antes de a equipe atender conversas.</p>
+                    <p>Bem-vindo ao <strong>Capiller Rely</strong>! Use esta lista para preparar seu espaço antes de a equipe atender conversas.</p>
                     <h3>Passo 1: Configurar seu Espaço de Trabalho</h3>
                     <p>Abra <strong>Configurações &rarr; General Settings</strong> para revisar os dados do espaço e o fuso horário da conta.</p>
                     <h3>Passo 2: Conectar seu Primeiro Canal</h3>
@@ -132,7 +132,7 @@ module Seeds
                 ar: {
                   title: "دليل البدء السريع والإعداد",
                   content: <<~HTML
-                    <p>مرحبًا بك في <strong>Deskbolic</strong>! استخدم هذه القائمة لإعداد مساحة العمل قبل أن يبدأ فريقك في التعامل مع المحادثات.</p>
+                    <p>مرحبًا بك في <strong>Capiller Rely</strong>! استخدم هذه القائمة لإعداد مساحة العمل قبل أن يبدأ فريقك في التعامل مع المحادثات.</p>
                     <h3>الخطوة 1: تكوين مساحة العمل</h3>
                     <p>افتح <strong>الإعدادات &rarr; General Settings</strong> لمراجعة معلومات مساحة العمل والمنطقة الزمنية للحساب.</p>
                     <h3>الخطوة 2: ربط قناة الاتصال الأولى</h3>
@@ -148,7 +148,7 @@ module Seeds
                 ko: {
                   title: "빠른 시작 가이드 및 온보딩",
                   content: <<~HTML
-                    <p><strong>Deskbolic</strong>에 오신 것을 환영합니다. 팀이 상담을 시작하기 전에 이 체크리스트에 따라 워크스페이스를 준비하세요.</p>
+                    <p><strong>Capiller Rely</strong>에 오신 것을 환영합니다. 팀이 상담을 시작하기 전에 이 체크리스트에 따라 워크스페이스를 준비하세요.</p>
                     <h3>1단계: 워크스페이스 기본 설정</h3>
                     <p><strong>설정 &rarr; General Settings</strong>에서 워크스페이스 정보와 계정 시간대를 확인합니다.</p>
                     <h3>2단계: 첫 번째 상담 채널 연결</h3>

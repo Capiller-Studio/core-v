@@ -23,7 +23,7 @@ module Seeds
 
     def create_portal
       domain = account.domains.find_or_create_by!(value: "help.deskbolic.localhost") do |d|
-        d.name = "Deskbolic Help"
+        d.name = "Capiller Rely Help"
         d.domain_type = :custom
         d.status = :active
         d.dns_status = :dns_verified

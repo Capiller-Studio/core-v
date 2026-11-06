@@ -74,7 +74,7 @@ RSpec.describe Auth::AuditLog, type: :model do
 
     before do
       Current.ip_address = "10.0.0.1"
-      Current.user_agent = "Deskbolic-Client/1.0"
+      Current.user_agent = "Capiller Rely-Client/1.0"
     end
 
     after do
@@ -118,7 +118,7 @@ RSpec.describe Auth::AuditLog, type: :model do
       expect(log.account).to eq(account)
       expect(log.user).to eq(user)
       expect(log.ip_address).to eq("10.0.0.1")
-      expect(log.user_agent).to eq("Deskbolic-Client/1.0")
+      expect(log.user_agent).to eq("Capiller Rely-Client/1.0")
     end
 
     it "never raises an exception on invalid data, returning nil" do

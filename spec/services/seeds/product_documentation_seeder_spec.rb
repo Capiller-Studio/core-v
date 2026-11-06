@@ -21,7 +21,7 @@ RSpec.describe Seeds::ProductDocumentationSeeder do
 
         portal = HelpCenter::Portal.find_by(domain_id: domain_record.id)
         expect(portal).to be_present
-        expect(portal.name).to eq("Deskbolic User Guide & Help Center")
+        expect(portal.name).to eq("Capiller Rely User Guide & Help Center")
         expect(portal.locales).to match_array(Core::SUPPORTED_LOCALES.map(&:to_s))
         expect(portal.translations.count).to eq(7)
 

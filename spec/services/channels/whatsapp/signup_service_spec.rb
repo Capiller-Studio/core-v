@@ -81,7 +81,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
       )
 
       allow(api_mock).to receive(:access_token).and_return("token123")
-      session_phone_response = double('Response', success?: true, parsed_response: { "display_phone_number" => "+44 7700 900077", "verified_name" => "Deskbolic UK" })
+      session_phone_response = double('Response', success?: true, parsed_response: { "display_phone_number" => "+44 7700 900077", "verified_name" => "Capiller Rely UK" })
       allow(HTTParty).to receive(:get).with(/session_phone_456$/, anything).and_return(session_phone_response)
 
       expect(HTTParty).to receive(:post).with(/session_waba_123\/subscribed_apps/, anything).and_return(subscribed_apps_response)
@@ -93,7 +93,7 @@ RSpec.describe Channels::Whatsapp::SignupService do
         waba_id: "session_waba_123",
         phone_number_id: "session_phone_456",
         display_phone_number: "+447700900077",
-        name: "Deskbolic UK"
+        name: "Capiller Rely UK"
       })
     end
 

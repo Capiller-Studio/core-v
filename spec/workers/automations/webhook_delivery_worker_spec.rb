@@ -15,7 +15,7 @@ RSpec.describe Automations::WebhookDeliveryWorker, type: :worker do
         body: payload,
         headers: hash_including(
           'Content-Type' => 'application/json',
-          'User-Agent' => 'Deskbolic-Automations/1.0',
+          'User-Agent' => 'Capiller Rely-Automations/1.0',
           'X-Custom-Header' => 'CustomValue',
           'Deskbolic-Signature' => a_string_matching(/\At=\d+,v1=[a-f0-9]{64}\z/)
         ),

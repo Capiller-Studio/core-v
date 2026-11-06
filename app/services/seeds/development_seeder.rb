@@ -53,7 +53,7 @@ module Seeds
         password: "password123",
         first_name: "Alex",
         last_name: "Morgan",
-        account_name: "Deskbolic Demo"
+        account_name: "Capiller Rely Demo"
       )
 
       unless result.success?
@@ -166,7 +166,7 @@ module Seeds
             allowed_hosts: ["http://localhost:3000", "http://127.0.0.1:3000"],
             ui_configurations: {
               "theme_color" => "#4f46e5",
-              "welcome_title" => "Welcome to Deskbolic!",
+              "welcome_title" => "Welcome to Capiller Rely!",
               "welcome_tagline" => "We typically reply within a few minutes.",
               "position" => "right"
             },
@@ -511,10 +511,10 @@ module Seeds
           timeline: [
             { type: :activity, actor: staff[:agent3], event_key: "conversation.team_assigned", offset: 130 },
             { type: :activity, actor: staff[:agent3], event_key: "conversation.conversation_assigned", offset: 125 },
-            { type: :message, sender: :customer, offset: 120, content: "Hello! We're evaluating Deskbolic for our 45-person support organization. Does your platform support custom SSO via Okta and streaming audit logs?" },
+            { type: :message, sender: :customer, offset: 120, content: "Hello! We're evaluating Capiller Rely for our 45-person support organization. Does your platform support custom SSO via Okta and streaming audit logs?" },
             { type: :activity, actor: staff[:agent3], event_key: "conversation.priority_updated", changes: { priority: %w[low high] }, offset: 115 },
             { type: :activity, actor: staff[:agent3], event_key: "conversation.label_added", changes: { label: [nil, "sales"] }, offset: 110 },
-            { type: :message, sender: :agent, offset: 105, content: "Hi Elena! Yes, absolutely. Deskbolic Enterprise includes SAML 2.0 / OIDC (Okta, Azure AD, Google Workspace), automated SCIM user provisioning, and streaming audit logs to Datadog or S3." },
+            { type: :message, sender: :agent, offset: 105, content: "Hi Elena! Yes, absolutely. Capiller Rely Enterprise includes SAML 2.0 / OIDC (Okta, Azure AD, Google Workspace), automated SCIM user provisioning, and streaming audit logs to Datadog or S3." },
             { type: :message, sender: :agent, offset: 100, content: "I can provision a dedicated enterprise sandbox for your team and host a 20-minute architecture overview. Would tomorrow afternoon work?" },
             { type: :message, sender: :customer, offset: 75, content: "That sounds perfect! Tomorrow at 2 PM EST works great for our team lead and myself." },
             { type: :message, sender: :agent, offset: 60, private: true, content: "High-intent enterprise lead (45 seats). Sent demo calendar link and prepared custom SAML migration guide." }
@@ -657,7 +657,7 @@ module Seeds
           timeline: [
             { type: :activity, actor: staff[:owner], event_key: "conversation.team_assigned", offset: 310 },
             { type: :activity, actor: staff[:owner], event_key: "conversation.conversation_assigned", offset: 305 },
-            { type: :message, sender: :customer, offset: 300, content: "Hi Alex, our team just signed up and we're configuring our shared mailboxes. Does Deskbolic support auto-forwarding from Google Workspace?" },
+            { type: :message, sender: :customer, offset: 300, content: "Hi Alex, our team just signed up and we're configuring our shared mailboxes. Does Capiller Rely support auto-forwarding from Google Workspace?" },
             { type: :activity, actor: staff[:owner], event_key: "conversation.label_added", changes: { label: [nil, "onboarding"] }, offset: 290 },
             { type: :message, sender: :owner, offset: 270, content: "Welcome aboard Jane! Yes, Google Workspace forwarding is fully supported. Under Inboxes > Email Support, copy your forwarding address and paste it into Google Workspace forwarding rules." },
             { type: :message, sender: :customer, offset: 240, content: "Got it, verified with test email and it popped right up in the dashboard. Thanks Alex!" }
@@ -685,7 +685,7 @@ module Seeds
             { type: :activity, actor: staff[:admin], event_key: "conversation.conversation_assigned", offset: 365 },
             { type: :message, sender: :customer, offset: 360, content: "Hi team, does the Help Center custom domain feature handle automatic Let's Encrypt SSL certificate provisioning and renewal?" },
             { type: :activity, actor: staff[:admin], event_key: "conversation.label_added", changes: { label: [nil, "feature-request"] }, offset: 340 },
-            { type: :message, sender: :admin, offset: 330, content: "Hello John! Yes, once you add your CNAME record pointing to our edge proxy, Deskbolic automatically provisions and auto-renews TLS certificates via Cloudflare edge." },
+            { type: :message, sender: :admin, offset: 330, content: "Hello John! Yes, once you add your CNAME record pointing to our edge proxy, Capiller Rely automatically provisions and auto-renews TLS certificates via Cloudflare edge." },
             { type: :message, sender: :customer, offset: 300, content: "Perfect, that saves our DevOps team a ton of work. Appreciate the clarification!" }
           ]
         }

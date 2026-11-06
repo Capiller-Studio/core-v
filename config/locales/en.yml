@@ -79,12 +79,12 @@ en:
       message_field: "*Message:*\n%{message}"
       initial_message_field: "*Initial Message:*\n%{message}"
       attachment_preview: "*(Attachment / Media)*"
-      open_button: "Open in Deskbolic ↗"
+      open_button: "Open in Capiller Rely ↗"
       default_customer: "Customer"
       default_channel: "Channel"
       default_support: "Support"
       default_conversation_preview: "A new customer conversation has been opened."
-      event_triggered: "Deskbolic Event Triggered: %{event_name}"
+      event_triggered: "Capiller Rely Event Triggered: %{event_name}"
   mailers:
     conversation_reply:
       subject: "Re: %{subject}"
@@ -130,14 +130,14 @@ en:
         subject: "We received your message: %{title}"
     account_invitation:
       invite:
-        subject: "You've been invited to join %{account_name} on Deskbolic"
+        subject: "You've been invited to join %{account_name} on Capiller Rely"
         header: "You're Invited!"
-        body_main: "Hi there, %{inviter_name} has invited you to join the %{account_name} team on Deskbolic."
+        body_main: "Hi there, %{inviter_name} has invited you to join the %{account_name} team on Capiller Rely."
         roles_label: "Your assigned roles:"
-        body_footer: "Deskbolic is the all-in-one platform for high-performance customer support. Join your team now to start managing conversations, mentions, and more."
+        body_footer: "Capiller Rely is the all-in-one platform for high-performance customer support. Join your team now to start managing conversations, mentions, and more."
         cta: "Join the Team"
         expiry: "This invitation will expire on %{expiry_date}."
-        footer: "© %{year} Deskbolic. All rights reserved. If you didn't expect this invitation, you can safely ignore this email."
+        footer: "© %{year} Capiller Rely. All rights reserved. If you didn't expect this invitation, you can safely ignore this email."
   billing:
     plans:
       starter:

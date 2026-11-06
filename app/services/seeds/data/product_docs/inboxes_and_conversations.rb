@@ -51,7 +51,7 @@ module Seeds
                 en: {
                   title: "Unified Inboxes & Smart Filter Views",
                   content: <<~HTML
-                    <p>Deskbolic aggregates all customer messages across all communication channels into a single unified queue.</p>
+                    <p>Capiller Rely aggregates all customer messages across all communication channels into a single unified queue.</p>
                     <h3>Smart Views</h3>
                     <ul>
                       <li><strong>Assigned to me:</strong> Conversations assigned to your account.</li>
@@ -63,27 +63,27 @@ module Seeds
                 },
                 de: {
                   title: "Einheitliche Postfächer & Ansichten",
-                  content: "<p>Deskbolic bündelt Kundennachrichten aus den Kommunikationskanälen in einer Warteschlange. Die Ansichten helfen Ihnen, relevante Gespräche zu finden.</p><ul><li><strong>Assigned to me:</strong> Ihnen zugewiesene Konversationen.</li><li><strong>Unassigned:</strong> Eingehende Anfragen ohne zuständiges Teammitglied.</li><li><strong>All:</strong> Konversationen des Arbeitsbereichs über alle Kanäle.</li><li><strong>Mentions:</strong> Konversationen, in denen Sie erwähnt wurden.</li></ul><p>Öffnen Sie die passende Ansicht in der Seitenleiste und wählen Sie eine Konversation aus der Liste, um sie zu bearbeiten.</p>"
+                  content: "<p>Capiller Rely bündelt Kundennachrichten aus den Kommunikationskanälen in einer Warteschlange. Die Ansichten helfen Ihnen, relevante Gespräche zu finden.</p><ul><li><strong>Assigned to me:</strong> Ihnen zugewiesene Konversationen.</li><li><strong>Unassigned:</strong> Eingehende Anfragen ohne zuständiges Teammitglied.</li><li><strong>All:</strong> Konversationen des Arbeitsbereichs über alle Kanäle.</li><li><strong>Mentions:</strong> Konversationen, in denen Sie erwähnt wurden.</li></ul><p>Öffnen Sie die passende Ansicht in der Seitenleiste und wählen Sie eine Konversation aus der Liste, um sie zu bearbeiten.</p>"
                 },
                 es: {
                   title: "Bandeja Unificada y Vistas Inteligentes",
-                  content: "<p>Deskbolic reúne los mensajes de los canales en una cola unificada. Las vistas ayudan a encontrar conversaciones que requieren atención.</p><ul><li><strong>Assigned to me:</strong> conversaciones asignadas a su usuario.</li><li><strong>Unassigned:</strong> consultas entrantes sin una persona responsable.</li><li><strong>All:</strong> conversaciones del espacio de trabajo en todos los canales.</li><li><strong>Mentions:</strong> conversaciones en las que un compañero le mencionó.</li></ul><p>Abra la vista adecuada en la barra lateral y seleccione una conversación para gestionarla.</p>"
+                  content: "<p>Capiller Rely reúne los mensajes de los canales en una cola unificada. Las vistas ayudan a encontrar conversaciones que requieren atención.</p><ul><li><strong>Assigned to me:</strong> conversaciones asignadas a su usuario.</li><li><strong>Unassigned:</strong> consultas entrantes sin una persona responsable.</li><li><strong>All:</strong> conversaciones del espacio de trabajo en todos los canales.</li><li><strong>Mentions:</strong> conversaciones en las que un compañero le mencionó.</li></ul><p>Abra la vista adecuada en la barra lateral y seleccione una conversación para gestionarla.</p>"
                 },
                 fr: {
                   title: "Boîte Unifiée et Vues Intelligentes",
-                  content: "<p>Deskbolic rassemble les messages clients des différents canaux dans une file unifiée. Les vues permettent de repérer les conversations à traiter.</p><ul><li><strong>Assigned to me:</strong> conversations qui vous sont attribuées.</li><li><strong>Unassigned:</strong> demandes entrantes sans responsable.</li><li><strong>All:</strong> conversations de l'espace sur tous les canaux.</li><li><strong>Mentions:</strong> conversations dans lesquelles un collègue vous a mentionné.</li></ul><p>Ouvrez la vue souhaitée dans la barre latérale puis sélectionnez une conversation pour la traiter.</p>"
+                  content: "<p>Capiller Rely rassemble les messages clients des différents canaux dans une file unifiée. Les vues permettent de repérer les conversations à traiter.</p><ul><li><strong>Assigned to me:</strong> conversations qui vous sont attribuées.</li><li><strong>Unassigned:</strong> demandes entrantes sans responsable.</li><li><strong>All:</strong> conversations de l'espace sur tous les canaux.</li><li><strong>Mentions:</strong> conversations dans lesquelles un collègue vous a mentionné.</li></ul><p>Ouvrez la vue souhaitée dans la barre latérale puis sélectionnez une conversation pour la traiter.</p>"
                 },
                 "pt-BR": {
                   title: "Caixa Unificada e Visualizações Inteligentes",
-                  content: "<p>O Deskbolic reúne mensagens dos canais em uma fila unificada. As visualizações ajudam a encontrar conversas que precisam de atenção.</p><ul><li><strong>Assigned to me:</strong> conversas atribuídas a você.</li><li><strong>Unassigned:</strong> solicitações recebidas sem responsável.</li><li><strong>All:</strong> conversas do espaço de trabalho em todos os canais.</li><li><strong>Mentions:</strong> conversas em que um colega mencionou você.</li></ul><p>Abra a visualização desejada na barra lateral e selecione uma conversa para atendê-la.</p>"
+                  content: "<p>O Capiller Rely reúne mensagens dos canais em uma fila unificada. As visualizações ajudam a encontrar conversas que precisam de atenção.</p><ul><li><strong>Assigned to me:</strong> conversas atribuídas a você.</li><li><strong>Unassigned:</strong> solicitações recebidas sem responsável.</li><li><strong>All:</strong> conversas do espaço de trabalho em todos os canais.</li><li><strong>Mentions:</strong> conversas em que um colega mencionou você.</li></ul><p>Abra a visualização desejada na barra lateral e selecione uma conversa para atendê-la.</p>"
                 },
                 ar: {
                   title: "صناديق الوارد الموحدة وطرق العرض الذكية",
-                  content: "<p>يجمع Deskbolic رسائل العملاء من القنوات في قائمة موحدة، وتساعد طرق العرض في العثور على المحادثات التي تحتاج إلى متابعة.</p><ul><li><strong>Assigned to me:</strong> المحادثات المسندة إليك.</li><li><strong>Unassigned:</strong> الطلبات الواردة التي لم تُسند إلى مسؤول.</li><li><strong>All:</strong> محادثات مساحة العمل من جميع القنوات.</li><li><strong>Mentions:</strong> المحادثات التي أشار إليك فيها زميل.</li></ul><p>افتح طريقة العرض المناسبة من الشريط الجانبي واختر محادثة لمتابعتها.</p>"
+                  content: "<p>يجمع Capiller Rely رسائل العملاء من القنوات في قائمة موحدة، وتساعد طرق العرض في العثور على المحادثات التي تحتاج إلى متابعة.</p><ul><li><strong>Assigned to me:</strong> المحادثات المسندة إليك.</li><li><strong>Unassigned:</strong> الطلبات الواردة التي لم تُسند إلى مسؤول.</li><li><strong>All:</strong> محادثات مساحة العمل من جميع القنوات.</li><li><strong>Mentions:</strong> المحادثات التي أشار إليك فيها زميل.</li></ul><p>افتح طريقة العرض المناسبة من الشريط الجانبي واختر محادثة لمتابعتها.</p>"
                 },
                 ko: {
                   title: "통합 받은 편지함 및 스마트 필터 뷰",
-                  content: "<p>Deskbolic은 채널별 고객 메시지를 통합 큐에 모읍니다. 스마트 뷰를 사용해 확인할 대화를 찾으세요.</p><ul><li><strong>Assigned to me:</strong> 내게 배정된 대화.</li><li><strong>Unassigned:</strong> 담당자가 지정되지 않은 문의.</li><li><strong>All:</strong> 모든 채널의 워크스페이스 대화.</li><li><strong>Mentions:</strong> 팀원이 나를 언급한 대화.</li></ul><p>사이드바에서 뷰를 열고 목록의 대화를 선택해 처리합니다.</p>"
+                  content: "<p>Capiller Rely은 채널별 고객 메시지를 통합 큐에 모읍니다. 스마트 뷰를 사용해 확인할 대화를 찾으세요.</p><ul><li><strong>Assigned to me:</strong> 내게 배정된 대화.</li><li><strong>Unassigned:</strong> 담당자가 지정되지 않은 문의.</li><li><strong>All:</strong> 모든 채널의 워크스페이스 대화.</li><li><strong>Mentions:</strong> 팀원이 나를 언급한 대화.</li></ul><p>사이드바에서 뷰를 열고 목록의 대화를 선택해 처리합니다.</p>"
                 }
               }
             },
