@@ -16,7 +16,7 @@ RSpec.describe Seeds::DevelopmentSeeder do
         }.not_to raise_error
         
         # Verify that it created the expected records
-        account = Account.find_by(name: 'Deskbolic Demo')
+        account = Account.find_by(name: 'Capiller Rely Demo')
         expect(account).not_to be_nil
         
         owner = User.find_by(email: 'owner@deskbolic.test')

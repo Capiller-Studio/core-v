@@ -56,7 +56,7 @@ module Seeds
                     <p>Your Help Center is a public portal where customers can find your published support articles. You can manage portals, their appearance, languages, categories, and articles from the Help Center area in the dashboard.</p>
                     <ol>
                       <li>Open <strong>Help Center</strong> in the settings sidebar and choose <strong>Create Help Center</strong>, or open <strong>All Help Centers</strong> to manage an existing portal.</li>
-                      <li>When creating a portal, enter its name and choose an available Deskbolic subdomain or a custom domain if your account plan supports custom domains.</li>
+                      <li>When creating a portal, enter its name and choose an available Capiller Rely subdomain or a custom domain if your account plan supports custom domains.</li>
                       <li>Open the portal's edit page to set its supported locales, branding, logo, hero presentation, and other appearance options.</li>
                       <li>Use <strong>Articles</strong> and <strong>Categories</strong> in the Help Center sidebar to add and organize customer-facing content. Only publish content after reviewing it in the intended language.</li>
                     </ol>
@@ -65,27 +65,27 @@ module Seeds
                 },
                 de: {
                   title: "Wissensportale erstellen & anpassen",
-                  content: "<p>Das Help Center ist ein öffentliches Portal mit veröffentlichten Supportartikeln. Portale, Sprachen, Erscheinungsbild, Kategorien und Artikel verwalten Sie im Dashboard.</p><ol><li>Öffnen Sie <strong>Help Center</strong> in der Einstellungsseitenleiste. Wählen Sie <strong>Create Help Center</strong> oder <strong>All Help Centers</strong>.</li><li>Geben Sie beim Erstellen einen Namen ein und wählen Sie eine verfügbare Deskbolic-Subdomain oder – sofern Ihr Tarif dies unterstützt – eine eigene Domain.</li><li>Öffnen Sie die Bearbeitungsseite und konfigurieren Sie unterstützte Sprachen, Branding, Logo und Darstellung.</li><li>Erstellen und ordnen Sie kundenorientierte Inhalte unter <strong>Articles</strong> und <strong>Categories</strong>. Prüfen Sie jede Sprache vor der Veröffentlichung.</li></ol><p>Die verfügbaren Domainoptionen und Einrichtungsschritte hängen vom Tarif und den Angaben im Formular ab.</p>"
+                  content: "<p>Das Help Center ist ein öffentliches Portal mit veröffentlichten Supportartikeln. Portale, Sprachen, Erscheinungsbild, Kategorien und Artikel verwalten Sie im Dashboard.</p><ol><li>Öffnen Sie <strong>Help Center</strong> in der Einstellungsseitenleiste. Wählen Sie <strong>Create Help Center</strong> oder <strong>All Help Centers</strong>.</li><li>Geben Sie beim Erstellen einen Namen ein und wählen Sie eine verfügbare Capiller Rely-Subdomain oder – sofern Ihr Tarif dies unterstützt – eine eigene Domain.</li><li>Öffnen Sie die Bearbeitungsseite und konfigurieren Sie unterstützte Sprachen, Branding, Logo und Darstellung.</li><li>Erstellen und ordnen Sie kundenorientierte Inhalte unter <strong>Articles</strong> und <strong>Categories</strong>. Prüfen Sie jede Sprache vor der Veröffentlichung.</li></ol><p>Die verfügbaren Domainoptionen und Einrichtungsschritte hängen vom Tarif und den Angaben im Formular ab.</p>"
                 },
                 es: {
                   title: "Creación y Personalización de Portales de Ayuda",
-                  content: "<p>El Help Center es un portal público con artículos de soporte publicados. Administre portales, idiomas, apariencia, categorías y artículos desde el panel.</p><ol><li>Abra <strong>Help Center</strong> en la barra lateral de configuración. Elija <strong>Create Help Center</strong> o <strong>All Help Centers</strong>.</li><li>Al crear un portal, escriba el nombre y elija un subdominio disponible de Deskbolic o un dominio propio si su plan lo permite.</li><li>Abra la página de edición para configurar idiomas, marca, logotipo y presentación.</li><li>Cree y organice el contenido para clientes en <strong>Articles</strong> y <strong>Categories</strong>. Revise cada idioma antes de publicar.</li></ol><p>Las opciones de dominio y los pasos aplicables dependen del plan y de lo que muestre el formulario.</p>"
+                  content: "<p>El Help Center es un portal público con artículos de soporte publicados. Administre portales, idiomas, apariencia, categorías y artículos desde el panel.</p><ol><li>Abra <strong>Help Center</strong> en la barra lateral de configuración. Elija <strong>Create Help Center</strong> o <strong>All Help Centers</strong>.</li><li>Al crear un portal, escriba el nombre y elija un subdominio disponible de Capiller Rely o un dominio propio si su plan lo permite.</li><li>Abra la página de edición para configurar idiomas, marca, logotipo y presentación.</li><li>Cree y organice el contenido para clientes en <strong>Articles</strong> y <strong>Categories</strong>. Revise cada idioma antes de publicar.</li></ol><p>Las opciones de dominio y los pasos aplicables dependen del plan y de lo que muestre el formulario.</p>"
                 },
                 fr: {
                   title: "Création et Personnalisation des Portails d'Aide",
-                  content: "<p>Le Help Center est un portail public où les clients consultent les articles publiés. Gérez les portails, langues, apparence, catégories et articles depuis le tableau de bord.</p><ol><li>Ouvrez <strong>Help Center</strong> dans la barre latérale des paramètres. Choisissez <strong>Create Help Center</strong> ou <strong>All Help Centers</strong>.</li><li>Lors de la création, saisissez un nom et choisissez un sous-domaine Deskbolic disponible ou un domaine personnalisé si votre forfait l'autorise.</li><li>Ouvrez la page de modification pour définir les langues, l'identité visuelle, le logo et la présentation.</li><li>Créez et organisez les contenus clients dans <strong>Articles</strong> et <strong>Categories</strong>. Relisez chaque langue avant publication.</li></ol><p>Les domaines proposés et les étapes de configuration dépendent de votre forfait et du formulaire.</p>"
+                  content: "<p>Le Help Center est un portail public où les clients consultent les articles publiés. Gérez les portails, langues, apparence, catégories et articles depuis le tableau de bord.</p><ol><li>Ouvrez <strong>Help Center</strong> dans la barre latérale des paramètres. Choisissez <strong>Create Help Center</strong> ou <strong>All Help Centers</strong>.</li><li>Lors de la création, saisissez un nom et choisissez un sous-domaine Capiller Rely disponible ou un domaine personnalisé si votre forfait l'autorise.</li><li>Ouvrez la page de modification pour définir les langues, l'identité visuelle, le logo et la présentation.</li><li>Créez et organisez les contenus clients dans <strong>Articles</strong> et <strong>Categories</strong>. Relisez chaque langue avant publication.</li></ol><p>Les domaines proposés et les étapes de configuration dépendent de votre forfait et du formulaire.</p>"
                 },
                 "pt-BR": {
                   title: "Criando e Personalizando Portais de Ajuda",
-                  content: "<p>O Help Center é um portal público com artigos de suporte publicados. Gerencie portais, idiomas, aparência, categorias e artigos pelo painel.</p><ol><li>Abra <strong>Help Center</strong> na barra lateral de configurações e escolha <strong>Create Help Center</strong> ou <strong>All Help Centers</strong>.</li><li>Ao criar, informe um nome e escolha um subdomínio Deskbolic disponível ou um domínio próprio, se o plano permitir.</li><li>Abra a edição do portal para configurar idiomas, marca, logotipo e apresentação.</li><li>Crie e organize conteúdo para clientes em <strong>Articles</strong> e <strong>Categories</strong>. Revise cada idioma antes de publicar.</li></ol><p>As opções de domínio e os passos aplicáveis dependem do plano e do formulário exibido.</p>"
+                  content: "<p>O Help Center é um portal público com artigos de suporte publicados. Gerencie portais, idiomas, aparência, categorias e artigos pelo painel.</p><ol><li>Abra <strong>Help Center</strong> na barra lateral de configurações e escolha <strong>Create Help Center</strong> ou <strong>All Help Centers</strong>.</li><li>Ao criar, informe um nome e escolha um subdomínio Capiller Rely disponível ou um domínio próprio, se o plano permitir.</li><li>Abra a edição do portal para configurar idiomas, marca, logotipo e apresentação.</li><li>Crie e organize conteúdo para clientes em <strong>Articles</strong> e <strong>Categories</strong>. Revise cada idioma antes de publicar.</li></ol><p>As opções de domínio e os passos aplicáveis dependem do plano e do formulário exibido.</p>"
                 },
                 ar: {
                   title: "إنشاء وتخصيص بوابات مركز المساعدة",
-                  content: "<p>مركز المساعدة بوابة عامة تعرض مقالات الدعم المنشورة. يمكنك إدارة البوابات واللغات والمظهر والفئات والمقالات من لوحة التحكم.</p><ol><li>افتح <strong>Help Center</strong> من الشريط الجانبي للإعدادات واختر <strong>Create Help Center</strong> أو <strong>All Help Centers</strong>.</li><li>عند الإنشاء، أدخل اسمًا واختر نطاق Deskbolic فرعيًا متاحًا أو نطاقًا مخصصًا إذا كانت خطتك تسمح بذلك.</li><li>افتح صفحة التعديل لضبط اللغات المدعومة والعلامة التجارية والشعار وطريقة العرض.</li><li>أنشئ محتوى العملاء ونظمه في <strong>Articles</strong> و<strong>Categories</strong>. راجع كل لغة قبل النشر.</li></ol><p>تعتمد خيارات النطاق وخطوات إعداده على خطتك وما يعرضه النموذج.</p>"
+                  content: "<p>مركز المساعدة بوابة عامة تعرض مقالات الدعم المنشورة. يمكنك إدارة البوابات واللغات والمظهر والفئات والمقالات من لوحة التحكم.</p><ol><li>افتح <strong>Help Center</strong> من الشريط الجانبي للإعدادات واختر <strong>Create Help Center</strong> أو <strong>All Help Centers</strong>.</li><li>عند الإنشاء، أدخل اسمًا واختر نطاق Capiller Rely فرعيًا متاحًا أو نطاقًا مخصصًا إذا كانت خطتك تسمح بذلك.</li><li>افتح صفحة التعديل لضبط اللغات المدعومة والعلامة التجارية والشعار وطريقة العرض.</li><li>أنشئ محتوى العملاء ونظمه في <strong>Articles</strong> و<strong>Categories</strong>. راجع كل لغة قبل النشر.</li></ol><p>تعتمد خيارات النطاق وخطوات إعداده على خطتك وما يعرضه النموذج.</p>"
                 },
                 ko: {
                   title: "지식 기반 헬프 센터 포털 생성 및 맞춤 설정",
-                  content: "<p>Help Center는 게시된 지원 문서를 고객에게 제공하는 공개 포털입니다. 대시보드에서 포털, 언어, 디자인, 카테고리, 문서를 관리할 수 있습니다.</p><ol><li>설정 사이드바에서 <strong>Help Center</strong>를 열고 <strong>Create Help Center</strong> 또는 <strong>All Help Centers</strong>를 선택합니다.</li><li>새 포털의 이름을 입력하고 사용 가능한 Deskbolic 하위 도메인을 선택합니다. 요금제에서 허용하면 사용자 지정 도메인도 선택할 수 있습니다.</li><li>편집 화면에서 지원 언어, 브랜드, 로고, 화면 표시 방식을 설정합니다.</li><li><strong>Articles</strong>와 <strong>Categories</strong>에서 고객용 콘텐츠를 만들고 정리합니다. 게시 전에 각 언어를 검토하세요.</li></ol><p>도메인 옵션과 설정 단계는 요금제와 포털 양식에 표시되는 내용에 따라 달라집니다.</p>"
+                  content: "<p>Help Center는 게시된 지원 문서를 고객에게 제공하는 공개 포털입니다. 대시보드에서 포털, 언어, 디자인, 카테고리, 문서를 관리할 수 있습니다.</p><ol><li>설정 사이드바에서 <strong>Help Center</strong>를 열고 <strong>Create Help Center</strong> 또는 <strong>All Help Centers</strong>를 선택합니다.</li><li>새 포털의 이름을 입력하고 사용 가능한 Capiller Rely 하위 도메인을 선택합니다. 요금제에서 허용하면 사용자 지정 도메인도 선택할 수 있습니다.</li><li>편집 화면에서 지원 언어, 브랜드, 로고, 화면 표시 방식을 설정합니다.</li><li><strong>Articles</strong>와 <strong>Categories</strong>에서 고객용 콘텐츠를 만들고 정리합니다. 게시 전에 각 언어를 검토하세요.</li></ol><p>도메인 옵션과 설정 단계는 요금제와 포털 양식에 표시되는 내용에 따라 달라집니다.</p>"
                 }
               }
             },
@@ -147,9 +147,9 @@ module Seeds
                 en: {
                   title: "Developer Platform & API Reference Portal",
                   content: <<~HTML
-                    <p>For developers building integrations with Deskbolic, open the API documentation portal. Use its current reference to confirm available endpoints, authentication requirements, and request formats.</p>
+                    <p>For developers building integrations with Capiller Rely, open the API documentation portal. Use its current reference to confirm available endpoints, authentication requirements, and request formats.</p>
                     <div style="padding: 20px; border-radius: 12px; background: #EEF2FF; border: 1px solid #C7D2FE; margin: 20px 0;">
-                      <h4 style="margin: 0 0 8px 0; color: #3730A3;">Explore the Deskbolic API Reference</h4>
+                      <h4 style="margin: 0 0 8px 0; color: #3730A3;">Explore the Capiller Rely API Reference</h4>
                       <p style="margin: 0 0 14px 0; color: #4338CA;">Review the available API documentation and integration guidance.</p>
                       <a href="#{api_url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #4F46E5; color: #ffffff; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600;">Open API Documentation &rarr;</a>
                     </div>
@@ -158,42 +158,42 @@ module Seeds
                 de: {
                   title: "Entwicklerplattform & API-Referenzportal",
                   content: <<~HTML
-                    <p>Möchten Sie benutzerdefinierte Integrationen oder Bots erstellen? Nutzen Sie das offizielle Deskbolic API-Referenzportal.</p>
+                    <p>Möchten Sie benutzerdefinierte Integrationen oder Bots erstellen? Nutzen Sie das offizielle Capiller Rely API-Referenzportal.</p>
                     <p><a href="#{api_url}" target="_blank" rel="noopener noreferrer"><strong>API-Dokumentation öffnen &rarr;</strong></a></p>
                   HTML
                 },
                 es: {
                   title: "Plataforma de Desarrolladores y Portal de API",
                   content: <<~HTML
-                    <p>¿Desea crear integraciones personalizadas o bots? Visite el portal oficial de referencia de la API de Deskbolic.</p>
+                    <p>¿Desea crear integraciones personalizadas o bots? Visite el portal oficial de referencia de la API de Capiller Rely.</p>
                     <p><a href="#{api_url}" target="_blank" rel="noopener noreferrer"><strong>Abrir Documentación de la API &rarr;</strong></a></p>
                   HTML
                 },
                 fr: {
                   title: "Plateforme Développeurs et Référence API",
                   content: <<~HTML
-                    <p>Vous souhaitez créer des intégrations ou des bots? Consultez le portail de référence de l'API Deskbolic.</p>
+                    <p>Vous souhaitez créer des intégrations ou des bots? Consultez le portail de référence de l'API Capiller Rely.</p>
                     <p><a href="#{api_url}" target="_blank" rel="noopener noreferrer"><strong>Ouvrir la Documentation API &rarr;</strong></a></p>
                   HTML
                 },
                 "pt-BR": {
                   title: "Plataforma de Desenvolvedores e Referência da API",
                   content: <<~HTML
-                    <p>Deseja criar integrações personalizadas ou bots? Acesse o portal oficial de referência da API Deskbolic.</p>
+                    <p>Deseja criar integrações personalizadas ou bots? Acesse o portal oficial de referência da API Capiller Rely.</p>
                     <p><a href="#{api_url}" target="_blank" rel="noopener noreferrer"><strong>Abrir Documentação da API &rarr;</strong></a></p>
                   HTML
                 },
                 ar: {
                   title: "منصة المطورين ومرجع واجهة برمجة التطبيقات (API)",
                   content: <<~HTML
-                    <p>هل ترغب في بناء عمليات تكامل مخصصة أو روبوتات محادثة؟ قم بزيارة بوابة مرجع واجهة برمجة تطبيقات Deskbolic الرسمية.</p>
+                    <p>هل ترغب في بناء عمليات تكامل مخصصة أو روبوتات محادثة؟ قم بزيارة بوابة مرجع واجهة برمجة تطبيقات Capiller Rely الرسمية.</p>
                     <p><a href="#{api_url}" target="_blank" rel="noopener noreferrer"><strong>فتح وثائق واجهة برمجة التطبيقات &rarr;</strong></a></p>
                   HTML
                 },
                 ko: {
                   title: "개발자 플랫폼 및 API 레퍼런스 포털 바로가기",
                   content: <<~HTML
-                    <p>자체 서비스 연동, 챗봇 또는 백엔드 자동화를 구축하려면 Deskbolic 공식 <strong>REST API 레퍼런스 포털</strong>을 확인하세요.</p>
+                    <p>자체 서비스 연동, 챗봇 또는 백엔드 자동화를 구축하려면 Capiller Rely 공식 <strong>REST API 레퍼런스 포털</strong>을 확인하세요.</p>
                     <p><a href="#{api_url}" target="_blank" rel="noopener noreferrer"><strong>API 공식 설명서 열기 &rarr;</strong></a></p>
                   HTML
                 }

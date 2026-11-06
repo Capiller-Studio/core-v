@@ -100,7 +100,7 @@ RSpec.describe Outbound::CampaignService do
       expect(preview[:from]).to eq(["ahsan@techbolic.com"])
       expect(preview[:subject]).to include("Intercom")
       expect(preview[:html_part]).to include("Alex")
-      expect(preview[:text_part]).to include("Deskbolic")
+      expect(preview[:text_part]).to include("Capiller Rely")
       expect(ActionMailer::Base.deliveries).to be_empty
     end
   end

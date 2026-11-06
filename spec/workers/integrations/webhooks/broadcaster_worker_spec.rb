@@ -30,7 +30,7 @@ RSpec.describe Integrations::Webhooks::BroadcasterWorker, type: :worker do
         body: delivery.request_payload.to_json,
         headers: hash_including(
           'Content-Type' => 'application/json',
-          'User-Agent' => 'Deskbolic-Webhook-Engine/1.0',
+          'User-Agent' => 'Capiller Rely-Webhook-Engine/1.0',
           'Signature' => a_string_matching(/\At=\d+,v1=[a-f0-9]{64}\z/)
         ),
         timeout: 10

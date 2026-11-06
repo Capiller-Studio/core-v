@@ -57,32 +57,32 @@ module Seeds
               },
               translations: {
                 en: {
-                  title: "Deskbolic User Guide & Knowledge Base",
-                  content: "<p>Redirecting to Deskbolic User Guide & Help Center...</p>"
+                  title: "Capiller Rely User Guide & Knowledge Base",
+                  content: "<p>Redirecting to Capiller Rely User Guide & Help Center...</p>"
                 },
                 de: {
-                  title: "Deskbolic Benutzerhandbuch & Wissensdatenbank",
-                  content: "<p>Weiterleitung zum Deskbolic Benutzerhandbuch...</p>"
+                  title: "Capiller Rely Benutzerhandbuch & Wissensdatenbank",
+                  content: "<p>Weiterleitung zum Capiller Rely Benutzerhandbuch...</p>"
                 },
                 es: {
-                  title: "Guía del Usuario y Base de Conocimientos de Deskbolic",
-                  content: "<p>Redirigiendo a la Guía del Usuario de Deskbolic...</p>"
+                  title: "Guía del Usuario y Base de Conocimientos de Capiller Rely",
+                  content: "<p>Redirigiendo a la Guía del Usuario de Capiller Rely...</p>"
                 },
                 fr: {
-                  title: "Guide Utilisateur et Base de Connaissances Deskbolic",
-                  content: "<p>Redirection vers le Guide Utilisateur Deskbolic...</p>"
+                  title: "Guide Utilisateur et Base de Connaissances Capiller Rely",
+                  content: "<p>Redirection vers le Guide Utilisateur Capiller Rely...</p>"
                 },
                 "pt-BR": {
-                  title: "Guia do Usuário e Base de Conhecimento Deskbolic",
-                  content: "<p>Redirecionando para a Central de Ajuda Deskbolic...</p>"
+                  title: "Guia do Usuário e Base de Conhecimento Capiller Rely",
+                  content: "<p>Redirecionando para a Central de Ajuda Capiller Rely...</p>"
                 },
                 ar: {
-                  title: "دليل المستخدم وقاعدة المعرفة لمنصة Deskbolic",
+                  title: "دليل المستخدم وقاعدة المعرفة لمنصة Capiller Rely",
                   content: "<p>جاري إعادة التوجيه إلى دليل المستخدم ومركز المساعدة...</p>"
                 },
                 ko: {
-                  title: "Deskbolic 사용자 가이드 및 고객 지식 기반",
-                  content: "<p>Deskbolic 사용자 가이드 및 헬프 센터로 이동합니다...</p>"
+                  title: "Capiller Rely 사용자 가이드 및 고객 지식 기반",
+                  content: "<p>Capiller Rely 사용자 가이드 및 헬프 센터로 이동합니다...</p>"
                 }
               }
             }

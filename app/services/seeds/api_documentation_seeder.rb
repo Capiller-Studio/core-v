@@ -48,53 +48,53 @@ module Seeds
 
     PORTAL_TRANSLATIONS = {
       en: {
-        hero_title: "Deskbolic API Reference",
-        hero_subtitle: "Comprehensive REST API documentation, guides, and integration reference for Deskbolic.",
+        hero_title: "Capiller Rely API Reference",
+        hero_subtitle: "Comprehensive REST API documentation, guides, and integration reference for Capiller Rely.",
         header_tagline: "Developer Platform & API Reference",
         search_placeholder: "Search API endpoints, parameters, and guides...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. All rights reserved."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. All rights reserved."
       },
       de: {
-        hero_title: "Deskbolic API-Referenz",
-        hero_subtitle: "Vollständige REST-API-Dokumentation, Anleitungen und Referenz für Deskbolic.",
+        hero_title: "Capiller Rely API-Referenz",
+        hero_subtitle: "Vollständige REST-API-Dokumentation, Anleitungen und Referenz für Capiller Rely.",
         header_tagline: "Entwicklerplattform & API-Referenz",
         search_placeholder: "API-Endpunkte, Parameter und Anleitungen durchsuchen...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Alle Rechte vorbehalten."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Alle Rechte vorbehalten."
       },
       es: {
-        hero_title: "Referencia de la API de Deskbolic",
+        hero_title: "Referencia de la API de Capiller Rely",
         hero_subtitle: "Documentación completa de la API REST, guías y referencia de integración.",
         header_tagline: "Plataforma para Desarrolladores y Referencia de API",
         search_placeholder: "Buscar puntos finales de API, parámetros y guías...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Todos los derechos reservados."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Todos los derechos reservados."
       },
       fr: {
-        hero_title: "Référence de l'API Deskbolic",
-        hero_subtitle: "Documentation complète de l'API REST, guides et intégrations pour Deskbolic.",
+        hero_title: "Référence de l'API Capiller Rely",
+        hero_subtitle: "Documentation complète de l'API REST, guides et intégrations pour Capiller Rely.",
         header_tagline: "Plateforme Développeurs & Référence API",
         search_placeholder: "Rechercher des points de terminaison, paramètres et guides...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Tous droits réservés."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Tous droits réservés."
       },
       "pt-BR": {
-        hero_title: "Referência da API Deskbolic",
-        hero_subtitle: "Documentação completa da API REST, guias e integrações para Deskbolic.",
+        hero_title: "Referência da API Capiller Rely",
+        hero_subtitle: "Documentação completa da API REST, guias e integrações para Capiller Rely.",
         header_tagline: "Plataforma de Desenvolvedores e Referência de API",
         search_placeholder: "Pesquisar endpoints da API, parâmetros e guias...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Todos os direitos reservados."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Todos os direitos reservados."
       },
       ar: {
-        hero_title: "مرجع واجهة برمجة تطبيقات Deskbolic",
-        hero_subtitle: "وثائق REST API الشاملة والأدلة والتكامل لمنصة Deskbolic.",
+        hero_title: "مرجع واجهة برمجة تطبيقات Capiller Rely",
+        hero_subtitle: "وثائق REST API الشاملة والأدلة والتكامل لمنصة Capiller Rely.",
         header_tagline: "منصة المطورين ومرجع واجهة برمجة التطبيقات",
         search_placeholder: "البحث في نقاط نهاية واجهة برمجة التطبيقات والمعلمات...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. جميع الحقوق محفوظة."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. جميع الحقوق محفوظة."
       },
       ko: {
-        hero_title: "Deskbolic API 레퍼런스",
-        hero_subtitle: "Deskbolic의 종합적인 REST API 설명서, 연동 가이드 및 레퍼런스 문서입니다.",
+        hero_title: "Capiller Rely API 레퍼런스",
+        hero_subtitle: "Capiller Rely의 종합적인 REST API 설명서, 연동 가이드 및 레퍼런스 문서입니다.",
         header_tagline: "개발자 플랫폼 및 API 레퍼런스",
         search_placeholder: "API 엔드포인트, 파라미터 및 가이드 검색...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. All rights reserved."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. All rights reserved."
       }
     }.freeze
 
@@ -154,7 +154,7 @@ module Seeds
     def find_or_create_portal(domain_record)
       portal = HelpCenter::Portal.find_or_initialize_by(domain_id: domain_record.id)
       portal.account = account
-      portal.name = "Deskbolic API Reference"
+      portal.name = "Capiller Rely API Reference"
       portal.default_locale = "en"
       portal.locales = Core::SUPPORTED_LOCALES.map(&:to_s)
       portal.status = :active

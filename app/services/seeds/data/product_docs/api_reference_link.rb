@@ -56,32 +56,32 @@ module Seeds
               },
               translations: {
                 en: {
-                  title: "Deskbolic REST API Documentation",
-                  content: "<p>Redirecting to Deskbolic REST API Documentation...</p>"
+                  title: "Capiller Rely REST API Documentation",
+                  content: "<p>Redirecting to Capiller Rely REST API Documentation...</p>"
                 },
                 de: {
-                  title: "Deskbolic REST-API-Dokumentation",
-                  content: "<p>Weiterleitung zur Deskbolic REST-API-Dokumentation...</p>"
+                  title: "Capiller Rely REST-API-Dokumentation",
+                  content: "<p>Weiterleitung zur Capiller Rely REST-API-Dokumentation...</p>"
                 },
                 es: {
-                  title: "Documentación de la API REST de Deskbolic",
-                  content: "<p>Redirigiendo a la documentación de la API REST de Deskbolic...</p>"
+                  title: "Documentación de la API REST de Capiller Rely",
+                  content: "<p>Redirigiendo a la documentación de la API REST de Capiller Rely...</p>"
                 },
                 fr: {
-                  title: "Documentation de l'API REST Deskbolic",
-                  content: "<p>Redirection vers la documentation de l'API REST Deskbolic...</p>"
+                  title: "Documentation de l'API REST Capiller Rely",
+                  content: "<p>Redirection vers la documentation de l'API REST Capiller Rely...</p>"
                 },
                 "pt-BR": {
-                  title: "Documentação da API REST Deskbolic",
-                  content: "<p>Redirecionando para a documentação da API REST Deskbolic...</p>"
+                  title: "Documentação da API REST Capiller Rely",
+                  content: "<p>Redirecionando para a documentação da API REST Capiller Rely...</p>"
                 },
                 ar: {
-                  title: "وثائق واجهة برمجة تطبيقات Deskbolic REST",
-                  content: "<p>جاري إعادة التوجيه إلى وثائق واجهة برمجة تطبيقات Deskbolic REST...</p>"
+                  title: "وثائق واجهة برمجة تطبيقات Capiller Rely REST",
+                  content: "<p>جاري إعادة التوجيه إلى وثائق واجهة برمجة تطبيقات Capiller Rely REST...</p>"
                 },
                 ko: {
-                  title: "Deskbolic REST API 공식 설명서",
-                  content: "<p>Deskbolic REST API 공식 설명서로 이동합니다...</p>"
+                  title: "Capiller Rely REST API 공식 설명서",
+                  content: "<p>Capiller Rely REST API 공식 설명서로 이동합니다...</p>"
                 }
               }
             }

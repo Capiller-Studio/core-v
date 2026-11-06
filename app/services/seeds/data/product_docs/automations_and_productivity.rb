@@ -105,7 +105,7 @@ module Seeds
                       <li>Save the policy. Then open the channel or inbox settings and select the policy for the inbox.</li>
                       <li>Check the SLA status on a test conversation to confirm the policy and schedule apply as expected.</li>
                     </ol>
-                    <p>Targets and coverage are configured by your team; Deskbolic does not apply a universal set of priority-based durations. Review policy and inbox assignments together when troubleshooting an unexpected SLA status.</p>
+                    <p>Targets and coverage are configured by your team; Capiller Rely does not apply a universal set of priority-based durations. Review policy and inbox assignments together when troubleshooting an unexpected SLA status.</p>
                   HTML
                 },
                 de: {

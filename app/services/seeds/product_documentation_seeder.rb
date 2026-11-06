@@ -38,49 +38,49 @@ module Seeds
         hero_subtitle: "Explore user guides, tutorials, setup walkthroughs, and answers to frequently asked questions.",
         header_tagline: "Customer Help Center & User Guide",
         search_placeholder: "Search guides, setup tutorials, and FAQs...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. All rights reserved."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. All rights reserved."
       },
       de: {
         hero_title: "Wie können wir Ihnen heute helfen?",
         hero_subtitle: "Entdecken Sie Benutzerhandbücher, Einrichtungsanleitungen und Antworten auf häufig gestellte Fragen.",
         header_tagline: "Hilfe-Center & Benutzerhandbuch",
         search_placeholder: "Anleitungen, Tutorials und FAQs durchsuchen...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Alle Rechte vorbehalten."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Alle Rechte vorbehalten."
       },
       es: {
         hero_title: "¿Cómo podemos ayudarte hoy?",
         hero_subtitle: "Explore guías de usuario, tutoriales, pasos de configuración y preguntas frecuentes.",
         header_tagline: "Centro de Ayuda y Guía del Usuario",
         search_placeholder: "Buscar guías, tutoriales y preguntas frecuentes...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Todos los derechos reservados."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Todos los derechos reservados."
       },
       fr: {
         hero_title: "Comment pouvons-nous vous aider aujourd'hui?",
         hero_subtitle: "Explorez les guides utilisateurs, tutoriels de configuration et réponses aux questions fréquentes.",
         header_tagline: "Centre d'Aide et Guide Utilisateur",
         search_placeholder: "Rechercher des guides, tutoriels et FAQ...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Tous droits réservés."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Tous droits réservés."
       },
       "pt-BR": {
         hero_title: "Como podemos ajudar você hoje?",
         hero_subtitle: "Explore guias do usuário, tutoriais de configuração e respostas para perguntas frequentes.",
         header_tagline: "Central de Ajuda e Guia do Usuário",
         search_placeholder: "Pesquisar guias, tutoriais e perguntas frequentes...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. Todos os direitos reservados."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. Todos os direitos reservados."
       },
       ar: {
         hero_title: "كيف يمكننا مساعدتك اليوم؟",
         hero_subtitle: "استكشف أدلة المستخدم، والبرامج التعليمية للإعداد، والإجابات على الأسئلة الشائعة.",
         header_tagline: "مركز مساعدة العملاء ودليل المستخدم",
         search_placeholder: "ابحث في الأدلة، والبرامج التعليمية، والأسئلة الشائعة...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. جميع الحقوق محفوظة."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. جميع الحقوق محفوظة."
       },
       ko: {
         hero_title: "무엇을 도와드릴까요?",
-        hero_subtitle: "Deskbolic 사용자 가이드, 채널 연동 튜토리얼 및 자주 묻는 질문을 확인하세요.",
+        hero_subtitle: "Capiller Rely 사용자 가이드, 채널 연동 튜토리얼 및 자주 묻는 질문을 확인하세요.",
         header_tagline: "고객 지원 헬프 센터 및 사용자 가이드",
         search_placeholder: "사용자 가이드, 튜토리얼 및 FAQ 검색...",
-        footer_text: "© #{Time.current.year} Deskbolic Inc. All rights reserved."
+        footer_text: "© #{Time.current.year} Capiller Rely Inc. All rights reserved."
       }
     }.freeze
 
@@ -138,7 +138,7 @@ module Seeds
     def find_or_create_portal(domain_record)
       portal = HelpCenter::Portal.find_or_initialize_by(domain_id: domain_record.id)
       portal.account = account
-      portal.name ||= "Deskbolic User Guide & Help Center"
+      portal.name ||= "Capiller Rely User Guide & Help Center"
       portal.default_locale ||= "en"
       portal.locales = Core::SUPPORTED_LOCALES.map(&:to_s) if portal.locales.blank?
       portal.status ||= :active

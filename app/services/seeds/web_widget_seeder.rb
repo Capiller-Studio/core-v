@@ -24,7 +24,7 @@ module Seeds
     private
 
     def find_or_create_account
-      Account.first || Account.create!(name: "Deskbolic Demo")
+      Account.first || Account.create!(name: "Capiller Rely Demo")
     end
 
     FIRST_NAMES = %w[Sarah James].freeze
@@ -82,7 +82,7 @@ module Seeds
         allowed_hosts: ["http://localhost:3000"],
         ui_configurations: {
           "theme_color" => "#778DFF",
-          "welcome_title" => "Welcome to Deskbolic!",
+          "welcome_title" => "Welcome to Capiller Rely!",
           "welcome_tagline" => "We typically reply within a few minutes.",
           "position" => "right"
         },
@@ -142,7 +142,7 @@ module Seeds
           name: "Getting Started",
           description: "Learn the basics of using our platform.",
           articles: [
-            { slug: "how-to-get-started", title: "How to Get Started", content: "Welcome to Deskbolic! This guide will walk you through setting up your workspace and connecting your first channel." },
+            { slug: "how-to-get-started", title: "How to Get Started", content: "Welcome to Capiller Rely! This guide will walk you through setting up your workspace and connecting your first channel." },
             { slug: "creating-your-account", title: "Creating Your Account", content: "To create an account, visit our sign-up page and enter your business email. You'll receive a verification email within minutes." },
             { slug: "connecting-your-first-channel", title: "Connecting Your First Channel", content: "Navigate to Settings > Channels and choose from Email, Live Chat, Facebook, WhatsApp, or other supported channels." }
           ]
