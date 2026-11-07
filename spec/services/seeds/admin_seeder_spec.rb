@@ -31,15 +31,38 @@ RSpec.describe Seeds::AdminSeeder do
     it "does not create another admin when run again" do
       first_staff = seed_admin
       staff_count = Platform::Staff.count
+      user_count = User.count
       second_staff = nil
 
       expect do
         second_staff = described_class.seed(email: email, password: password, name: name)
-      end.to output("Admin seeder ran successfully: #{email} / roles: super_admin\n").to_stdout
+      end.to output(/Admin seeder ran successfully: staff=#{Regexp.escape(email)} user=#{Regexp.escape(email)} \/ roles: super_admin\n/).to_stdout
 
       expect(second_staff.id).to eq(first_staff.id)
       expect(Platform::Staff.count).to eq(staff_count)
       expect(Platform::Staff.where(email: email).count).to eq(1)
+      expect(User.count).to eq(user_count)
+      expect(User.where("LOWER(email) = ?", email.downcase).count).to eq(1)
+    end
+
+    it "creates a confirmed dashboard User that can authenticate" do
+      seed_admin
+
+      user = User.find_by!("LOWER(email) = ?", email.downcase)
+      expect(user).to be_persisted
+      expect(user.confirmed_at).to be_present
+      expect(user.valid_password?(password)).to be(true)
+      expect(user.accounts.count).to be >= 1
+    end
+
+    it "updates the dashboard User password when re-seeded" do
+      seed_admin
+      new_password = "AnotherSecure99!"
+
+      described_class.seed(email: email, password: new_password, name: name)
+
+      user = User.find_by!("LOWER(email) = ?", email.downcase)
+      expect(user.valid_password?(new_password)).to be(true)
     end
 
     it "removes other assignments and remains idempotent" do

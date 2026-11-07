@@ -96,7 +96,8 @@ module Seeds
         seeded_staff
       end
 
-      puts "Admin seeder ran successfully: #{staff.email} / roles: #{staff.roles.pluck(:identifier).join(', ')}"
+      user = seed_dashboard_user!
+      puts "Admin seeder ran successfully: staff=#{staff.email} user=#{user.email} / roles: #{staff.roles.pluck(:identifier).join(', ')}"
       staff
     end
 
@@ -135,14 +136,47 @@ module Seeds
       staff = Platform::Staff.find_or_initialize_by(email: email)
       staff.name = name
       staff.status = :active
-
-      if staff.new_record?
-        staff.password = password
-        staff.password_confirmation = password
-      end
-
+      staff.password = password
+      staff.password_confirmation = password
       staff.save!
       staff
+    end
+
+    # /login authenticates User, not Platform::Staff. Keep staff for platform roles,
+    # and always upsert a confirmed dashboard owner from ADMIN_DEFAULT_*.
+    def seed_dashboard_user!
+      existing = User.find_by("LOWER(email) = ?", email.downcase)
+      if existing
+        existing.password = password
+        existing.password_confirmation = password
+        existing.confirmed_at ||= Time.current
+        existing.confirmation_token = nil
+        existing.locked_at = nil
+        existing.failed_attempts = 0
+        existing.save!
+        return existing
+      end
+
+      first_name, last_name = name.to_s.split(/\s+/, 2)
+      result = Accounts::RegistrationService.call(
+        email: email,
+        password: password,
+        first_name: first_name.presence || "Admin",
+        last_name: last_name.presence || "User",
+        account_name: ENV.fetch("ADMIN_DEFAULT_ACCOUNT_NAME", "Capiller Rely"),
+        locale: "en",
+        currency: ENV.fetch("ADMIN_DEFAULT_CURRENCY", "INR"),
+        shard_key: "de"
+      )
+      raise "Dashboard admin seed failed: #{result.errors.inspect}" unless result.success?
+
+      user = result.user
+      user.confirmed_at ||= Time.current
+      user.confirmation_token = nil
+      user.locked_at = nil
+      user.failed_attempts = 0
+      user.save!
+      user
     end
 
     def assign_super_admin_role!(staff, super_admin_role)
